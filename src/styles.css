@@ -590,6 +590,12 @@ select {
   overflow-wrap: anywhere;
 }
 
+.survivor-row .job-effect {
+  margin-top: 3px;
+  color: #ffbd73;
+  font-size: 0.76rem;
+}
+
 .resource strong {
   font-size: 1.35rem;
 }

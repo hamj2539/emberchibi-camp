@@ -5,6 +5,9 @@ export function createGuardianBattle(state: GameState, partyIds: string[], beaco
   const party = state.run.survivors.filter((survivor) => partyIds.includes(survivor.id));
   const spearBonus = state.run.items.stoneSpear > 0 ? 12 : 0;
   const cloakBonus = state.run.items.warmCloak > 0 ? -1 : 0;
+  const researchBonus = state.run.survivors.some(
+    (survivor) => !partyIds.includes(survivor.id) && !survivor.onExpedition && survivor.job === "research",
+  ) ? -1 : 0;
 
   return {
     beaconId: beacon.id,
@@ -14,7 +17,7 @@ export function createGuardianBattle(state: GameState, partyIds: string[], beaco
     bossHp: beacon.bossHp,
     bossMaxHp: beacon.bossHp,
     guardStacks: 0,
-    burnPressure: Math.max(1, beacon.pressure + cloakBonus),
+    burnPressure: Math.max(1, beacon.pressure + cloakBonus + researchBonus),
     partyIds: party.map((survivor) => survivor.id),
     turn: 1,
     status: "active",
@@ -22,6 +25,7 @@ export function createGuardianBattle(state: GameState, partyIds: string[], beaco
     log: [
       `${beacon.bossName} takes shape before ${beacon.name}. Party power ${partyPower(party) + spearBonus}.`,
       state.run.items.warmCloak > 0 ? "Warm Cloak softens the pressure around the party." : "Guardian pressure closes in.",
+      researchBonus < 0 ? "Camp research reveals a weakness and lowers starting pressure." : "No research insight is ready.",
     ],
   };
 }

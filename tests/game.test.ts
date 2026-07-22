@@ -5,9 +5,69 @@ import { gameReducer } from "../src/game/reducer.js";
 import { migrateV1 } from "../src/game/save.js";
 import { applyReward } from "../src/game/rewards.js";
 import { calculateScore } from "../src/game/scoring.js";
+import { resolveExpedition, resolveIdleProgress } from "../src/game/tick.js";
 import { createInitialState, type GameState } from "../src/game/state.js";
 
 const tests: { name: string; run: () => void }[] = [
+  {
+    name: "Cook converts Food into Rations across timer boundaries",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "herbalist" });
+      const cooking = {
+        ...started,
+        run: {
+          ...started.run,
+          daySeconds: 29,
+          survivors: started.run.survivors.map((survivor) => ({ ...survivor, job: "cook" as const })),
+        },
+      };
+      const next = resolveIdleProgress(cooking, 1);
+      assertEqual(next.run.resources.food, 8);
+      assertEqual(next.run.items.ration, 1);
+    },
+  },
+  {
+    name: "Research lowers Guardian starting pressure",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "scout" });
+      const researcher = { ...started.run.survivors[0], id: "researcher", job: "research" as const };
+      const prepared = { ...started, run: { ...started.run, survivors: [...started.run.survivors, researcher] } };
+      const battle = createGuardianBattle(prepared, ["survivor-scout"], getBeacon("gale"));
+      assertEqual(battle.burnPressure, 2);
+    },
+  },
+  {
+    name: "Camp Guards add safety to an active expedition",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "scout" });
+      const scout = { ...started.run.survivors[0], onExpedition: true };
+      const guardOne = { ...started.run.survivors[0], id: "guard-one", job: "guard" as const };
+      const guardTwo = { ...started.run.survivors[0], id: "guard-two", job: "guard" as const };
+      const exploring = {
+        ...started,
+        run: {
+          ...started.run,
+          survivors: [scout, guardOne, guardTwo],
+          activeExpedition: {
+            id: "guard-test",
+            routeId: "burntGrove" as const,
+            survivorIds: [scout.id],
+            startedAt: 0,
+            endsAt: 1,
+          },
+        },
+      };
+      const originalRandom = Math.random;
+      Math.random = () => 0;
+      try {
+        const next = resolveExpedition(exploring, 1);
+        assertEqual(next.run.routes.burntGrove.completed, 1);
+        assertEqual(next.run.routes.burntGrove.failed, 0);
+      } finally {
+        Math.random = originalRandom;
+      }
+    },
+  },
   {
     name: "party Guard protects without reducing the next attack",
     run: () => {

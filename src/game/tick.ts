@@ -7,6 +7,10 @@ export function resolveIdleProgress(state: GameState, elapsedSeconds: number): G
   if (!state.run.started || elapsedSeconds <= 0) return state;
 
   const resources = { ...state.run.resources };
+  const items = { ...state.run.items };
+  const log = [...state.run.log];
+  const previousDaySeconds = state.run.daySeconds;
+  const nextDaySeconds = previousDaySeconds + elapsedSeconds;
   const survivors = state.run.survivors.map((survivor) => {
     if (survivor.onExpedition) return survivor;
     if (survivor.job === "forage") {
@@ -20,19 +24,27 @@ export function resolveIdleProgress(state: GameState, elapsedSeconds: number): G
         fatigue: Math.max(0, survivor.fatigue - elapsedSeconds / 18),
       };
     }
-    if (survivor.job === "cook" && resources.food >= 2 && elapsedSeconds >= 30) {
-      resources.food = Math.max(0, resources.food - elapsedSeconds / 30);
-    }
     return survivor;
   });
+
+  const cooks = survivors.filter((survivor) => !survivor.onExpedition && survivor.job === "cook").length;
+  const cookCycles = crossedIntervals(previousDaySeconds, nextDaySeconds, 30) * cooks;
+  const rationsProduced = Math.min(cookCycles, Math.floor(resources.food / 2));
+  if (rationsProduced > 0) {
+    resources.food -= rationsProduced * 2;
+    items.ration += rationsProduced;
+    log.unshift(`Camp cooks prepared ${rationsProduced} Ration${rationsProduced === 1 ? "" : "s"}.`);
+  }
 
   const withCraft = resolveCraftProgress({
     ...state,
     run: {
       ...state.run,
-      daySeconds: state.run.daySeconds + elapsedSeconds,
+      daySeconds: nextDaySeconds,
       resources,
+      items,
       survivors,
+      log: log.slice(0, 12),
     },
   }, elapsedSeconds);
 
@@ -131,7 +143,12 @@ export function resolveExpedition(state: GameState, now: number): GameState {
 
   const route = getRoute(expedition.routeId);
   const party = state.run.survivors.filter((survivor) => expedition.survivorIds.includes(survivor.id));
-  const safety = party.reduce((sum, survivor) => sum + survivor.stats.surv + survivor.stats.spd + survivor.stats.luck, 0);
+  const campGuards = state.run.survivors.filter(
+    (survivor) => !expedition.survivorIds.includes(survivor.id) && !survivor.onExpedition && survivor.job === "guard",
+  ).length;
+  const safety =
+    party.reduce((sum, survivor) => sum + survivor.stats.surv + survivor.stats.spd + survivor.stats.luck, 0) +
+    campGuards * 4;
   const failed = safety + roll(1, 24) < route.danger;
   const resources: Resources = { ...state.run.resources };
   const routes = { ...state.run.routes };
@@ -252,4 +269,8 @@ function coreRepairBonus(quality: NonNullable<GameState["run"]["beaconRepair"]>[
 
 function roll(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function crossedIntervals(previous: number, next: number, interval: number): number {
+  return Math.max(0, Math.floor(next / interval) - Math.floor(previous / interval));
 }

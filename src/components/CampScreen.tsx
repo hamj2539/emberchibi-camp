@@ -27,6 +27,15 @@ const resourceIcons: Record<keyof typeof resourceLabels, GameIconName> = {
   relicShard: "relicShard",
 };
 
+const jobDescriptions = {
+  rest: "Recover HP and fatigue",
+  forage: "Gather Food and Herb",
+  craft: "Speed every craft task",
+  guard: "+4 expedition safety",
+  cook: "2 Food → 1 Ration / 30s",
+  research: "Lower new Guardian pressure",
+};
+
 export function CampScreen({ state, dispatch, onReset }: Props) {
   const expedition = state.run.activeExpedition;
   const secondsLeft = expedition ? Math.max(0, Math.ceil((expedition.endsAt - Date.now()) / 1000)) : 0;
@@ -97,6 +106,7 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
               <div>
                 <strong>{survivor.name}</strong>
                 <span>{survivor.onExpedition ? "On expedition" : `Current: ${survivor.job}`}</span>
+                {!survivor.onExpedition && <span className="job-effect">{jobDescriptions[survivor.job]}</span>}
               </div>
               <select
                 value={survivor.job}
