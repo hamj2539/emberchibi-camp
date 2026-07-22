@@ -40,6 +40,16 @@ export function rollChestReward(grade: ChestGrade): ChestReward {
   return { type, label: pick(["Ember Adept Class", "Warden Class"]) };
 }
 
+export function describeChestGrade(grade: ChestGrade): string {
+  const descriptions: Record<ChestGrade, string> = {
+    broken: "Small shard payout with a low chance of collection unlocks.",
+    faded: "Better shard payout and a real chance at blueprints or relics.",
+    iron: "Strong collection odds with survivor and class unlock chances.",
+    ancient: "Best shard payout and the highest relic, survivor, and class unlock odds.",
+  };
+  return descriptions[grade];
+}
+
 export function applyReward(state: GameState, reward: ChestReward): GameState {
   const legacy = {
     ...state.legacy,

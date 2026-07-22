@@ -1,4 +1,5 @@
 import type { Dispatch } from "react";
+import { describeChestGrade } from "../game/rewards";
 import { labelChestGrade } from "../game/scoring";
 import type { GameAction, GameState } from "../game/state";
 import { GameIcon } from "./GameIcon";
@@ -16,7 +17,7 @@ export function EndRunScreen({ state, dispatch }: Props) {
       <section className="screen">
         <div className="panel">
           <h2>No Run Result</h2>
-          <p>Light the Ember Beacon to score this run.</p>
+          <p>Clear the Cinder Gate to score this run.</p>
           <button onClick={() => dispatch({ type: "setScreen", screen: "camp" })}>Return to Camp</button>
         </div>
       </section>
@@ -26,9 +27,9 @@ export function EndRunScreen({ state, dispatch }: Props) {
   return (
     <section className="screen end-layout">
       <div className="panel camp-hero">
-        <p className="eyebrow">Demo Run Complete</p>
+        <p className="eyebrow">Run Complete</p>
         <h2>{endRun.score} Score</h2>
-        <p>The Ember Beacon is lit. Your work pulls one more circle of forest out of the dark.</p>
+        <p>The Night Herald is defeated. The five Beacons hold the forest gate open until the next run.</p>
         <strong>{labelChestGrade(endRun.chestGrade)}</strong>
       </div>
 
@@ -48,6 +49,7 @@ export function EndRunScreen({ state, dispatch }: Props) {
         <p className="eyebrow">Legacy Chest</p>
         <GameIcon label={labelChestGrade(endRun.chestGrade)} name={`${endRun.chestGrade}Chest`} size="lg" />
         <h3>{labelChestGrade(endRun.chestGrade)}</h3>
+        <p>{describeChestGrade(endRun.chestGrade)}</p>
         {endRun.reward ? (
           <div className="result-box">
             <strong>{endRun.reward.label}</strong>

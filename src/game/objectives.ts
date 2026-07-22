@@ -54,6 +54,14 @@ export function getCurrentObjective(state: GameState): Objective {
     };
   }
 
+  if (state.run.gate.status !== "cleared") {
+    return {
+      title: "Defeat Night Herald",
+      detail: "Enter the Cinder Gate with 2-3 survivors to finish the run.",
+      progress: state.run.gate.status === "active" ? 90 : 82,
+    };
+  }
+
   if (!state.run.endRun?.claimed) {
     return {
       title: "Open the Legacy Chest",

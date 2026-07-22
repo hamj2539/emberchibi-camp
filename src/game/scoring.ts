@@ -29,6 +29,10 @@ export function calculateScore(state: GameState): { score: number; lines: ScoreL
   if (state.run.survivors.some((survivor) => survivor.id === "survivor-rook")) {
     lines.push({ label: "Recruited Rook", points: 50 });
   }
+  if (state.run.gate.status === "cleared") {
+    lines.push({ label: "Defeated Night Herald", points: 220 });
+    lines.push({ label: "Opened the Cinder Gate", points: 80 });
+  }
   if (state.run.routeFailures > 0) {
     lines.push({ label: "Route failures", points: state.run.routeFailures * -15 });
   }
@@ -54,8 +58,8 @@ export function labelChestGrade(grade: ChestGrade): string {
 }
 
 function chestGradeForScore(score: number): ChestGrade {
-  if (score >= 250) return "ancient";
-  if (score >= 170) return "iron";
-  if (score >= 100) return "faded";
+  if (score >= 1300) return "ancient";
+  if (score >= 1000) return "iron";
+  if (score >= 550) return "faded";
   return "broken";
 }

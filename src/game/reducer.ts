@@ -3,6 +3,7 @@ import { getStarterClass } from "../data/classes";
 import { getRecipe } from "../data/recipes";
 import { getRoute } from "../data/routes";
 import { resolveBossAction } from "./combat";
+import { openGate, resolveGateAction } from "./gate";
 import { applyReward, rollChestReward } from "./rewards";
 import { resolveExpedition, resolveIdleProgress } from "./tick";
 import type { GameAction, GameState, IdleJob, ResourceKey, Survivor } from "./state";
@@ -149,6 +150,22 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
     case "bossAction":
       return stamp(resolveBossAction(state, action.action));
+    case "startGate":
+      return stamp(openGate(state, action.survivorIds));
+    case "gateAction":
+      return stamp(resolveGateAction(state, action.action));
+    case "leaveGateResult":
+      return stamp({
+        ...state,
+        run: {
+          ...state.run,
+          screen: state.run.gate.status === "cleared" ? "end" : "camp",
+          log: [
+            state.run.gate.status === "cleared" ? "The Cinder Gate is quiet." : "The party falls back from the Cinder Gate.",
+            ...state.run.log,
+          ].slice(0, 12),
+        },
+      });
     case "leaveBossResult": {
       if (!state.run.bossBattle || state.run.bossBattle.status === "active") return state;
       const won = state.run.bossBattle.status === "won";

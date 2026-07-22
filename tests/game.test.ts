@@ -7,18 +7,18 @@ const tests: { name: string; run: () => void }[] = [
   {
     name: "score grants Ancient chest for a strong clean prototype run",
     run: () => {
-      const state = completedRun("pristine", 0, 0);
+      const state = gateClearedRun("pristine", 0, 0);
       const result = calculateScore(state);
-      assertEqual(result.score, 270);
+      assertEqual(result.score, 1450);
       assertEqual(result.chestGrade, "ancient");
     },
   },
   {
     name: "score downgrades when boss failures damage core quality",
     run: () => {
-      const state = completedRun("cracked", 1, 2);
+      const state = gateClearedRun("cracked", 1, 2);
       const result = calculateScore(state);
-      assertEqual(result.score, 185);
+      assertEqual(result.score, 1165);
       assertEqual(result.chestGrade, "iron");
     },
   },
@@ -38,9 +38,17 @@ const tests: { name: string; run: () => void }[] = [
     },
   },
   {
-    name: "objective advances to chest after all five Beacons are lit",
+    name: "objective advances to Gate after all five Beacons are lit",
     run: () => {
       const state = allBeaconsCompletedRun("stable");
+      const objective = getCurrentObjective(state);
+      assertEqual(objective.title, "Defeat Night Herald");
+    },
+  },
+  {
+    name: "objective advances to chest after Night Herald is defeated",
+    run: () => {
+      const state = gateClearedRun("stable", 0, 0);
       const objective = getCurrentObjective(state);
       assertEqual(objective.title, "Open the Legacy Chest");
     },
@@ -124,8 +132,38 @@ function completedRun(coreQuality: "pristine" | "stable" | "cracked" | "faded", 
         coreQuality,
         usedRepairKit: false,
       },
+      gate: {
+        ...state.run.gate,
+        status: "sealed",
+      },
       routeFailures,
       bossFailures,
+    },
+  };
+}
+
+function gateClearedRun(
+  coreQuality: "pristine" | "stable" | "cracked" | "faded",
+  routeFailures: number,
+  bossFailures: number,
+): GameState {
+  const state = allBeaconsCompletedRun(coreQuality);
+  return {
+    ...state,
+    run: {
+      ...state.run,
+      routeFailures,
+      bossFailures,
+      gate: {
+        status: "cleared",
+        heraldHp: 0,
+        heraldMaxHp: 160,
+        guardStacks: 0,
+        nightPressure: 5,
+        turn: 8,
+        partyIds: ["survivor-scout", "survivor-rook"],
+        log: [],
+      },
     },
   };
 }

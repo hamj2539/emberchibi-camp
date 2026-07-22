@@ -6,6 +6,7 @@ export type Screen =
   | "craft"
   | "boss"
   | "repair"
+  | "gate"
   | "end";
 
 export type StatKey = "hp" | "atk" | "def" | "spd" | "wis" | "craft" | "surv" | "luck";
@@ -27,6 +28,7 @@ export type RouteId =
   | "lunarBeaconSite";
 export type ItemId = "torch" | "ration" | "stoneSpear" | "herbSalve" | "warmCloak" | "repairKit";
 export type BossAction = "attack" | "guard" | "useTorch" | "useSalve";
+export type GateAction = BossAction;
 export type CoreQuality = "pristine" | "stable" | "cracked" | "faded";
 export type ChestGrade = "broken" | "faded" | "iron" | "ancient";
 export type RewardType = "legacyShards" | "blueprint" | "relic" | "survivorUnlock" | "classUnlock";
@@ -129,6 +131,17 @@ export type EndRunResult = {
   claimed: boolean;
 };
 
+export type GateProgress = {
+  status: "sealed" | "open" | "active" | "cleared" | "lost";
+  heraldHp: number;
+  heraldMaxHp: number;
+  guardStacks: number;
+  nightPressure: number;
+  turn: number;
+  partyIds: string[];
+  log: string[];
+};
+
 export type RunState = {
   started: boolean;
   screen: Screen;
@@ -143,6 +156,7 @@ export type RunState = {
   recruitEvent: RecruitEvent | null;
   bossBattle: BossBattle | null;
   beaconRepair: BeaconRepair | null;
+  gate: GateProgress;
   endRun: EndRunResult | null;
   log: string[];
   routeFailures: number;
@@ -173,6 +187,9 @@ export type GameAction =
   | { type: "bossAction"; action: BossAction }
   | { type: "leaveBossResult" }
   | { type: "startRepair"; survivorIds: string[]; useRepairKit: boolean }
+  | { type: "startGate"; survivorIds: string[] }
+  | { type: "gateAction"; action: GateAction }
+  | { type: "leaveGateResult" }
   | { type: "claimChest" }
   | { type: "tick"; now: number }
   | { type: "resetRun"; keepLegacy: boolean };
@@ -233,6 +250,16 @@ export function createInitialState(now = Date.now()): GameState {
       recruitEvent: null,
       bossBattle: null,
       beaconRepair: null,
+      gate: {
+        status: "sealed",
+        heraldHp: 160,
+        heraldMaxHp: 160,
+        guardStacks: 0,
+        nightPressure: 4,
+        turn: 1,
+        partyIds: [],
+        log: ["The Cinder Gate is sealed behind five cold sockets."],
+      },
       endRun: null,
       log: ["A cold ember waits under the campfire ash."],
       routeFailures: 0,
