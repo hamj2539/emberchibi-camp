@@ -95,7 +95,7 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
         </div>
       </div>
 
-      <div className="panel">
+      <div className="panel log-panel">
         <h3>Camp Log</h3>
         <ol className="log">
           {state.run.log.map((entry, index) => (
