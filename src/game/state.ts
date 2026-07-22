@@ -7,6 +7,7 @@ export type Screen =
   | "boss"
   | "repair"
   | "gate"
+  | "meta"
   | "end";
 
 export type StatKey = "hp" | "atk" | "def" | "spd" | "wis" | "craft" | "surv" | "luck";
@@ -168,6 +169,9 @@ export type LegacyState = {
   unlocks: string[];
   relics: string[];
   blueprints: string[];
+  runsCompleted: number;
+  bestScore: number;
+  bestChestGrade: ChestGrade | null;
 };
 
 export type GameState = {
@@ -270,6 +274,9 @@ export function createInitialState(now = Date.now()): GameState {
       unlocks: [],
       relics: [],
       blueprints: [],
+      runsCompleted: 0,
+      bestScore: 0,
+      bestChestGrade: null,
     },
   };
 }

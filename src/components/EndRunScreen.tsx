@@ -84,6 +84,7 @@ export function EndRunScreen({ state, dispatch }: Props) {
           </div>
         </div>
         <button onClick={() => dispatch({ type: "resetRun", keepLegacy: true })}>Start Fresh Run</button>
+        <button onClick={() => dispatch({ type: "setScreen", screen: "meta" })}>View Meta Progress</button>
       </div>
     </section>
   );

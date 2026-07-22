@@ -166,6 +166,44 @@ select {
   gap: 16px;
 }
 
+.meta-layout {
+  display: grid;
+  gap: 16px;
+}
+
+.legacy-list {
+  display: grid;
+  gap: 8px;
+}
+
+.legacy-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.45fr) 1fr;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.legacy-row span,
+.collection-block p {
+  color: var(--muted);
+}
+
+.collection-block + .collection-block {
+  margin-top: 16px;
+}
+
+.legacy-preview {
+  margin-bottom: 16px;
+}
+
+@media (max-width: 640px) {
+  .legacy-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
 .dashboard {
   align-items: start;
 }

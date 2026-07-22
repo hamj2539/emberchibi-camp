@@ -32,6 +32,9 @@ function migrateV1(state: GameState): GameState {
       unlocks: state.legacy.unlocks ?? [],
       relics: state.legacy.relics ?? [],
       blueprints: state.legacy.blueprints ?? [],
+      runsCompleted: state.legacy.runsCompleted ?? 0,
+      bestScore: state.legacy.bestScore ?? 0,
+      bestChestGrade: state.legacy.bestChestGrade ?? null,
     },
     run: {
       ...state.run,

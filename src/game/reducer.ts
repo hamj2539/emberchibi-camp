@@ -1,13 +1,14 @@
-import { getBeacon } from "../data/beacons";
-import { getStarterClass } from "../data/classes";
-import { getRecipe } from "../data/recipes";
-import { getRoute } from "../data/routes";
-import { resolveBossAction } from "./combat";
-import { openGate, resolveGateAction } from "./gate";
-import { applyReward, rollChestReward } from "./rewards";
-import { resolveExpedition, resolveIdleProgress } from "./tick";
-import type { GameAction, GameState, IdleJob, ResourceKey, Survivor } from "./state";
-import { createInitialState } from "./state";
+import { getBeacon } from "../data/beacons.js";
+import { getStarterClass } from "../data/classes.js";
+import { getRecipe } from "../data/recipes.js";
+import { getRoute } from "../data/routes.js";
+import { resolveBossAction } from "./combat.js";
+import { openGate, resolveGateAction } from "./gate.js";
+import { applyLegacyStartBonuses } from "./meta.js";
+import { applyReward, rollChestReward } from "./rewards.js";
+import { resolveExpedition, resolveIdleProgress } from "./tick.js";
+import type { ChestGrade, GameAction, GameState, IdleJob, ResourceKey, Survivor } from "./state.js";
+import { createInitialState } from "./state.js";
 
 const jobLabels: Record<IdleJob, string> = {
   rest: "Rest",
@@ -35,7 +36,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         onExpedition: false,
       };
 
-      return stamp({
+      return stamp(applyLegacyStartBonuses({
         ...state,
         run: {
           ...state.run,
@@ -44,7 +45,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           survivors: [survivor],
           log: [`${starter.name} raises the first ember at camp.`, ...state.run.log],
         },
-      });
+      }));
     }
     case "setScreen":
       return stamp({ ...state, run: { ...state.run, screen: action.screen } });
@@ -231,6 +232,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const rewarded = applyReward(state, reward);
       return stamp({
         ...rewarded,
+        legacy: {
+          ...rewarded.legacy,
+          runsCompleted: rewarded.legacy.runsCompleted + 1,
+          bestScore: Math.max(rewarded.legacy.bestScore, endRun.score),
+          bestChestGrade: betterChestGrade(rewarded.legacy.bestChestGrade, endRun.chestGrade),
+        },
         run: {
           ...rewarded.run,
           endRun: { ...endRun, reward, claimed: true },
@@ -274,4 +281,9 @@ function createRook(): Survivor {
     job: "rest",
     onExpedition: false,
   };
+}
+
+function betterChestGrade(current: ChestGrade | null, next: ChestGrade): ChestGrade {
+  const rank = { broken: 0, faded: 1, iron: 2, ancient: 3 } as const;
+  return current && rank[current] >= rank[next] ? current : next;
 }

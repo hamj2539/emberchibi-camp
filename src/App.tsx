@@ -6,6 +6,7 @@ import { CraftScreen } from "./components/CraftScreen";
 import { EndRunScreen } from "./components/EndRunScreen";
 import { ExploreScreen } from "./components/ExploreScreen";
 import { GateScreen } from "./components/GateScreen";
+import { MetaScreen } from "./components/MetaScreen";
 import { ObjectivePanel } from "./components/ObjectivePanel";
 import { StarterSelect } from "./components/StarterSelect";
 import { SurvivorsScreen } from "./components/SurvivorsScreen";
@@ -19,6 +20,7 @@ const navItems: { screen: Screen; label: string; when?: "boss" | "repair" | "gat
   { screen: "explore", label: "Explore" },
   { screen: "survivors", label: "Survivors" },
   { screen: "craft", label: "Craft" },
+  { screen: "meta", label: "Meta" },
   { screen: "boss", label: "Boss", when: "boss" },
   { screen: "repair", label: "Repair", when: "repair" },
   { screen: "gate", label: "Gate", when: "gate" },
@@ -78,7 +80,7 @@ export default function App() {
 
       <main>
         <ObjectivePanel state={state} />
-        {screen === "starter" && <StarterSelect dispatch={dispatch} />}
+        {screen === "starter" && <StarterSelect dispatch={dispatch} state={state} />}
         {screen === "camp" && <CampScreen dispatch={dispatch} state={state} onReset={resetRun} />}
         {screen === "explore" && <ExploreScreen dispatch={dispatch} state={state} />}
         {screen === "survivors" && <SurvivorsScreen dispatch={dispatch} state={state} />}
@@ -86,6 +88,7 @@ export default function App() {
         {screen === "boss" && <BossBattleScreen dispatch={dispatch} state={state} />}
         {screen === "repair" && <BeaconRepairScreen dispatch={dispatch} state={state} />}
         {screen === "gate" && <GateScreen dispatch={dispatch} state={state} />}
+        {screen === "meta" && <MetaScreen dispatch={dispatch} state={state} />}
         {screen === "end" && <EndRunScreen dispatch={dispatch} state={state} />}
       </main>
     </div>

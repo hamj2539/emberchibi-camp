@@ -1,9 +1,31 @@
 import { getCurrentObjective } from "../src/game/objectives.js";
+import { gameReducer } from "../src/game/reducer.js";
 import { applyReward } from "../src/game/rewards.js";
 import { calculateScore } from "../src/game/scoring.js";
 import { createInitialState, type GameState } from "../src/game/state.js";
 
 const tests: { name: string; run: () => void }[] = [
+  {
+    name: "legacy collection grants permanent bonuses to the next starter",
+    run: () => {
+      const state = createInitialState();
+      const next = gameReducer({
+        ...state,
+        legacy: {
+          ...state.legacy,
+          blueprints: ["Torch Blueprint"],
+          relics: ["Coalglass Charm"],
+          unlocks: ["Rook Camp Trait", "Warden Class"],
+        },
+      }, { type: "chooseStarter", classId: "scout" });
+      assertEqual(next.run.items.torch, 1);
+      assertEqual(next.run.resources.wood, 16);
+      assertEqual(next.run.resources.stone, 4);
+      assertEqual(next.run.survivors[0].stats.hp, 27);
+      assertEqual(next.run.survivors[0].stats.atk, 5);
+      assertEqual(next.run.survivors[0].stats.def, 4);
+    },
+  },
   {
     name: "score grants Ancient chest for a strong clean prototype run",
     run: () => {
@@ -35,6 +57,24 @@ const tests: { name: string; run: () => void }[] = [
       );
       assertEqual(next.legacy.shards, 9);
       assertEqual(next.legacy.blueprints.length, 1);
+    },
+  },
+  {
+    name: "claiming a chest records run history and keeps the best result",
+    run: () => {
+      const state = gateClearedRun("stable", 0, 0);
+      const next = gameReducer({
+        ...state,
+        legacy: { ...state.legacy, runsCompleted: 2, bestScore: 1500, bestChestGrade: "ancient" },
+        run: {
+          ...state.run,
+          endRun: { score: 1200, lines: [], chestGrade: "iron", reward: null, claimed: false },
+        },
+      }, { type: "claimChest" });
+      assertEqual(next.legacy.runsCompleted, 3);
+      assertEqual(next.legacy.bestScore, 1500);
+      assertEqual(next.legacy.bestChestGrade, "ancient");
+      assertEqual(next.run.endRun?.claimed, true);
     },
   },
   {
