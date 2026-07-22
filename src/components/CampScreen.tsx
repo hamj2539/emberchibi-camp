@@ -51,6 +51,7 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
           <span>{state.run.survivors.filter((survivor) => !survivor.onExpedition).length} ready</span>
           <span>{state.run.craftQueue.length} craft queued</span>
           <span>{litBeacons}/5 Beacons lit</span>
+          <span>Offline: 10% · 8h cap</span>
         </div>
         {expedition && <strong>Expedition returns in {secondsLeft}s</strong>}
       </div>

@@ -2,8 +2,8 @@ import { getCurrentObjective } from "../src/game/objectives.js";
 import { getBeacon } from "../src/data/beacons.js";
 import { getRoute } from "../src/data/routes.js";
 import { createGuardianBattle, resolveBossAction } from "../src/game/combat.js";
-import { gameReducer } from "../src/game/reducer.js";
-import { migrateV1 } from "../src/game/save.js";
+import { calculateIdleElapsed, gameReducer, MAX_OFFLINE_SECONDS } from "../src/game/reducer.js";
+import { migrateV1, parseGame } from "../src/game/save.js";
 import { applyReward } from "../src/game/rewards.js";
 import { calculateScore } from "../src/game/scoring.js";
 import { resolveExpedition, resolveIdleProgress } from "../src/game/tick.js";
@@ -11,6 +11,27 @@ import { calculateExpeditionDuration, expeditionSuccessChance } from "../src/gam
 import { createInitialState, type GameState } from "../src/game/state.js";
 
 const tests: { name: string; run: () => void }[] = [
+  {
+    name: "save parser rejects corrupt data without throwing",
+    run: () => {
+      assertEqual(parseGame("not-json"), null);
+      assertEqual(parseGame(JSON.stringify({ version: 99 })), null);
+      assertEqual(parseGame(JSON.stringify(createInitialState()))?.version, 1);
+    },
+  },
+  {
+    name: "offline progress uses ten percent efficiency with an eight hour cap",
+    run: () => {
+      assertEqual(calculateIdleElapsed(30), 30);
+      assertEqual(calculateIdleElapsed(3600), 360);
+      assertEqual(calculateIdleElapsed(MAX_OFFLINE_SECONDS * 2), 2880);
+      const started = gameReducer(createInitialState(0), { type: "chooseStarter", classId: "scout" });
+      const saved = { ...started, savedAt: 0 };
+      const next = gameReducer(saved, { type: "tick", now: MAX_OFFLINE_SECONDS * 2 * 1000 });
+      assertEqual(next.run.daySeconds, 2880);
+      assertEqual(next.run.log[0].includes("8h offline cap"), true);
+    },
+  },
   {
     name: "Scout shortens routes and forecast reports exact success chance",
     run: () => {

@@ -20,6 +20,9 @@ const jobLabels: Record<IdleJob, string> = {
   research: "Research",
 };
 
+export const MAX_OFFLINE_SECONDS = 8 * 60 * 60;
+export const OFFLINE_EFFICIENCY = 0.1;
+
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case "chooseStarter": {
@@ -268,8 +271,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
     case "tick": {
       const elapsedSeconds = Math.max(0, Math.floor((action.now - state.savedAt) / 1000));
-      let next = resolveIdleProgress(state, elapsedSeconds);
+      const idleSeconds = calculateIdleElapsed(elapsedSeconds);
+      let next = resolveIdleProgress(state, idleSeconds);
       next = resolveExpedition(next, action.now);
+      if (state.run.started && elapsedSeconds >= 60) {
+        next = {
+          ...next,
+          run: {
+            ...next.run,
+            log: [offlineSummary(elapsedSeconds, idleSeconds), ...next.run.log].slice(0, 12),
+          },
+        };
+      }
       return stamp(next, action.now);
     }
     case "resetRun": {
@@ -283,6 +296,21 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
 function stamp(state: GameState, savedAt = Date.now()): GameState {
   return { ...state, savedAt };
+}
+
+export function calculateIdleElapsed(elapsedSeconds: number): number {
+  if (elapsedSeconds < 60) return elapsedSeconds;
+  return Math.floor(Math.min(elapsedSeconds, MAX_OFFLINE_SECONDS) * OFFLINE_EFFICIENCY);
+}
+
+function offlineSummary(elapsedSeconds: number, idleSeconds: number): string {
+  const capped = elapsedSeconds > MAX_OFFLINE_SECONDS ? " The 8h offline cap was applied." : "";
+  return `Returned after ${formatDuration(elapsedSeconds)}. Camp gained ${formatDuration(idleSeconds)} of idle progress at 10% efficiency.${capped}`;
+}
+
+function formatDuration(seconds: number): string {
+  if (seconds >= 3600) return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`;
+  return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
 }
 
 function canAfford(state: GameState, cost: Partial<Record<ResourceKey, number>>): boolean {
