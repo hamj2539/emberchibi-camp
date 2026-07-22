@@ -29,7 +29,7 @@ export function GateScreen({ state, dispatch }: Props) {
         {gate.status === "active" ? (
           <>
             <div className="meter">
-              <span style={{ width: `${hpPercent}%` }} />
+              <span aria-label={`Night Herald health ${hpPercent}%`} style={{ width: `${hpPercent}%` }} />
             </div>
             <p>
               HP {Math.ceil(gate.heraldHp)}/{gate.heraldMaxHp} · Night {gate.nightPressure} · Guard {gate.guardStacks} ·
@@ -79,7 +79,7 @@ export function GateScreen({ state, dispatch }: Props) {
                 onClick={() => dispatch({ type: "gateAction", action: item.action })}
               >
                 <strong>{item.label}</strong>
-                <span>{item.detail}</span>
+                <span>{actionDetail(item.action, item.detail, state)}</span>
               </button>
             ))}
           </div>
@@ -108,4 +108,10 @@ function isDisabled(action: GateAction, state: GameState): boolean {
   if (action === "useTorch") return state.run.items.torch <= 0;
   if (action === "useSalve") return state.run.items.herbSalve <= 0;
   return false;
+}
+
+function actionDetail(action: GateAction, detail: string, state: GameState): string {
+  if (action === "useTorch") return `${detail} (${state.run.items.torch} ready)`;
+  if (action === "useSalve") return `${detail} (${state.run.items.herbSalve} ready)`;
+  return detail;
 }

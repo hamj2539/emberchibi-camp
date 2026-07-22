@@ -1,10 +1,28 @@
 import { getCurrentObjective } from "../src/game/objectives.js";
 import { gameReducer } from "../src/game/reducer.js";
+import { migrateV1 } from "../src/game/save.js";
 import { applyReward } from "../src/game/rewards.js";
 import { calculateScore } from "../src/game/scoring.js";
 import { createInitialState, type GameState } from "../src/game/state.js";
 
 const tests: { name: string; run: () => void }[] = [
+  {
+    name: "old encounter saves recover to camp instead of crashing",
+    run: () => {
+      const state = createInitialState();
+      const migrated = migrateV1({
+        ...state,
+        run: {
+          ...state.run,
+          started: true,
+          screen: "boss",
+          bossBattle: { beaconId: undefined } as unknown as GameState["run"]["bossBattle"],
+        },
+      });
+      assertEqual(migrated.run.screen, "camp");
+      assertEqual(migrated.run.bossBattle, null);
+    },
+  },
   {
     name: "legacy collection grants permanent bonuses to the next starter",
     run: () => {

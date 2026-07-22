@@ -41,7 +41,7 @@ export function BossBattleScreen({ state, dispatch }: Props) {
         <div className="boss-art">{battle.bossName.split(" ").map((word) => word[0]).join("")}</div>
         <p>{beacon.name}</p>
         <div className="meter">
-          <span style={{ width: `${bossHpPercent}%` }} />
+          <span aria-label={`${battle.bossName} health ${bossHpPercent}%`} style={{ width: `${bossHpPercent}%` }} />
         </div>
         <p>
           HP {Math.ceil(battle.bossHp)}/{battle.bossMaxHp} · Burn {battle.burnPressure} · Guard {battle.guardStacks} ·
@@ -77,7 +77,7 @@ export function BossBattleScreen({ state, dispatch }: Props) {
                 onClick={() => dispatch({ type: "bossAction", action: item.action })}
               >
                 <strong>{item.label}</strong>
-                <span>{item.detail}</span>
+                <span>{actionDetail(item.action, item.detail, state)}</span>
               </button>
             ))}
           </div>
@@ -112,4 +112,10 @@ function isDisabled(action: BossAction, state: GameState): boolean {
   if (action === "useTorch") return state.run.items.torch <= 0;
   if (action === "useSalve") return state.run.items.herbSalve <= 0;
   return false;
+}
+
+function actionDetail(action: BossAction, detail: string, state: GameState): string {
+  if (action === "useTorch") return `${detail} (${state.run.items.torch} ready)`;
+  if (action === "useSalve") return `${detail} (${state.run.items.herbSalve} ready)`;
+  return detail;
 }

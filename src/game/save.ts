@@ -23,8 +23,18 @@ export function deleteSave(): void {
   localStorage.removeItem(SAVE_KEY);
 }
 
-function migrateV1(state: GameState): GameState {
+export function migrateV1(state: GameState): GameState {
   const defaults = createInitialState(state.savedAt);
+  const validBeaconIds = new Set(Object.keys(defaults.run.beacons));
+  const bossBattle = state.run.bossBattle && validBeaconIds.has(state.run.bossBattle.beaconId)
+    ? state.run.bossBattle
+    : null;
+  const beaconRepair = state.run.beaconRepair && validBeaconIds.has(state.run.beaconRepair.beaconId)
+    ? state.run.beaconRepair
+    : null;
+  const unsafeEncounterScreen =
+    (state.run.screen === "boss" && !bossBattle) ||
+    (state.run.screen === "repair" && (!bossBattle || !beaconRepair));
   return {
     ...state,
     legacy: {
@@ -38,13 +48,14 @@ function migrateV1(state: GameState): GameState {
     },
     run: {
       ...state.run,
+      screen: unsafeEncounterScreen ? "camp" : state.run.screen,
       items: { ...emptyInventory, ...(state.run.items ?? {}) },
       routes: { ...defaults.run.routes, ...(state.run.routes ?? {}) },
       beacons: { ...emptyBeaconProgress, ...(state.run.beacons ?? {}) },
       craftQueue: state.run.craftQueue ?? [],
       recruitEvent: state.run.recruitEvent ?? null,
-      bossBattle: state.run.bossBattle ?? null,
-      beaconRepair: state.run.beaconRepair ?? null,
+      bossBattle,
+      beaconRepair,
       gate: state.run.gate ?? defaults.run.gate,
       endRun: state.run.endRun ?? null,
     },

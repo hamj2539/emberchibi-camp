@@ -15,6 +15,8 @@ export type BeaconDefinition = {
   };
   bonus: string;
   placeholder: boolean;
+  bossHp: number;
+  pressure: number;
 };
 
 export const beacons: BeaconDefinition[] = [
@@ -30,6 +32,8 @@ export const beacons: BeaconDefinition[] = [
     repairCost: { wood: 8, stone: 6 },
     bonus: "Legacy Chest grade gains full score value.",
     placeholder: false,
+    bossHp: 90,
+    pressure: 2,
   },
   {
     id: "tidal",
@@ -43,6 +47,8 @@ export const beacons: BeaconDefinition[] = [
     repairCost: { wood: 7, stone: 7 },
     bonus: "Future runs start with bonus food.",
     placeholder: true,
+    bossHp: 100,
+    pressure: 2,
   },
   {
     id: "gale",
@@ -56,6 +62,8 @@ export const beacons: BeaconDefinition[] = [
     repairCost: { wood: 6, stone: 8 },
     bonus: "Future expeditions resolve faster.",
     placeholder: true,
+    bossHp: 110,
+    pressure: 3,
   },
   {
     id: "root",
@@ -69,6 +77,8 @@ export const beacons: BeaconDefinition[] = [
     repairCost: { wood: 10, stone: 5 },
     bonus: "Future camps gain passive wood.",
     placeholder: true,
+    bossHp: 120,
+    pressure: 3,
   },
   {
     id: "lunar",
@@ -82,6 +92,8 @@ export const beacons: BeaconDefinition[] = [
     repairCost: { wood: 8, stone: 8 },
     bonus: "Unlocks the v0.3 Night Herald win-condition track.",
     placeholder: true,
+    bossHp: 130,
+    pressure: 4,
   },
 ];
 
