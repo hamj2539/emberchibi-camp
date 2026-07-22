@@ -16,3 +16,7 @@ npm run build
 ```
 
 The app is configured for GitHub Pages under `/emberchibi-camp/`.
+
+## Assets
+
+Prototype background assets live in `public/assets/backgrounds/` and are referenced from CSS using the GitHub Pages base path.

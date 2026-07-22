@@ -156,8 +156,8 @@ select {
   flex-direction: column;
   justify-content: end;
   background:
-    linear-gradient(180deg, transparent, rgba(22, 15, 11, 0.9)),
-    linear-gradient(135deg, rgba(239, 111, 57, 0.24), rgba(45, 77, 65, 0.3)),
+    linear-gradient(180deg, rgba(22, 15, 11, 0.08), rgba(22, 15, 11, 0.88)),
+    url("/emberchibi-camp/assets/backgrounds/camp.png") center / cover,
     #221a14;
 }
 
@@ -168,8 +168,8 @@ select {
   flex-direction: column;
   justify-content: end;
   background:
-    linear-gradient(180deg, rgba(23, 20, 17, 0.05), rgba(23, 20, 17, 0.96)),
-    radial-gradient(circle at 50% 28%, rgba(255, 113, 67, 0.38), transparent 12rem),
+    linear-gradient(180deg, rgba(23, 20, 17, 0.06), rgba(23, 20, 17, 0.92)),
+    url("/emberchibi-camp/assets/backgrounds/ember-beacon-site.png") center / cover,
     linear-gradient(135deg, #2a1712, #593120);
 }
 
@@ -486,18 +486,21 @@ select {
 .route-mistwoodEdge {
   background:
     linear-gradient(180deg, rgba(23, 20, 17, 0.1), rgba(23, 20, 17, 0.95)),
+    url("/emberchibi-camp/assets/backgrounds/mistwood-edge.png") center / cover,
     linear-gradient(135deg, #253c2f, #617064);
 }
 
 .route-burntGrove {
   background:
     linear-gradient(180deg, rgba(23, 20, 17, 0.1), rgba(23, 20, 17, 0.95)),
+    url("/emberchibi-camp/assets/backgrounds/burnt-grove.png") center / cover,
     linear-gradient(135deg, #532b22, #a24936);
 }
 
 .route-emberBeaconSite {
   background:
     linear-gradient(180deg, rgba(23, 20, 17, 0.1), rgba(23, 20, 17, 0.95)),
+    url("/emberchibi-camp/assets/backgrounds/ember-beacon-site.png") center / cover,
     linear-gradient(135deg, #2b1b17, #d05a2a);
 }
 
