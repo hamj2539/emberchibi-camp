@@ -1,4 +1,4 @@
-import { createInitialState, type GameState } from "./state";
+import { createInitialState, emptyInventory, type GameState } from "./state";
 
 const SAVE_KEY = "emberchibiCamp.v1";
 
@@ -28,6 +28,8 @@ function migrateV1(state: GameState): GameState {
     ...state,
     run: {
       ...state.run,
+      items: { ...emptyInventory, ...(state.run.items ?? {}) },
+      craftQueue: state.run.craftQueue ?? [],
       recruitEvent: state.run.recruitEvent ?? null,
     },
   };

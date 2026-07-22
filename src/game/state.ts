@@ -13,6 +13,7 @@ export type ResourceKey = "wood" | "food" | "herb" | "stone" | "ore" | "relicSha
 export type IdleJob = "rest" | "forage" | "craft" | "guard" | "cook" | "research";
 export type StarterClassId = "scout" | "hunter" | "herbalist" | "tinker";
 export type RouteId = "mistwoodEdge" | "burntGrove" | "emberBeaconSite";
+export type ItemId = "torch" | "ration" | "stoneSpear" | "herbSalve" | "warmCloak" | "repairKit";
 
 export type Stats = Record<StatKey, number>;
 export type Resources = Record<ResourceKey, number>;
@@ -44,6 +45,15 @@ export type RouteProgress = {
   failed: number;
 };
 
+export type Inventory = Record<ItemId, number>;
+
+export type CraftTask = {
+  id: string;
+  recipeId: ItemId;
+  startedAt: number;
+  remainingSeconds: number;
+};
+
 export type RecruitEvent = {
   id: "rook";
   status: "available" | "resolved";
@@ -54,9 +64,11 @@ export type RunState = {
   screen: Screen;
   daySeconds: number;
   resources: Resources;
+  items: Inventory;
   survivors: Survivor[];
   routes: Record<RouteId, RouteProgress>;
   activeExpedition: Expedition | null;
+  craftQueue: CraftTask[];
   recruitEvent: RecruitEvent | null;
   log: string[];
   routeFailures: number;
@@ -81,6 +93,7 @@ export type GameAction =
   | { type: "assignJob"; survivorId: string; job: IdleJob }
   | { type: "startExpedition"; routeId: RouteId; survivorIds: string[] }
   | { type: "resolveRecruit"; choice: "herb" | "food" | "ignore" }
+  | { type: "startCraft"; recipeId: ItemId }
   | { type: "tick"; now: number }
   | { type: "resetRun"; keepLegacy: boolean };
 
@@ -93,6 +106,15 @@ export const emptyResources: Resources = {
   relicShard: 0,
 };
 
+export const emptyInventory: Inventory = {
+  torch: 0,
+  ration: 0,
+  stoneSpear: 0,
+  herbSalve: 0,
+  warmCloak: 0,
+  repairKit: 0,
+};
+
 export function createInitialState(now = Date.now()): GameState {
   return {
     version: 1,
@@ -102,6 +124,7 @@ export function createInitialState(now = Date.now()): GameState {
       screen: "starter",
       daySeconds: 0,
       resources: { wood: 12, food: 10, herb: 4, stone: 0, ore: 0, relicShard: 0 },
+      items: { ...emptyInventory },
       survivors: [],
       routes: {
         mistwoodEdge: { discovered: true, completed: 0, failed: 0 },
@@ -109,6 +132,7 @@ export function createInitialState(now = Date.now()): GameState {
         emberBeaconSite: { discovered: false, completed: 0, failed: 0 },
       },
       activeExpedition: null,
+      craftQueue: [],
       recruitEvent: null,
       log: ["A cold ember waits under the campfire ash."],
       routeFailures: 0,

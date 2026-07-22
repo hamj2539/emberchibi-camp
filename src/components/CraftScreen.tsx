@@ -1,36 +1,67 @@
-import type { GameState } from "../game/state";
+import type { Dispatch } from "react";
+import { formatCost, getRecipe, recipes } from "../data/recipes";
+import type { GameAction, GameState, ResourceKey } from "../game/state";
 
 type Props = {
   state: GameState;
+  dispatch: Dispatch<GameAction>;
 };
 
-const recipes = [
-  ["Torch", "Wood 2, Herb 1", "Reduces night and burn route risk."],
-  ["Ration", "Food 3", "Improves expedition safety."],
-  ["Stone Spear", "Wood 2, Stone 3", "Adds combat power."],
-  ["Herb Salve", "Herb 3", "Heals HP or injury."],
-  ["Warm Cloak", "Hide 1, Herb 2", "Reduces Ember burn pressure."],
-  ["Repair Kit", "Wood 4, Stone 4", "Improves Beacon repair efficiency."],
-];
+export function CraftScreen({ state, dispatch }: Props) {
+  const craftWorkers = state.run.survivors.filter((survivor) => !survivor.onExpedition && survivor.job === "craft");
 
-export function CraftScreen({ state }: Props) {
   return (
     <section className="screen">
       <div className="panel">
-        <p className="eyebrow">Milestone 5 Preview</p>
+        <p className="eyebrow">Craft Bench</p>
         <h2>Craft Bench</h2>
-        <p>Recipes are visible now; queueing and item effects come after the route loop is stable.</p>
+        <p>Queue up to 3 items. Survivors assigned to Craft speed up every active task.</p>
       </div>
+
+      <div className="panel compact">
+        <h3>Queue</h3>
+        {state.run.craftQueue.length === 0 ? (
+          <p>No active craft tasks. Assign someone to Craft before starting longer recipes.</p>
+        ) : (
+          <div className="queue-list">
+            {state.run.craftQueue.map((task) => {
+              const recipe = getRecipe(task.recipeId);
+              return (
+                <div className="queue-row" key={task.id}>
+                  <strong>{recipe.name}</strong>
+                  <span>{Math.ceil(task.remainingSeconds)}s left</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        <span className="helper-text">{craftWorkers.length} survivor(s) assigned to Craft.</span>
+      </div>
+
       <div className="recipe-grid">
-        {recipes.map(([name, cost, effect]) => (
-          <article className="recipe-card" key={name}>
-            <div className="item-icon">{name.slice(0, 2)}</div>
-            <h3>{name}</h3>
-            <span>{cost}</span>
-            <p>{effect}</p>
-            <button disabled>Craft Soon</button>
-          </article>
-        ))}
+        {recipes.map((recipe) => {
+          const affordable = canAfford(state, recipe.cost);
+          const queueFull = state.run.craftQueue.length >= 3;
+          return (
+            <article className="recipe-card" key={recipe.id}>
+              <div className="item-icon">{recipe.name.slice(0, 2)}</div>
+              <h3>{recipe.name}</h3>
+              <span>{formatCost(recipe.cost)}</span>
+              <p>{recipe.effect}</p>
+              <div className="recipe-meta">
+                <span>{recipe.craftSeconds}s</span>
+                <span>Owned {state.run.items[recipe.id]}</span>
+              </div>
+              <button
+                className={affordable && !queueFull ? "primary" : ""}
+                disabled={!affordable || queueFull}
+                onClick={() => dispatch({ type: "startCraft", recipeId: recipe.id })}
+              >
+                {queueFull ? "Queue Full" : affordable ? "Craft" : "Need Resources"}
+              </button>
+            </article>
+          );
+        })}
       </div>
       <div className="panel compact">
         <strong>Current stock:</strong> {state.run.resources.wood} wood, {state.run.resources.food} food,{" "}
@@ -38,4 +69,8 @@ export function CraftScreen({ state }: Props) {
       </div>
     </section>
   );
+}
+
+function canAfford(state: GameState, cost: Partial<Record<ResourceKey, number>>): boolean {
+  return Object.entries(cost).every(([key, amount]) => state.run.resources[key as ResourceKey] >= amount);
 }

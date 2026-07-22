@@ -234,7 +234,8 @@ select {
 .stat-row,
 .route-meta,
 .reward-list,
-.meters {
+.meters,
+.recipe-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -243,7 +244,8 @@ select {
 .stat-row span,
 .route-meta span,
 .reward-list span,
-.meters span {
+.meters span,
+.recipe-meta span {
   border: 1px solid rgba(255, 255, 255, 0.11);
   border-radius: 999px;
   padding: 0.25rem 0.55rem;
@@ -282,9 +284,28 @@ select {
 }
 
 .survivor-list,
-.log {
+.log,
+.queue-list {
   display: grid;
   gap: 10px;
+}
+
+.queue-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.helper-text {
+  display: block;
+  margin-top: 12px;
+  color: #cdbba4;
+  font-size: 0.9rem;
 }
 
 .log {

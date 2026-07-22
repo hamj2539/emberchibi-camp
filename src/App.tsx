@@ -62,7 +62,7 @@ export default function App() {
         {screen === "camp" && <CampScreen dispatch={dispatch} state={state} onReset={resetRun} />}
         {screen === "explore" && <ExploreScreen dispatch={dispatch} state={state} />}
         {screen === "survivors" && <SurvivorsScreen dispatch={dispatch} state={state} />}
-        {screen === "craft" && <CraftScreen state={state} />}
+        {screen === "craft" && <CraftScreen dispatch={dispatch} state={state} />}
       </main>
     </div>
   );

@@ -1,7 +1,8 @@
 import { getStarterClass } from "../data/classes";
+import { getRecipe } from "../data/recipes";
 import { getRoute } from "../data/routes";
 import { resolveExpedition, resolveIdleProgress } from "./tick";
-import type { GameAction, GameState, IdleJob, Survivor } from "./state";
+import type { GameAction, GameState, IdleJob, ResourceKey, Survivor } from "./state";
 import { createInitialState } from "./state";
 
 const jobLabels: Record<IdleJob, string> = {
@@ -114,6 +115,35 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         },
       });
     }
+    case "startCraft": {
+      if (state.run.craftQueue.length >= 3) return state;
+      const recipe = getRecipe(action.recipeId);
+      if (!canAfford(state, recipe.cost)) return state;
+
+      const resources = { ...state.run.resources };
+      for (const [key, amount] of Object.entries(recipe.cost) as [ResourceKey, number][]) {
+        resources[key] -= amount;
+      }
+
+      return stamp({
+        ...state,
+        run: {
+          ...state.run,
+          screen: "craft",
+          resources,
+          craftQueue: [
+            ...state.run.craftQueue,
+            {
+              id: `craft-${action.recipeId}-${Date.now()}`,
+              recipeId: action.recipeId,
+              startedAt: Date.now(),
+              remainingSeconds: recipe.craftSeconds,
+            },
+          ],
+          log: [`Craft started: ${recipe.name}.`, ...state.run.log].slice(0, 12),
+        },
+      });
+    }
     case "tick": {
       const elapsedSeconds = Math.max(0, Math.floor((action.now - state.savedAt) / 1000));
       let next = resolveIdleProgress(state, elapsedSeconds);
@@ -131,6 +161,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
 function stamp(state: GameState, savedAt = Date.now()): GameState {
   return { ...state, savedAt };
+}
+
+function canAfford(state: GameState, cost: Partial<Record<ResourceKey, number>>): boolean {
+  return Object.entries(cost).every(([key, amount]) => state.run.resources[key as ResourceKey] >= amount);
 }
 
 function createRook(): Survivor {
