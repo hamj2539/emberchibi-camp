@@ -1,5 +1,6 @@
+import { getBeaconByBossRoute, getBeaconByPrepRoute } from "../data/beacons";
 import { getRoute } from "../data/routes";
-import { createCinderStagBattle } from "./combat";
+import { createGuardianBattle } from "./combat";
 import { calculateScore } from "./scoring";
 import type { GameState, ItemId, ResourceKey, Resources } from "./state";
 
@@ -101,7 +102,7 @@ function resolveRepairProgress(state: GameState, elapsedSeconds: number): GameSt
           ? { ...survivor, onExpedition: false, fatigue: Math.min(100, survivor.fatigue + 8) }
           : survivor,
       ),
-      log: ["Ember Beacon is lit. The demo run is complete.", ...state.run.log].slice(0, 12),
+      log: [`${repair.beaconName} is lit. The demo run is complete.`, ...state.run.log].slice(0, 12),
     },
   };
 
@@ -143,8 +144,9 @@ export function resolveExpedition(state: GameState, now: number): GameState {
     routes[route.id] = { ...progress, failed: progress.failed + 1 };
     log.unshift(`${route.name} failed. The party returned early with burns and lost packs.`);
   } else {
-    if (route.id === "emberBeaconSite") {
-      log.unshift("The Ember Beacon Site opens into a ring of living coals.");
+    const bossBeacon = getBeaconByBossRoute(route.id);
+    if (bossBeacon) {
+      log.unshift(`${route.name} opens into a guardian arena.`);
       const battleSurvivors = survivors.map((survivor) =>
         expedition.survivorIds.includes(survivor.id) ? { ...survivor, onExpedition: false } : survivor,
       );
@@ -157,7 +159,7 @@ export function resolveExpedition(state: GameState, now: number): GameState {
           survivors: battleSurvivors,
           activeExpedition: null,
           screen: "boss",
-          bossBattle: createCinderStagBattle(
+          bossBattle: createGuardianBattle(
             {
               ...state,
               run: {
@@ -168,6 +170,7 @@ export function resolveExpedition(state: GameState, now: number): GameState {
               },
             },
             expedition.survivorIds,
+            bossBeacon,
           ),
           log: log.slice(0, 12),
         },
@@ -178,9 +181,10 @@ export function resolveExpedition(state: GameState, now: number): GameState {
       resources[key] += roll(range[0], range[1]);
     }
     routes[route.id] = { ...progress, completed: progress.completed + 1 };
-    if (route.id === "burntGrove") {
-      routes.emberBeaconSite = { ...routes.emberBeaconSite, discovered: true };
-      log.unshift("Burnt Grove revealed the Ember Beacon Site.");
+    const prepBeacon = getBeaconByPrepRoute(route.id);
+    if (prepBeacon) {
+      routes[prepBeacon.bossRouteId] = { ...routes[prepBeacon.bossRouteId], discovered: true };
+      log.unshift(`${route.name} revealed the ${prepBeacon.name} site.`);
     } else if (route.id === "mistwoodEdge" && !hasRook(state) && !state.run.recruitEvent) {
       log.unshift("The party found a wounded hunter near a burned trail.");
     } else {

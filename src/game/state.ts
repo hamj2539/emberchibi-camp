@@ -12,7 +12,19 @@ export type StatKey = "hp" | "atk" | "def" | "spd" | "wis" | "craft" | "surv" | 
 export type ResourceKey = "wood" | "food" | "herb" | "stone" | "ore" | "relicShard";
 export type IdleJob = "rest" | "forage" | "craft" | "guard" | "cook" | "research";
 export type StarterClassId = "scout" | "hunter" | "herbalist" | "tinker";
-export type RouteId = "mistwoodEdge" | "burntGrove" | "emberBeaconSite";
+export type BeaconId = "ember" | "tidal" | "gale" | "root" | "lunar";
+export type RouteId =
+  | "mistwoodEdge"
+  | "burntGrove"
+  | "emberBeaconSite"
+  | "saltmarshRun"
+  | "tidalBeaconSite"
+  | "windscarCliffs"
+  | "galeBeaconSite"
+  | "rootwarrenTrail"
+  | "rootBeaconSite"
+  | "moonwellPath"
+  | "lunarBeaconSite";
 export type ItemId = "torch" | "ration" | "stoneSpear" | "herbSalve" | "warmCloak" | "repairKit";
 export type BossAction = "attack" | "guard" | "useTorch" | "useSalve";
 export type CoreQuality = "pristine" | "stable" | "cracked" | "faded";
@@ -64,7 +76,10 @@ export type RecruitEvent = {
 };
 
 export type BossBattle = {
-  bossId: "cinderStag";
+  beaconId: BeaconId;
+  bossId: string;
+  bossName: string;
+  coreName: string;
   bossHp: number;
   bossMaxHp: number;
   guardStacks: number;
@@ -77,6 +92,8 @@ export type BossBattle = {
 };
 
 export type BeaconRepair = {
+  beaconId: BeaconId;
+  beaconName: string;
   status: "idle" | "active" | "lit";
   assignedSurvivorIds: string[];
   progress: number;
@@ -184,6 +201,14 @@ export function createInitialState(now = Date.now()): GameState {
         mistwoodEdge: { discovered: true, completed: 0, failed: 0 },
         burntGrove: { discovered: true, completed: 0, failed: 0 },
         emberBeaconSite: { discovered: false, completed: 0, failed: 0 },
+        saltmarshRun: { discovered: true, completed: 0, failed: 0 },
+        tidalBeaconSite: { discovered: false, completed: 0, failed: 0 },
+        windscarCliffs: { discovered: true, completed: 0, failed: 0 },
+        galeBeaconSite: { discovered: false, completed: 0, failed: 0 },
+        rootwarrenTrail: { discovered: true, completed: 0, failed: 0 },
+        rootBeaconSite: { discovered: false, completed: 0, failed: 0 },
+        moonwellPath: { discovered: true, completed: 0, failed: 0 },
+        lunarBeaconSite: { discovered: false, completed: 0, failed: 0 },
       },
       activeExpedition: null,
       craftQueue: [],

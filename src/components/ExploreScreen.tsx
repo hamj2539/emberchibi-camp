@@ -1,4 +1,5 @@
 import type { Dispatch } from "react";
+import { getBeaconByBossRoute, getBeaconByPrepRoute } from "../data/beacons";
 import { routes } from "../data/routes";
 import type { GameAction, GameState, RouteId } from "../game/state";
 
@@ -12,7 +13,8 @@ export function ExploreScreen({ state, dispatch }: Props) {
   const expedition = state.run.activeExpedition;
 
   function startRoute(routeId: RouteId) {
-    const partySize = routeId === "emberBeaconSite" ? 2 : 1;
+    const route = routes.find((item) => item.id === routeId);
+    const partySize = route?.kind === "boss" ? 2 : 1;
     dispatch({
       type: "startExpedition",
       routeId,
@@ -36,8 +38,9 @@ export function ExploreScreen({ state, dispatch }: Props) {
         {routes.map((route) => {
           const progress = state.run.routes[route.id];
           const locked = !progress.discovered;
-          const needsParty = route.id === "emberBeaconSite" && availableSurvivors.length < 2;
+          const needsParty = route.kind === "boss" && availableSurvivors.length < 2;
           const disabled = locked || needsParty || Boolean(state.run.activeExpedition) || availableSurvivors.length === 0;
+          const beacon = getBeaconByBossRoute(route.id) ?? getBeaconByPrepRoute(route.id);
 
           return (
             <article className={`route-card route-${route.id}`} key={route.id}>
@@ -52,6 +55,7 @@ export function ExploreScreen({ state, dispatch }: Props) {
                 <span>{availableSurvivors.length} ready</span>
               </div>
               <div className="reward-list">
+                {beacon && <span>{beacon.bonus}</span>}
                 {Object.keys(route.rewards).map((reward) => (
                   <span key={reward}>{reward}</span>
                 ))}

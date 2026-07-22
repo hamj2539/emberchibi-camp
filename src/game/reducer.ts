@@ -1,3 +1,4 @@
+import { getBeacon } from "../data/beacons";
 import { getStarterClass } from "../data/classes";
 import { getRecipe } from "../data/recipes";
 import { getRoute } from "../data/routes";
@@ -157,21 +158,29 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           ...state.run,
           screen: won ? "repair" : "camp",
           bossBattle: won ? state.run.bossBattle : null,
-          log: [won ? "The Cinder Heart waits for Beacon repair." : "The party retreats to camp.", ...state.run.log].slice(
-            0,
-            12,
-          ),
+          log: [
+            won
+              ? `${state.run.bossBattle.coreName} waits for ${getBeacon(state.run.bossBattle.beaconId).name} repair.`
+              : "The party retreats to camp.",
+            ...state.run.log,
+          ].slice(0, 12),
         },
       });
     }
     case "startRepair": {
-      const quality = state.run.bossBattle?.coreQuality;
-      if (!quality || state.run.beaconRepair?.status === "active" || action.survivorIds.length < 1) return state;
-      if (state.run.resources.wood < 8 || state.run.resources.stone < 6) return state;
+      const battle = state.run.bossBattle;
+      const quality = battle?.coreQuality;
+      if (!battle || !quality || state.run.beaconRepair?.status === "active" || action.survivorIds.length < 1) return state;
+      const beacon = getBeacon(battle.beaconId);
+      if (state.run.resources.wood < beacon.repairCost.wood || state.run.resources.stone < beacon.repairCost.stone) return state;
       if (action.useRepairKit && state.run.items.repairKit < 1) return state;
 
       const selected = new Set(action.survivorIds.slice(0, 2));
-      const resources = { ...state.run.resources, wood: state.run.resources.wood - 8, stone: state.run.resources.stone - 6 };
+      const resources = {
+        ...state.run.resources,
+        wood: state.run.resources.wood - beacon.repairCost.wood,
+        stone: state.run.resources.stone - beacon.repairCost.stone,
+      };
       const items = { ...state.run.items, repairKit: state.run.items.repairKit - (action.useRepairKit ? 1 : 0) };
 
       return stamp({
@@ -182,6 +191,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           resources,
           items,
           beaconRepair: {
+            beaconId: beacon.id,
+            beaconName: beacon.name,
             status: "active",
             assignedSurvivorIds: [...selected],
             progress: action.useRepairKit ? 18 : 0,
@@ -192,7 +203,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           survivors: state.run.survivors.map((survivor) =>
             selected.has(survivor.id) ? { ...survivor, onExpedition: true } : survivor,
           ),
-          log: ["Ember Beacon repair has begun.", ...state.run.log].slice(0, 12),
+          log: [`${beacon.repairName} has begun.`, ...state.run.log].slice(0, 12),
         },
       });
     }

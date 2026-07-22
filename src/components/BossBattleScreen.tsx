@@ -1,3 +1,4 @@
+import { getBeacon } from "../data/beacons";
 import type { Dispatch } from "react";
 import { labelCoreQuality } from "../game/combat";
 import type { BossAction, GameAction, GameState } from "../game/state";
@@ -21,7 +22,7 @@ export function BossBattleScreen({ state, dispatch }: Props) {
       <section className="screen">
         <div className="panel">
           <h2>No Guardian Found</h2>
-          <p>Explore the Ember Beacon Site to challenge the Cinder Stag.</p>
+          <p>Explore a Beacon Site to challenge its guardian.</p>
           <button onClick={() => dispatch({ type: "setScreen", screen: "explore" })}>Back to Explore</button>
         </div>
       </section>
@@ -30,13 +31,15 @@ export function BossBattleScreen({ state, dispatch }: Props) {
 
   const party = state.run.survivors.filter((survivor) => battle.partyIds.includes(survivor.id));
   const bossHpPercent = Math.max(0, Math.round((battle.bossHp / battle.bossMaxHp) * 100));
+  const beacon = getBeacon(battle.beaconId);
 
   return (
     <section className="screen boss-layout">
       <div className="panel boss-scene">
         <p className="eyebrow">Beacon Guardian</p>
-        <h2>Cinder Stag</h2>
-        <div className="boss-art">CS</div>
+        <h2>{battle.bossName}</h2>
+        <div className="boss-art">{battle.bossName.split(" ").map((word) => word[0]).join("")}</div>
+        <p>{beacon.name}</p>
         <div className="meter">
           <span style={{ width: `${bossHpPercent}%` }} />
         </div>
@@ -83,8 +86,8 @@ export function BossBattleScreen({ state, dispatch }: Props) {
             <h3>{battle.status === "won" ? "Guardian Defeated" : "Attempt Failed"}</h3>
             <p>
               {battle.status === "won" && battle.coreQuality
-                ? labelCoreQuality(battle.coreQuality)
-                : "The party returns injured. The next victory will yield a weaker Cinder Heart."}
+                ? labelCoreQuality(battle.coreQuality, battle.coreName)
+                : `The party returns injured. The next victory will yield a weaker ${battle.coreName}.`}
             </p>
             <button className="primary" onClick={() => dispatch({ type: "leaveBossResult" })}>
               Continue

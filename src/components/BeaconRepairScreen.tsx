@@ -1,3 +1,4 @@
+import { getBeacon } from "../data/beacons";
 import type { Dispatch } from "react";
 import { labelCoreQuality } from "../game/combat";
 import type { GameAction, GameState } from "../game/state";
@@ -9,22 +10,25 @@ type Props = {
 
 export function BeaconRepairScreen({ state, dispatch }: Props) {
   const quality = state.run.bossBattle?.coreQuality;
+  const battle = state.run.bossBattle;
   const repair = state.run.beaconRepair;
+  const beacon = battle ? getBeacon(battle.beaconId) : null;
   const available = state.run.survivors.filter((survivor) => !survivor.onExpedition);
   const selected = available.slice(0, 2);
   const canStart =
     Boolean(quality) &&
     !repair &&
     selected.length > 0 &&
-    state.run.resources.wood >= 8 &&
-    state.run.resources.stone >= 6;
+    Boolean(beacon) &&
+    state.run.resources.wood >= (beacon?.repairCost.wood ?? 0) &&
+    state.run.resources.stone >= (beacon?.repairCost.stone ?? 0);
 
   if (!quality) {
     return (
       <section className="screen">
         <div className="panel">
-          <h2>No Cinder Heart</h2>
-          <p>Defeat Cinder Stag to recover a Cinder Heart before repairing the Beacon.</p>
+          <h2>No Beacon Core</h2>
+          <p>Defeat a Beacon guardian to recover its core before repairing the Beacon.</p>
           <button onClick={() => dispatch({ type: "setScreen", screen: "explore" })}>Back to Explore</button>
         </div>
       </section>
@@ -35,8 +39,8 @@ export function BeaconRepairScreen({ state, dispatch }: Props) {
     <section className="screen repair-layout">
       <div className="panel camp-hero">
         <p className="eyebrow">Beacon Repair</p>
-        <h2>Ember Beacon</h2>
-        <p>{labelCoreQuality(quality)} is ready for the repair ritual.</p>
+        <h2>{beacon?.name ?? repair?.beaconName ?? "Beacon"}</h2>
+        <p>{labelCoreQuality(quality, battle?.coreName)} is ready for the repair ritual.</p>
         {repair?.status === "active" && (
           <>
             <div className="meter">
@@ -45,7 +49,7 @@ export function BeaconRepairScreen({ state, dispatch }: Props) {
             <strong>{Math.round(repair.progress)} / {repair.requiredProgress}</strong>
           </>
         )}
-        {repair?.status === "lit" && <strong>The Ember Beacon is lit.</strong>}
+        {repair?.status === "lit" && <strong>The {repair.beaconName} is lit.</strong>}
       </div>
 
       <div className="panel">
@@ -53,11 +57,11 @@ export function BeaconRepairScreen({ state, dispatch }: Props) {
         <div className="resource-grid">
           <div className="resource">
             <span>Wood</span>
-            <strong>{state.run.resources.wood}/8</strong>
+            <strong>{state.run.resources.wood}/{beacon?.repairCost.wood ?? 0}</strong>
           </div>
           <div className="resource">
             <span>Stone</span>
-            <strong>{state.run.resources.stone}/6</strong>
+            <strong>{state.run.resources.stone}/{beacon?.repairCost.stone ?? 0}</strong>
           </div>
           <div className="resource">
             <span>Repair Kit</span>

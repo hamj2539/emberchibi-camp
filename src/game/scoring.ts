@@ -11,10 +11,10 @@ export function calculateScore(state: GameState): { score: number; lines: ScoreL
   const lines: ScoreLine[] = [];
 
   if (state.run.routes.emberBeaconSite.discovered) lines.push({ label: "Discovered Ember Beacon Site", points: 20 });
-  if (state.run.bossBattle?.status === "won") lines.push({ label: "Defeated Cinder Stag", points: 60 });
+  if (state.run.bossBattle?.status === "won") lines.push({ label: `Defeated ${state.run.bossBattle.bossName}`, points: 60 });
   if (state.run.beaconRepair?.status === "lit") {
     lines.push({
-      label: `Repaired Ember Beacon (${state.run.beaconRepair.coreQuality})`,
+      label: `Repaired ${state.run.beaconRepair.beaconName} (${state.run.beaconRepair.coreQuality})`,
       points: repairPoints[state.run.beaconRepair.coreQuality],
     });
   }

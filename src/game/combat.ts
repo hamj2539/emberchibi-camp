@@ -1,12 +1,16 @@
+import type { BeaconDefinition } from "../data/beacons";
 import type { BossAction, BossBattle, CoreQuality, GameState, Survivor } from "./state";
 
-export function createCinderStagBattle(state: GameState, partyIds: string[]): BossBattle {
+export function createGuardianBattle(state: GameState, partyIds: string[], beacon: BeaconDefinition): BossBattle {
   const party = state.run.survivors.filter((survivor) => partyIds.includes(survivor.id));
   const spearBonus = state.run.items.stoneSpear > 0 ? 12 : 0;
   const cloakBonus = state.run.items.warmCloak > 0 ? -1 : 0;
 
   return {
-    bossId: "cinderStag",
+    beaconId: beacon.id,
+    bossId: beacon.bossId,
+    bossName: beacon.bossName,
+    coreName: beacon.coreName,
     bossHp: 100,
     bossMaxHp: 100,
     guardStacks: 0,
@@ -16,11 +20,13 @@ export function createCinderStagBattle(state: GameState, partyIds: string[]): Bo
     status: "active",
     coreQuality: null,
     log: [
-      `Cinder Stag lowers its ember antlers. Party power ${partyPower(party) + spearBonus}.`,
-      state.run.items.warmCloak > 0 ? "Warm Cloak softens the heat around the party." : "The grove heat presses close.",
+      `${beacon.bossName} takes shape before ${beacon.name}. Party power ${partyPower(party) + spearBonus}.`,
+      state.run.items.warmCloak > 0 ? "Warm Cloak softens the pressure around the party." : "Guardian pressure closes in.",
     ],
   };
 }
+
+export const createCinderStagBattle = createGuardianBattle;
 
 export function resolveBossAction(state: GameState, action: BossAction): GameState {
   const battle = state.run.bossBattle;
@@ -77,9 +83,12 @@ export function resolveBossAction(state: GameState, action: BossAction): GameSta
           burnPressure,
           status: "won",
           coreQuality: quality,
-          log: [`Cinder Stag falls. ${labelCoreQuality(quality)} recovered.`, ...log].slice(0, 12),
+          log: [`${battle.bossName} falls. ${labelCoreQuality(quality, battle.coreName)} recovered.`, ...log].slice(0, 12),
         },
-        log: [`Cinder Stag defeated. ${labelCoreQuality(quality)} recovered.`, ...state.run.log].slice(0, 12),
+        log: [`${battle.bossName} defeated. ${labelCoreQuality(quality, battle.coreName)} recovered.`, ...state.run.log].slice(
+          0,
+          12,
+        ),
       },
     };
   }
@@ -107,7 +116,7 @@ export function resolveBossAction(state: GameState, action: BossAction): GameSta
           status: "lost",
           log: ["The party collapses under ember pressure.", ...log].slice(0, 12),
         },
-        log: ["Boss attempt failed. Cinder Heart quality will drop.", ...state.run.log].slice(0, 12),
+        log: [`Boss attempt failed. ${battle.coreName} quality will drop.`, ...state.run.log].slice(0, 12),
       },
     };
   }
@@ -130,12 +139,12 @@ export function resolveBossAction(state: GameState, action: BossAction): GameSta
   };
 }
 
-export function labelCoreQuality(quality: CoreQuality): string {
+export function labelCoreQuality(quality: CoreQuality, coreName = "Cinder Heart"): string {
   const labels: Record<CoreQuality, string> = {
-    pristine: "Pristine Cinder Heart",
-    stable: "Stable Cinder Heart",
-    cracked: "Cracked Cinder Heart",
-    faded: "Faded Cinder Heart",
+    pristine: `Pristine ${coreName}`,
+    stable: `Stable ${coreName}`,
+    cracked: `Cracked ${coreName}`,
+    faded: `Faded ${coreName}`,
   };
   return labels[quality];
 }
@@ -147,7 +156,7 @@ function resolveBossTurn(
   burnPressure: number,
 ): { survivors: Survivor[]; guardStacks: number; burnPressure: number; message: string } {
   const target = survivors.find((survivor) => partyIds.includes(survivor.id) && survivor.currentHp > 1);
-  if (!target) return { survivors, guardStacks, burnPressure, message: "Cinder Stag circles through the ash." };
+  if (!target) return { survivors, guardStacks, burnPressure, message: "The guardian circles through the ash." };
 
   const damage = Math.max(2, 9 + burnPressure * 2 - guardStacks * 3 - Math.floor(target.stats.def / 2));
   const nextSurvivors = survivors.map((survivor) =>
@@ -165,7 +174,7 @@ function resolveBossTurn(
     survivors: nextSurvivors,
     guardStacks: Math.max(0, guardStacks - 1),
     burnPressure: Math.min(7, burnPressure + 1),
-    message: `Cinder Stag scorches ${target.name} for ${damage} damage.`,
+    message: `The guardian scorches ${target.name} for ${damage} damage.`,
   };
 }
 
