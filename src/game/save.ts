@@ -32,6 +32,7 @@ function migrateV1(state: GameState): GameState {
       craftQueue: state.run.craftQueue ?? [],
       recruitEvent: state.run.recruitEvent ?? null,
       bossBattle: state.run.bossBattle ?? null,
+      beaconRepair: state.run.beaconRepair ?? null,
     },
   };
 }

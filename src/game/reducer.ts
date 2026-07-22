@@ -163,6 +163,38 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         },
       });
     }
+    case "startRepair": {
+      const quality = state.run.bossBattle?.coreQuality;
+      if (!quality || state.run.beaconRepair?.status === "active" || action.survivorIds.length < 1) return state;
+      if (state.run.resources.wood < 8 || state.run.resources.stone < 6) return state;
+      if (action.useRepairKit && state.run.items.repairKit < 1) return state;
+
+      const selected = new Set(action.survivorIds.slice(0, 2));
+      const resources = { ...state.run.resources, wood: state.run.resources.wood - 8, stone: state.run.resources.stone - 6 };
+      const items = { ...state.run.items, repairKit: state.run.items.repairKit - (action.useRepairKit ? 1 : 0) };
+
+      return stamp({
+        ...state,
+        run: {
+          ...state.run,
+          screen: "repair",
+          resources,
+          items,
+          beaconRepair: {
+            status: "active",
+            assignedSurvivorIds: [...selected],
+            progress: action.useRepairKit ? 18 : 0,
+            requiredProgress: 100,
+            coreQuality: quality,
+            usedRepairKit: action.useRepairKit,
+          },
+          survivors: state.run.survivors.map((survivor) =>
+            selected.has(survivor.id) ? { ...survivor, onExpedition: true } : survivor,
+          ),
+          log: ["Ember Beacon repair has begun.", ...state.run.log].slice(0, 12),
+        },
+      });
+    }
     case "tick": {
       const elapsedSeconds = Math.max(0, Math.floor((action.now - state.savedAt) / 1000));
       let next = resolveIdleProgress(state, elapsedSeconds);

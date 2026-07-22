@@ -3,6 +3,7 @@ import { BeaconRepairScreen } from "./components/BeaconRepairScreen";
 import { BossBattleScreen } from "./components/BossBattleScreen";
 import { CampScreen } from "./components/CampScreen";
 import { CraftScreen } from "./components/CraftScreen";
+import { EndRunScreen } from "./components/EndRunScreen";
 import { ExploreScreen } from "./components/ExploreScreen";
 import { StarterSelect } from "./components/StarterSelect";
 import { SurvivorsScreen } from "./components/SurvivorsScreen";
@@ -10,13 +11,14 @@ import { gameReducer } from "./game/reducer";
 import { deleteSave, loadGame, saveGame } from "./game/save";
 import type { Screen } from "./game/state";
 
-const navItems: { screen: Screen; label: string; when?: "boss" | "repair" }[] = [
+const navItems: { screen: Screen; label: string; when?: "boss" | "repair" | "end" }[] = [
   { screen: "camp", label: "Camp" },
   { screen: "explore", label: "Explore" },
   { screen: "survivors", label: "Survivors" },
   { screen: "craft", label: "Craft" },
   { screen: "boss", label: "Boss", when: "boss" },
   { screen: "repair", label: "Repair", when: "repair" },
+  { screen: "end", label: "End", when: "end" },
 ];
 
 export default function App() {
@@ -52,6 +54,7 @@ export default function App() {
               .filter((item) => {
                 if (item.when === "boss") return Boolean(state.run.bossBattle);
                 if (item.when === "repair") return state.run.bossBattle?.status === "won";
+                if (item.when === "end") return state.run.beaconRepair?.status === "lit";
                 return true;
               })
               .map((item) => (
@@ -75,6 +78,7 @@ export default function App() {
         {screen === "craft" && <CraftScreen dispatch={dispatch} state={state} />}
         {screen === "boss" && <BossBattleScreen dispatch={dispatch} state={state} />}
         {screen === "repair" && <BeaconRepairScreen dispatch={dispatch} state={state} />}
+        {screen === "end" && <EndRunScreen dispatch={dispatch} state={state} />}
       </main>
     </div>
   );

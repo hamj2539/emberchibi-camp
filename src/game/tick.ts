@@ -25,7 +25,7 @@ export function resolveIdleProgress(state: GameState, elapsedSeconds: number): G
     return survivor;
   });
 
-  return resolveCraftProgress({
+  const withCraft = resolveCraftProgress({
     ...state,
     run: {
       ...state.run,
@@ -34,6 +34,8 @@ export function resolveIdleProgress(state: GameState, elapsedSeconds: number): G
       survivors,
     },
   }, elapsedSeconds);
+
+  return resolveRepairProgress(withCraft, elapsedSeconds);
 }
 
 function resolveCraftProgress(state: GameState, elapsedSeconds: number): GameState {
@@ -61,6 +63,44 @@ function resolveCraftProgress(state: GameState, elapsedSeconds: number): GameSta
       items,
       craftQueue: remaining,
       log: log.slice(0, 12),
+    },
+  };
+}
+
+function resolveRepairProgress(state: GameState, elapsedSeconds: number): GameState {
+  const repair = state.run.beaconRepair;
+  if (!repair || repair.status !== "active") return state;
+
+  const assigned = state.run.survivors.filter((survivor) => repair.assignedSurvivorIds.includes(survivor.id));
+  const repairPower = assigned.reduce(
+    (sum, survivor) => sum + 1.2 + survivor.stats.craft * 0.22 + survivor.stats.wis * 0.08,
+    0,
+  );
+  const qualityBonus = coreRepairBonus(repair.coreQuality);
+  const nextProgress = Math.min(repair.requiredProgress, repair.progress + elapsedSeconds * repairPower * qualityBonus);
+
+  if (nextProgress < repair.requiredProgress) {
+    return {
+      ...state,
+      run: {
+        ...state.run,
+        beaconRepair: { ...repair, progress: nextProgress },
+      },
+    };
+  }
+
+  return {
+    ...state,
+    run: {
+      ...state.run,
+      screen: "end",
+      beaconRepair: { ...repair, progress: repair.requiredProgress, status: "lit" },
+      survivors: state.run.survivors.map((survivor) =>
+        repair.assignedSurvivorIds.includes(survivor.id)
+          ? { ...survivor, onExpedition: false, fatigue: Math.min(100, survivor.fatigue + 8) }
+          : survivor,
+      ),
+      log: ["Ember Beacon is lit. The demo run is complete.", ...state.run.log].slice(0, 12),
     },
   };
 }
@@ -170,6 +210,16 @@ function labelItem(itemId: ItemId): string {
     repairKit: "Repair Kit",
   };
   return labels[itemId];
+}
+
+function coreRepairBonus(quality: NonNullable<GameState["run"]["beaconRepair"]>["coreQuality"]): number {
+  const bonuses = {
+    pristine: 1.18,
+    stable: 1.08,
+    cracked: 0.95,
+    faded: 0.82,
+  };
+  return bonuses[quality];
 }
 
 function roll(min: number, max: number): number {

@@ -74,6 +74,15 @@ export type BossBattle = {
   log: string[];
 };
 
+export type BeaconRepair = {
+  status: "idle" | "active" | "lit";
+  assignedSurvivorIds: string[];
+  progress: number;
+  requiredProgress: number;
+  coreQuality: CoreQuality;
+  usedRepairKit: boolean;
+};
+
 export type RunState = {
   started: boolean;
   screen: Screen;
@@ -86,6 +95,7 @@ export type RunState = {
   craftQueue: CraftTask[];
   recruitEvent: RecruitEvent | null;
   bossBattle: BossBattle | null;
+  beaconRepair: BeaconRepair | null;
   log: string[];
   routeFailures: number;
   bossFailures: number;
@@ -112,6 +122,7 @@ export type GameAction =
   | { type: "startCraft"; recipeId: ItemId }
   | { type: "bossAction"; action: BossAction }
   | { type: "leaveBossResult" }
+  | { type: "startRepair"; survivorIds: string[]; useRepairKit: boolean }
   | { type: "tick"; now: number }
   | { type: "resetRun"; keepLegacy: boolean };
 
@@ -153,6 +164,7 @@ export function createInitialState(now = Date.now()): GameState {
       craftQueue: [],
       recruitEvent: null,
       bossBattle: null,
+      beaconRepair: null,
       log: ["A cold ember waits under the campfire ash."],
       routeFailures: 0,
       bossFailures: 0,
