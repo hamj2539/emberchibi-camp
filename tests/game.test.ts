@@ -10,6 +10,31 @@ import { createInitialState, type GameState } from "../src/game/state.js";
 
 const tests: { name: string; run: () => void }[] = [
   {
+    name: "Expedition validation rejects locked routes and incomplete boss crews",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "scout" });
+      const locked = gameReducer(started, {
+        type: "startExpedition",
+        routeId: "emberBeaconSite",
+        survivorIds: ["survivor-scout"],
+      });
+      assertEqual(locked.run.activeExpedition, null);
+      const discovered = {
+        ...started,
+        run: {
+          ...started.run,
+          routes: { ...started.run.routes, emberBeaconSite: { discovered: true, completed: 0, failed: 0 } },
+        },
+      };
+      const incomplete = gameReducer(discovered, {
+        type: "startExpedition",
+        routeId: "emberBeaconSite",
+        survivorIds: ["survivor-scout"],
+      });
+      assertEqual(incomplete.run.activeExpedition, null);
+    },
+  },
+  {
     name: "Expedition supplies are consumed and improve route safety",
     run: () => {
       const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "scout" });

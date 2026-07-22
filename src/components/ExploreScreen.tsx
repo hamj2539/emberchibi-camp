@@ -2,6 +2,7 @@ import { useState, type Dispatch } from "react";
 import { beacons, getBeaconByBossRoute, getBeaconByPrepRoute } from "../data/beacons";
 import { routes } from "../data/routes";
 import type { GameAction, GameState, RouteId } from "../game/state";
+import { CrewPicker } from "./CrewPicker";
 
 type Props = {
   state: GameState;
@@ -11,16 +12,18 @@ type Props = {
 export function ExploreScreen({ state, dispatch }: Props) {
   const [useRation, setUseRation] = useState(false);
   const [useTorch, setUseTorch] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(() =>
+    state.run.survivors.filter((survivor) => !survivor.onExpedition && survivor.currentHp > 0).slice(0, 2).map((survivor) => survivor.id),
+  );
   const availableSurvivors = state.run.survivors.filter((survivor) => !survivor.onExpedition);
+  const selectedSurvivors = availableSurvivors.filter((survivor) => selectedIds.includes(survivor.id) && survivor.currentHp > 0);
   const expedition = state.run.activeExpedition;
 
   function startRoute(routeId: RouteId) {
-    const route = routes.find((item) => item.id === routeId);
-    const partySize = route?.kind === "boss" ? 2 : 1;
     dispatch({
       type: "startExpedition",
       routeId,
-      survivorIds: availableSurvivors.slice(0, partySize).map((survivor) => survivor.id),
+      survivorIds: selectedSurvivors.map((survivor) => survivor.id),
       useRation,
       useTorch,
     });
@@ -72,6 +75,19 @@ export function ExploreScreen({ state, dispatch }: Props) {
           </label>
         </div>
       )}
+      {!expedition && (
+        <div className="panel compact">
+          <p className="eyebrow">Expedition Crew</p>
+          <h3>Select 1–2 survivors</h3>
+          <CrewPicker
+            survivors={availableSurvivors}
+            selectedIds={selectedIds}
+            max={2}
+            onChange={setSelectedIds}
+            stats={["surv", "spd", "luck"]}
+          />
+        </div>
+      )}
       <div className="panel compact">
         <p className="eyebrow">Five Beacon Skeleton</p>
         <div className="beacon-strip">
@@ -92,8 +108,8 @@ export function ExploreScreen({ state, dispatch }: Props) {
         {routes.map((route) => {
           const progress = state.run.routes[route.id];
           const locked = !progress.discovered;
-          const needsParty = route.kind === "boss" && availableSurvivors.length < 2;
-          const disabled = locked || needsParty || Boolean(state.run.activeExpedition) || availableSurvivors.length === 0;
+          const needsParty = route.kind === "boss" ? selectedSurvivors.length !== 2 : selectedSurvivors.length < 1;
+          const disabled = locked || needsParty || Boolean(state.run.activeExpedition);
           const beacon = getBeaconByBossRoute(route.id) ?? getBeaconByPrepRoute(route.id);
 
           return (
@@ -106,7 +122,7 @@ export function ExploreScreen({ state, dispatch }: Props) {
                 <span>Danger {route.danger}</span>
                 <span>Clears {progress.completed}</span>
                 <span>Fails {progress.failed}</span>
-                <span>{availableSurvivors.length} ready</span>
+                <span>{selectedSurvivors.length} selected</span>
               </div>
               <div className="reward-list">
                 {beacon && <span>{beacon.bonus}</span>}
@@ -115,7 +131,7 @@ export function ExploreScreen({ state, dispatch }: Props) {
                 ))}
               </div>
               <button className="primary" disabled={disabled} onClick={() => startRoute(route.id)}>
-                {locked ? "Find clues first" : needsParty ? "Needs 2 survivors" : "Start Expedition"}
+                {locked ? "Find clues first" : needsParty ? (route.kind === "boss" ? "Select 2 survivors" : "Select a survivor") : "Start Expedition"}
               </button>
             </article>
           );

@@ -241,6 +241,32 @@ select {
   gap: 10px;
 }
 
+.crew-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.crew-option {
+  display: grid;
+  min-height: 82px;
+  gap: 3px;
+  align-content: center;
+  text-align: left;
+}
+
+.crew-option span {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.crew-option.selected {
+  border-color: rgba(255, 189, 115, 0.72);
+  background: rgba(240, 130, 69, 0.2);
+  box-shadow: inset 3px 0 #f08245;
+}
+
 .expedition-prep {
   display: grid;
   grid-template-columns: minmax(180px, 1fr) repeat(2, minmax(210px, 0.8fr));

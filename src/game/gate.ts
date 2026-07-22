@@ -3,7 +3,7 @@ import type { GameState, GateAction, GateProgress, Survivor } from "./state.js";
 
 export function openGate(state: GameState, partyIds: string[]): GameState {
   const party = state.run.survivors.filter((survivor) => partyIds.includes(survivor.id));
-  if (party.length < 2 || !allBeaconsLit(state) || state.run.gate.status === "cleared") return state;
+  if (party.length < 2 || party.length > 3 || !allBeaconsLit(state) || state.run.gate.status === "cleared") return state;
 
   return {
     ...state,

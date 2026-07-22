@@ -1,5 +1,6 @@
-import type { Dispatch } from "react";
+import { useState, type Dispatch } from "react";
 import type { GameAction, GameState, GateAction } from "../game/state";
+import { CrewPicker } from "./CrewPicker";
 
 type Props = {
   state: GameState;
@@ -14,10 +15,13 @@ const actions: { action: GateAction; label: string; detail: string }[] = [
 ];
 
 export function GateScreen({ state, dispatch }: Props) {
+  const [selectedIds, setSelectedIds] = useState(() =>
+    state.run.survivors.filter((survivor) => !survivor.onExpedition && survivor.currentHp > 0).slice(0, 3).map((survivor) => survivor.id),
+  );
   const gate = state.run.gate;
   const available = state.run.survivors.filter((survivor) => !survivor.onExpedition);
   const party = state.run.survivors.filter((survivor) => gate.partyIds.includes(survivor.id));
-  const selected = available.slice(0, 3);
+  const selected = available.filter((survivor) => selectedIds.includes(survivor.id) && survivor.currentHp > 0);
   const hpPercent = Math.max(0, Math.round((gate.heraldHp / gate.heraldMaxHp) * 100));
 
   return (
@@ -43,23 +47,27 @@ export function GateScreen({ state, dispatch }: Props) {
 
       <div className="panel">
         <h3>{gate.status === "active" ? "Gate Party" : "Ready Crew"}</h3>
-        <div className="survivor-list">
-          {(gate.status === "active" ? party : selected).map((survivor) => (
-            <article className="survivor-row" key={survivor.id}>
-              <div>
-                <strong>{survivor.name}</strong>
-                <span>
-                  HP {Math.floor(survivor.currentHp)}/{survivor.stats.hp} · ATK {survivor.stats.atk} · WIS{" "}
-                  {survivor.stats.wis}
-                </span>
-              </div>
-            </article>
-          ))}
-        </div>
+        {gate.status === "active" ? (
+          <div className="survivor-list">
+            {party.map((survivor) => (
+              <article className="survivor-row" key={survivor.id}>
+                <div>
+                  <strong>{survivor.name}</strong>
+                  <span>
+                    HP {Math.floor(survivor.currentHp)}/{survivor.stats.hp} · ATK {survivor.stats.atk} · WIS{" "}
+                    {survivor.stats.wis}
+                  </span>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <CrewPicker survivors={available} selectedIds={selectedIds} max={3} onChange={setSelectedIds} stats={["atk", "wis", "def"]} />
+        )}
         {(gate.status === "open" || gate.status === "lost") && (
           <button
             className="primary"
-            disabled={selected.length < 2}
+            disabled={selected.length < 2 || selected.length > 3}
             onClick={() => dispatch({ type: "startGate", survivorIds: selected.map((survivor) => survivor.id) })}
           >
             {gate.status === "lost" ? "Re-enter Gate" : "Enter Gate"}

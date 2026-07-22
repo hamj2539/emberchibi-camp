@@ -63,6 +63,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case "startExpedition": {
       if (state.run.activeExpedition) return state;
       const route = getRoute(action.routeId);
+      if (!state.run.routes[action.routeId].discovered) return state;
+      const validParty = state.run.survivors.filter(
+        (survivor) => action.survivorIds.includes(survivor.id) && !survivor.onExpedition && survivor.currentHp > 0,
+      );
+      if (validParty.length !== action.survivorIds.length || validParty.length < 1 || validParty.length > 2) return state;
+      if (route.kind === "boss" && validParty.length !== 2) return state;
       const now = Date.now();
       const selected = new Set(action.survivorIds);
       const useRation = Boolean(action.useRation && state.run.items.ration > 0);

@@ -1,7 +1,8 @@
 import { getBeacon } from "../data/beacons";
-import type { Dispatch } from "react";
+import { useState, type Dispatch } from "react";
 import { labelCoreQuality } from "../game/combat";
 import type { GameAction, GameState } from "../game/state";
+import { CrewPicker } from "./CrewPicker";
 
 type Props = {
   state: GameState;
@@ -9,12 +10,15 @@ type Props = {
 };
 
 export function BeaconRepairScreen({ state, dispatch }: Props) {
+  const [selectedIds, setSelectedIds] = useState(() =>
+    state.run.survivors.filter((survivor) => !survivor.onExpedition && survivor.currentHp > 0).slice(0, 2).map((survivor) => survivor.id),
+  );
   const quality = state.run.bossBattle?.coreQuality;
   const battle = state.run.bossBattle;
   const repair = state.run.beaconRepair;
   const beacon = battle ? getBeacon(battle.beaconId) : null;
   const available = state.run.survivors.filter((survivor) => !survivor.onExpedition);
-  const selected = available.slice(0, 2);
+  const selected = available.filter((survivor) => selectedIds.includes(survivor.id) && survivor.currentHp > 0);
   const canStart =
     Boolean(quality) &&
     repair?.status !== "active" &&
@@ -76,16 +80,7 @@ export function BeaconRepairScreen({ state, dispatch }: Props) {
 
       <div className="panel">
         <h3>Assigned Repair Crew</h3>
-        <div className="survivor-list">
-          {selected.map((survivor) => (
-            <article className="survivor-row" key={survivor.id}>
-              <div>
-                <strong>{survivor.name}</strong>
-                <span>CRAFT {survivor.stats.craft} · WIS {survivor.stats.wis}</span>
-              </div>
-            </article>
-          ))}
-        </div>
+        <CrewPicker survivors={available} selectedIds={selectedIds} max={2} onChange={setSelectedIds} stats={["craft", "wis"]} />
         <div className="choice-row">
           <button
             className="primary"
