@@ -41,9 +41,8 @@ export function resolveGateAction(state: GameState, action: GateAction): GameSta
   let survivors = state.run.survivors;
 
   if (action === "attack") {
-    const damage = Math.max(8, partyResolve(party) + roll(0, 10) - guardStacks * 2);
+    const damage = Math.max(8, partyResolve(party) + roll(0, 10));
     heraldHp = Math.max(0, heraldHp - damage);
-    guardStacks = Math.max(0, guardStacks - 1);
     log.unshift(`The party strikes the Herald for ${damage}.`);
   }
 

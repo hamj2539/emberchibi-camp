@@ -17,6 +17,13 @@ export type BeaconDefinition = {
   placeholder: boolean;
   bossHp: number;
   pressure: number;
+  mechanic: string;
+  counter: string;
+  attackModifier: number;
+  guardGain: number;
+  torchDamage: number;
+  torchRelief: number;
+  incomingBase: number;
 };
 
 export const beacons: BeaconDefinition[] = [
@@ -34,6 +41,13 @@ export const beacons: BeaconDefinition[] = [
     placeholder: false,
     bossHp: 90,
     pressure: 2,
+    mechanic: "Scorch grows stronger every turn.",
+    counter: "Torch and Warm Cloak control the flames.",
+    attackModifier: 0,
+    guardGain: 2,
+    torchDamage: 10,
+    torchRelief: 2,
+    incomingBase: 9,
   },
   {
     id: "tidal",
@@ -49,6 +63,13 @@ export const beacons: BeaconDefinition[] = [
     placeholder: false,
     bossHp: 100,
     pressure: 2,
+    mechanic: "Heavy tide blows reward patient guarding.",
+    counter: "Guard gains an extra stack against the Warden.",
+    attackModifier: -1,
+    guardGain: 3,
+    torchDamage: 6,
+    torchRelief: 1,
+    incomingBase: 8,
   },
   {
     id: "gale",
@@ -64,6 +85,13 @@ export const beacons: BeaconDefinition[] = [
     placeholder: false,
     bossHp: 110,
     pressure: 3,
+    mechanic: "The Roc trades defense for a fast damage race.",
+    counter: "Direct attacks gain bonus damage.",
+    attackModifier: 3,
+    guardGain: 2,
+    torchDamage: 8,
+    torchRelief: 2,
+    incomingBase: 10,
   },
   {
     id: "root",
@@ -79,6 +107,13 @@ export const beacons: BeaconDefinition[] = [
     placeholder: false,
     bossHp: 120,
     pressure: 3,
+    mechanic: "Stone bark reduces ordinary attacks.",
+    counter: "Guard absorbs its slow crushing strikes.",
+    attackModifier: -2,
+    guardGain: 3,
+    torchDamage: 6,
+    torchRelief: 1,
+    incomingBase: 11,
   },
   {
     id: "lunar",
@@ -94,6 +129,13 @@ export const beacons: BeaconDefinition[] = [
     placeholder: false,
     bossHp: 130,
     pressure: 4,
+    mechanic: "Moon pressure rises quickly around the arena.",
+    counter: "Torchlight deals extra damage and cuts more pressure.",
+    attackModifier: 1,
+    guardGain: 2,
+    torchDamage: 12,
+    torchRelief: 3,
+    incomingBase: 11,
   },
 ];
 

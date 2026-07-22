@@ -1,4 +1,6 @@
 import { getCurrentObjective } from "../src/game/objectives.js";
+import { getBeacon } from "../src/data/beacons.js";
+import { createGuardianBattle, resolveBossAction } from "../src/game/combat.js";
 import { gameReducer } from "../src/game/reducer.js";
 import { migrateV1 } from "../src/game/save.js";
 import { applyReward } from "../src/game/rewards.js";
@@ -6,6 +8,23 @@ import { calculateScore } from "../src/game/scoring.js";
 import { createInitialState, type GameState } from "../src/game/state.js";
 
 const tests: { name: string; run: () => void }[] = [
+  {
+    name: "party Guard protects without reducing the next attack",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "hunter" });
+      const battle = createGuardianBattle(started, ["survivor-hunter"], getBeacon("ember"));
+      const fighting = { ...started, run: { ...started.run, bossBattle: battle } };
+      const originalRandom = Math.random;
+      Math.random = () => 0;
+      try {
+        const guarded = resolveBossAction(fighting, "guard");
+        const attacked = resolveBossAction(guarded, "attack");
+        assertEqual(attacked.run.bossBattle?.bossHp, 81);
+      } finally {
+        Math.random = originalRandom;
+      }
+    },
+  },
   {
     name: "old encounter saves recover to camp instead of crashing",
     run: () => {

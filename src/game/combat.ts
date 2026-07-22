@@ -1,4 +1,4 @@
-import type { BeaconDefinition } from "../data/beacons.js";
+import { getBeacon, type BeaconDefinition } from "../data/beacons.js";
 import type { BossAction, BossBattle, CoreQuality, GameState, Survivor } from "./state.js";
 
 export function createGuardianBattle(state: GameState, partyIds: string[], beacon: BeaconDefinition): BossBattle {
@@ -31,6 +31,7 @@ export const createCinderStagBattle = createGuardianBattle;
 export function resolveBossAction(state: GameState, action: BossAction): GameState {
   const battle = state.run.bossBattle;
   if (!battle || battle.status !== "active") return state;
+  const beacon = getBattleBeacon(battle.beaconId);
 
   const party = state.run.survivors.filter((survivor) => battle.partyIds.includes(survivor.id));
   const items = { ...state.run.items };
@@ -41,23 +42,22 @@ export function resolveBossAction(state: GameState, action: BossAction): GameSta
   let survivors = state.run.survivors;
 
   if (action === "attack") {
-    const damage = partyDamage(party, state) - guardStacks * 3;
+    const damage = partyDamage(party, state) + beacon.attackModifier;
     bossHp = Math.max(0, bossHp - Math.max(6, damage));
-    guardStacks = Math.max(0, guardStacks - 1);
     log.unshift(`Party attacks for ${Math.max(6, damage)} damage.`);
   }
 
   if (action === "guard") {
-    guardStacks += 2;
-    log.unshift("The party braces behind ash-black shields.");
+    guardStacks += beacon.guardGain;
+    log.unshift(`The party braces and gains ${beacon.guardGain} Guard.`);
   }
 
   if (action === "useTorch") {
     if (items.torch <= 0) return state;
     items.torch -= 1;
-    burnPressure = Math.max(1, burnPressure - 2);
-    bossHp = Math.max(0, bossHp - 8);
-    log.unshift("A Torch flares. Burn pressure drops and the Stag recoils.");
+    burnPressure = Math.max(1, burnPressure - beacon.torchRelief);
+    bossHp = Math.max(0, bossHp - beacon.torchDamage);
+    log.unshift(`A Torch flares for ${beacon.torchDamage} damage and cuts pressure by ${beacon.torchRelief}.`);
   }
 
   if (action === "useSalve") {
@@ -93,7 +93,7 @@ export function resolveBossAction(state: GameState, action: BossAction): GameSta
     };
   }
 
-  const bossResult = resolveBossTurn(survivors, battle.partyIds, guardStacks, burnPressure);
+  const bossResult = resolveBossTurn(survivors, battle.partyIds, guardStacks, burnPressure, beacon.incomingBase);
   survivors = bossResult.survivors;
   guardStacks = bossResult.guardStacks;
   burnPressure = bossResult.burnPressure;
@@ -154,11 +154,12 @@ function resolveBossTurn(
   partyIds: string[],
   guardStacks: number,
   burnPressure: number,
+  incomingBase: number,
 ): { survivors: Survivor[]; guardStacks: number; burnPressure: number; message: string } {
   const target = survivors.find((survivor) => partyIds.includes(survivor.id) && survivor.currentHp > 1);
   if (!target) return { survivors, guardStacks, burnPressure, message: "The guardian circles through the ash." };
 
-  const damage = Math.max(2, 9 + burnPressure * 2 - guardStacks * 3 - Math.floor(target.stats.def / 2));
+  const damage = Math.max(2, incomingBase + burnPressure * 2 - guardStacks * 3 - Math.floor(target.stats.def / 2));
   const nextSurvivors = survivors.map((survivor) =>
     survivor.id === target.id
       ? {
@@ -213,4 +214,8 @@ function coreQualityForFailures(failures: number): CoreQuality {
 
 function roll(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function getBattleBeacon(beaconId: BossBattle["beaconId"]): BeaconDefinition {
+  return getBeacon(beaconId);
 }

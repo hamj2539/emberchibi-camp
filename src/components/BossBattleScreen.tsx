@@ -42,6 +42,10 @@ export function BossBattleScreen({ state, dispatch }: Props) {
           {battle.bossName.split(" ").map((word) => word[0]).join("")}
         </div>
         <p>{beacon.name}</p>
+        <div className="encounter-hints">
+          <span><strong>Mechanic</strong>{beacon.mechanic}</span>
+          <span><strong>Counter</strong>{beacon.counter}</span>
+        </div>
         <div className="meter">
           <span aria-label={`${battle.bossName} health ${bossHpPercent}%`} style={{ width: `${bossHpPercent}%` }} />
         </div>

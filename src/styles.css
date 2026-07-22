@@ -350,6 +350,28 @@ select {
   gap: 10px;
 }
 
+.encounter-hints {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.encounter-hints span {
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  background: rgba(0, 0, 0, 0.28);
+  font-size: 0.82rem;
+}
+
+.encounter-hints strong {
+  display: block;
+  margin-bottom: 3px;
+  color: #ffbd73;
+}
+
 .action-grid button {
   min-height: 92px;
   text-align: left;
@@ -791,6 +813,10 @@ select {
 
   .objective-progress strong {
     justify-self: start;
+  }
+
+  .encounter-hints {
+    grid-template-columns: 1fr;
   }
 }
 
