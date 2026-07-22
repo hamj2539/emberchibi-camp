@@ -1,6 +1,7 @@
 import type { Dispatch } from "react";
 import { formatCost, getRecipe, recipes } from "../data/recipes";
 import type { GameAction, GameState, ResourceKey } from "../game/state";
+import { GameIcon, type GameIconName } from "./GameIcon";
 
 type Props = {
   state: GameState;
@@ -49,7 +50,7 @@ export function CraftScreen({ state, dispatch }: Props) {
           const queueFull = state.run.craftQueue.length >= 3;
           return (
             <article className="recipe-card" key={recipe.id}>
-              <div className="item-icon">{recipe.name.slice(0, 2)}</div>
+              <GameIcon label={recipe.name} name={recipe.id as GameIconName} size="lg" />
               <h3>{recipe.name}</h3>
               <span>{formatCost(recipe.cost)}</span>
               <p>{recipe.effect}</p>

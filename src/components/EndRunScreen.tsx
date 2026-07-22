@@ -1,6 +1,7 @@
 import type { Dispatch } from "react";
 import { labelChestGrade } from "../game/scoring";
 import type { GameAction, GameState } from "../game/state";
+import { GameIcon } from "./GameIcon";
 
 type Props = {
   state: GameState;
@@ -45,6 +46,7 @@ export function EndRunScreen({ state, dispatch }: Props) {
 
       <div className="panel chest-panel">
         <p className="eyebrow">Legacy Chest</p>
+        <GameIcon label={labelChestGrade(endRun.chestGrade)} name={`${endRun.chestGrade}Chest`} size="lg" />
         <h3>{labelChestGrade(endRun.chestGrade)}</h3>
         {endRun.reward ? (
           <div className="result-box">

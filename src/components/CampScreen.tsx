@@ -1,4 +1,5 @@
 import type { Dispatch } from "react";
+import { GameIcon, type GameIconName } from "./GameIcon";
 import type { GameAction, GameState } from "../game/state";
 
 type Props = {
@@ -14,6 +15,15 @@ const resourceLabels = {
   stone: "Stone",
   ore: "Ore",
   relicShard: "Relic Shard",
+};
+
+const resourceIcons: Record<keyof typeof resourceLabels, GameIconName> = {
+  wood: "wood",
+  food: "food",
+  herb: "herb",
+  stone: "stone",
+  ore: "ore",
+  relicShard: "relicShard",
 };
 
 export function CampScreen({ state, dispatch, onReset }: Props) {
@@ -65,6 +75,11 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
         <div className="resource-grid">
           {Object.entries(state.run.resources).map(([key, value]) => (
             <div className="resource" key={key}>
+              <GameIcon
+                label={resourceLabels[key as keyof typeof resourceLabels]}
+                name={resourceIcons[key as keyof typeof resourceIcons]}
+                size="sm"
+              />
               <span>{resourceLabels[key as keyof typeof resourceLabels]}</span>
               <strong>{formatAmount(value)}</strong>
             </div>

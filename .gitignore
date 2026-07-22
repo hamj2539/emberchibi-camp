@@ -1,5 +1,6 @@
 node_modules
 dist
+.tmp-tests
 .DS_Store
 *.local
 *.tsbuildinfo

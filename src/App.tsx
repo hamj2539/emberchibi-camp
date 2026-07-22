@@ -5,6 +5,7 @@ import { CampScreen } from "./components/CampScreen";
 import { CraftScreen } from "./components/CraftScreen";
 import { EndRunScreen } from "./components/EndRunScreen";
 import { ExploreScreen } from "./components/ExploreScreen";
+import { ObjectivePanel } from "./components/ObjectivePanel";
 import { StarterSelect } from "./components/StarterSelect";
 import { SurvivorsScreen } from "./components/SurvivorsScreen";
 import { gameReducer } from "./game/reducer";
@@ -71,6 +72,7 @@ export default function App() {
       </header>
 
       <main>
+        <ObjectivePanel state={state} />
         {screen === "starter" && <StarterSelect dispatch={dispatch} />}
         {screen === "camp" && <CampScreen dispatch={dispatch} state={state} onReset={resetRun} />}
         {screen === "explore" && <ExploreScreen dispatch={dispatch} state={state} />}
