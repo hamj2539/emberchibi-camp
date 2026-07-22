@@ -11,7 +11,9 @@ export function SurvivorsScreen({ state, dispatch }: Props) {
     <section className="screen survivor-grid">
       {state.run.survivors.map((survivor) => (
         <article className="panel survivor-card" key={survivor.id}>
-          <div className={`portrait portrait-${survivor.classId}`}>{survivor.name.slice(0, 1)}</div>
+          <div className={`portrait ${survivor.id === "survivor-rook" ? "portrait-rook" : `portrait-${survivor.classId}`}`}>
+            {survivor.name.slice(0, 1)}
+          </div>
           <h2>{survivor.name}</h2>
           <p>{survivor.role}</p>
           <div className="meters">
