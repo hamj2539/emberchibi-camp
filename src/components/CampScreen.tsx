@@ -61,7 +61,7 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
           {Object.entries(state.run.resources).map(([key, value]) => (
             <div className="resource" key={key}>
               <span>{resourceLabels[key as keyof typeof resourceLabels]}</span>
-              <strong>{value}</strong>
+              <strong>{formatAmount(value)}</strong>
             </div>
           ))}
         </div>
@@ -108,6 +108,10 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
       </div>
     </section>
   );
+}
+
+function formatAmount(value: number): string {
+  return value % 1 === 0 ? `${value}` : value.toFixed(1);
 }
 
 function formatTime(seconds: number): string {

@@ -15,9 +15,9 @@ export function SurvivorsScreen({ state, dispatch }: Props) {
           <h2>{survivor.name}</h2>
           <p>{survivor.role}</p>
           <div className="meters">
-            <span>HP {survivor.currentHp}/{survivor.stats.hp}</span>
-            <span>Fatigue {survivor.fatigue}</span>
-            <span>Injury {survivor.injury}</span>
+            <span>HP {Math.floor(survivor.currentHp)}/{survivor.stats.hp}</span>
+            <span>Fatigue {Math.floor(survivor.fatigue)}</span>
+            <span>Injury {Math.floor(survivor.injury)}</span>
           </div>
           <div className="stat-row">
             {Object.entries(survivor.stats).map(([key, value]) => (

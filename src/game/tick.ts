@@ -10,18 +10,18 @@ export function resolveIdleProgress(state: GameState, elapsedSeconds: number): G
   const survivors = state.run.survivors.map((survivor) => {
     if (survivor.onExpedition) return survivor;
     if (survivor.job === "forage") {
-      resources.food += Math.floor(elapsedSeconds / 20);
-      resources.herb += Math.floor(elapsedSeconds / 45);
+      resources.food += elapsedSeconds / 20;
+      resources.herb += elapsedSeconds / 45;
     }
     if (survivor.job === "rest") {
       return {
         ...survivor,
-        currentHp: Math.min(survivor.stats.hp, survivor.currentHp + Math.floor(elapsedSeconds / 15)),
-        fatigue: Math.max(0, survivor.fatigue - Math.floor(elapsedSeconds / 18)),
+        currentHp: Math.min(survivor.stats.hp, survivor.currentHp + elapsedSeconds / 15),
+        fatigue: Math.max(0, survivor.fatigue - elapsedSeconds / 18),
       };
     }
     if (survivor.job === "cook" && resources.food >= 2 && elapsedSeconds >= 30) {
-      resources.food -= 1;
+      resources.food = Math.max(0, resources.food - elapsedSeconds / 30);
     }
     return survivor;
   });

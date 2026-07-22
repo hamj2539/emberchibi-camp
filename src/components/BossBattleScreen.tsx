@@ -41,8 +41,8 @@ export function BossBattleScreen({ state, dispatch }: Props) {
           <span style={{ width: `${bossHpPercent}%` }} />
         </div>
         <p>
-          HP {battle.bossHp}/{battle.bossMaxHp} · Burn {battle.burnPressure} · Guard {battle.guardStacks} · Turn{" "}
-          {battle.turn}
+          HP {Math.ceil(battle.bossHp)}/{battle.bossMaxHp} · Burn {battle.burnPressure} · Guard {battle.guardStacks} ·
+          Turn {battle.turn}
         </p>
       </div>
 
@@ -54,7 +54,7 @@ export function BossBattleScreen({ state, dispatch }: Props) {
               <div>
                 <strong>{survivor.name}</strong>
                 <span>
-                  HP {survivor.currentHp}/{survivor.stats.hp} · Injury {survivor.injury}
+                  HP {Math.floor(survivor.currentHp)}/{survivor.stats.hp} · Injury {Math.floor(survivor.injury)}
                 </span>
               </div>
             </article>
