@@ -15,7 +15,7 @@ export const routes: RouteDefinition[] = [
     id: "mistwoodEdge",
     name: "Mistwood Edge",
     purpose: "Early resource route with a chance to find Rook.",
-    durationSeconds: 45,
+    durationSeconds: 10,
     danger: 20,
     rewards: {
       wood: [4, 8],
@@ -28,7 +28,7 @@ export const routes: RouteDefinition[] = [
     id: "burntGrove",
     name: "Burnt Grove",
     purpose: "Ember prep route that reveals the Beacon site.",
-    durationSeconds: 75,
+    durationSeconds: 14,
     danger: 32,
     rewards: {
       wood: [3, 7],
@@ -41,7 +41,7 @@ export const routes: RouteDefinition[] = [
     id: "emberBeaconSite",
     name: "Ember Beacon Site",
     purpose: "Boss route leading to the Cinder Stag.",
-    durationSeconds: 120,
+    durationSeconds: 18,
     danger: 48,
     rewards: {
       stone: [3, 6],

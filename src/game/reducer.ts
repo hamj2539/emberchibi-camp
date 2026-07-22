@@ -185,7 +185,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             status: "active",
             assignedSurvivorIds: [...selected],
             progress: action.useRepairKit ? 18 : 0,
-            requiredProgress: 100,
+            requiredProgress: 35,
             coreQuality: quality,
             usedRepairKit: action.useRepairKit,
           },
