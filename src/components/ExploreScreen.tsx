@@ -1,5 +1,5 @@
 import type { Dispatch } from "react";
-import { getBeaconByBossRoute, getBeaconByPrepRoute } from "../data/beacons";
+import { beacons, getBeaconByBossRoute, getBeaconByPrepRoute } from "../data/beacons";
 import { routes } from "../data/routes";
 import type { GameAction, GameState, RouteId } from "../game/state";
 
@@ -34,6 +34,22 @@ export function ExploreScreen({ state, dispatch }: Props) {
           <p>{Math.max(0, Math.ceil((expedition.endsAt - Date.now()) / 1000))}s until return</p>
         </div>
       )}
+      <div className="panel compact">
+        <p className="eyebrow">Five Beacon Skeleton</p>
+        <div className="beacon-strip">
+          {beacons.map((beacon) => {
+            const progress = state.run.beacons[beacon.id];
+            const siteFound = state.run.routes[beacon.bossRouteId].discovered;
+            const status = progress.repaired ? "Lit" : progress.bossDefeated ? "Core Ready" : siteFound ? "Guardian" : "Prep";
+            return (
+              <div className="beacon-chip" key={beacon.id}>
+                <strong>{beacon.name}</strong>
+                <span>{status}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
       <div className="route-grid">
         {routes.map((route) => {
           const progress = state.run.routes[route.id];

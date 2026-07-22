@@ -8,6 +8,7 @@ import { ExploreScreen } from "./components/ExploreScreen";
 import { ObjectivePanel } from "./components/ObjectivePanel";
 import { StarterSelect } from "./components/StarterSelect";
 import { SurvivorsScreen } from "./components/SurvivorsScreen";
+import { beacons } from "./data/beacons";
 import { gameReducer } from "./game/reducer";
 import { deleteSave, loadGame, saveGame } from "./game/save";
 import type { Screen } from "./game/state";
@@ -41,6 +42,7 @@ export default function App() {
   }
 
   const screen = state.run.screen;
+  const allBeaconsLit = beacons.every((beacon) => state.run.beacons[beacon.id].repaired);
 
   return (
     <div className="app">
@@ -55,7 +57,7 @@ export default function App() {
               .filter((item) => {
                 if (item.when === "boss") return Boolean(state.run.bossBattle);
                 if (item.when === "repair") return state.run.bossBattle?.status === "won";
-                if (item.when === "end") return state.run.beaconRepair?.status === "lit";
+                if (item.when === "end") return allBeaconsLit;
                 return true;
               })
               .map((item) => (

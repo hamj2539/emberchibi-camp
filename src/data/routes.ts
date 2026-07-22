@@ -1,4 +1,4 @@
-import type { BeaconId, ResourceKey, RouteId } from "../game/state";
+import type { BeaconId, ResourceKey, RouteId } from "../game/state.js";
 
 export type RouteDefinition = {
   id: RouteId;

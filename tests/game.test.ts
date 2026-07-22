@@ -38,9 +38,9 @@ const tests: { name: string; run: () => void }[] = [
     },
   },
   {
-    name: "objective advances to chest after Beacon is lit",
+    name: "objective advances to chest after all five Beacons are lit",
     run: () => {
-      const state = completedRun("stable", 0, 0);
+      const state = allBeaconsCompletedRun("stable");
       const objective = getCurrentObjective(state);
       assertEqual(objective.title, "Open the Legacy Chest");
     },
@@ -63,6 +63,15 @@ function completedRun(coreQuality: "pristine" | "stable" | "cracked" | "faded", 
         ...state.run.routes,
         burntGrove: { discovered: true, completed: 1, failed: routeFailures },
         emberBeaconSite: { discovered: true, completed: 0, failed: 0 },
+      },
+      beacons: {
+        ...state.run.beacons,
+        ember: {
+          ...state.run.beacons.ember,
+          bossDefeated: true,
+          repaired: true,
+          coreQuality,
+        },
       },
       survivors: [
         {
@@ -117,6 +126,30 @@ function completedRun(coreQuality: "pristine" | "stable" | "cracked" | "faded", 
       },
       routeFailures,
       bossFailures,
+    },
+  };
+}
+
+function allBeaconsCompletedRun(coreQuality: "pristine" | "stable" | "cracked" | "faded"): GameState {
+  const state = completedRun(coreQuality, 0, 0);
+  return {
+    ...state,
+    run: {
+      ...state.run,
+      routes: {
+        ...state.run.routes,
+        tidalBeaconSite: { discovered: true, completed: 0, failed: 0 },
+        galeBeaconSite: { discovered: true, completed: 0, failed: 0 },
+        rootBeaconSite: { discovered: true, completed: 0, failed: 0 },
+        lunarBeaconSite: { discovered: true, completed: 0, failed: 0 },
+      },
+      beacons: {
+        ember: { ...state.run.beacons.ember, bossDefeated: true, repaired: true, coreQuality },
+        tidal: { ...state.run.beacons.tidal, bossDefeated: true, repaired: true, coreQuality },
+        gale: { ...state.run.beacons.gale, bossDefeated: true, repaired: true, coreQuality },
+        root: { ...state.run.beacons.root, bossDefeated: true, repaired: true, coreQuality },
+        lunar: { ...state.run.beacons.lunar, bossDefeated: true, repaired: true, coreQuality },
+      },
     },
   };
 }

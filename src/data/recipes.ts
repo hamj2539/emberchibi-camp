@@ -1,4 +1,4 @@
-import type { ItemId, ResourceKey } from "../game/state";
+import type { ItemId, ResourceKey } from "../game/state.js";
 
 export type Recipe = {
   id: ItemId;

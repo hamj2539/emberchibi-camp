@@ -1,4 +1,5 @@
 import type { Dispatch } from "react";
+import { beacons } from "../data/beacons";
 import { GameIcon, type GameIconName } from "./GameIcon";
 import type { GameAction, GameState } from "../game/state";
 
@@ -29,6 +30,7 @@ const resourceIcons: Record<keyof typeof resourceLabels, GameIconName> = {
 export function CampScreen({ state, dispatch, onReset }: Props) {
   const expedition = state.run.activeExpedition;
   const secondsLeft = expedition ? Math.max(0, Math.ceil((expedition.endsAt - Date.now()) / 1000)) : 0;
+  const litBeacons = beacons.filter((beacon) => state.run.beacons[beacon.id].repaired).length;
 
   return (
     <section className="screen dashboard">
@@ -39,7 +41,7 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
         <div className="status-strip">
           <span>{state.run.survivors.filter((survivor) => !survivor.onExpedition).length} ready</span>
           <span>{state.run.craftQueue.length} craft queued</span>
-          <span>{state.run.beaconRepair?.status === "lit" ? "Beacon lit" : "Beacon dark"}</span>
+          <span>{litBeacons}/5 Beacons lit</span>
         </div>
         {expedition && <strong>Expedition returns in {secondsLeft}s</strong>}
       </div>

@@ -1,4 +1,5 @@
-import type { ChestGrade, CoreQuality, GameState, ScoreLine } from "./state";
+import { beacons } from "../data/beacons.js";
+import type { ChestGrade, CoreQuality, GameState, ScoreLine } from "./state.js";
 
 const repairPoints: Record<CoreQuality, number> = {
   pristine: 140,
@@ -10,13 +11,20 @@ const repairPoints: Record<CoreQuality, number> = {
 export function calculateScore(state: GameState): { score: number; lines: ScoreLine[]; chestGrade: ChestGrade } {
   const lines: ScoreLine[] = [];
 
-  if (state.run.routes.emberBeaconSite.discovered) lines.push({ label: "Discovered Ember Beacon Site", points: 20 });
-  if (state.run.bossBattle?.status === "won") lines.push({ label: `Defeated ${state.run.bossBattle.bossName}`, points: 60 });
-  if (state.run.beaconRepair?.status === "lit") {
-    lines.push({
-      label: `Repaired ${state.run.beaconRepair.beaconName} (${state.run.beaconRepair.coreQuality})`,
-      points: repairPoints[state.run.beaconRepair.coreQuality],
-    });
+  for (const beacon of beacons) {
+    const progress = state.run.beacons[beacon.id];
+    if (state.run.routes[beacon.bossRouteId].discovered) {
+      lines.push({ label: `Discovered ${beacon.name} Site`, points: 20 });
+    }
+    if (progress.bossDefeated) {
+      lines.push({ label: `Defeated ${beacon.bossName}`, points: 60 });
+    }
+    if (progress.repaired && progress.coreQuality) {
+      lines.push({
+        label: `Repaired ${beacon.name} (${progress.coreQuality})`,
+        points: repairPoints[progress.coreQuality],
+      });
+    }
   }
   if (state.run.survivors.some((survivor) => survivor.id === "survivor-rook")) {
     lines.push({ label: "Recruited Rook", points: 50 });

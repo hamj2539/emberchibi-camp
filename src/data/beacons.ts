@@ -1,4 +1,4 @@
-import type { BeaconId, RouteId } from "../game/state";
+import type { BeaconId, RouteId } from "../game/state.js";
 
 export type BeaconDefinition = {
   id: BeaconId;

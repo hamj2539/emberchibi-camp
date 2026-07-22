@@ -1,8 +1,8 @@
-import { getBeaconByBossRoute, getBeaconByPrepRoute } from "../data/beacons";
-import { getRoute } from "../data/routes";
-import { createGuardianBattle } from "./combat";
-import { calculateScore } from "./scoring";
-import type { GameState, ItemId, ResourceKey, Resources } from "./state";
+import { beacons, getBeaconByBossRoute, getBeaconByPrepRoute } from "../data/beacons.js";
+import { getRoute } from "../data/routes.js";
+import { createGuardianBattle } from "./combat.js";
+import { calculateScore } from "./scoring.js";
+import type { GameState, ItemId, ResourceKey, Resources } from "./state.js";
 
 export function resolveIdleProgress(state: GameState, elapsedSeconds: number): GameState {
   if (!state.run.started || elapsedSeconds <= 0) return state;
@@ -91,29 +91,41 @@ function resolveRepairProgress(state: GameState, elapsedSeconds: number): GameSt
     };
   }
 
+  const beaconsProgress = {
+    ...state.run.beacons,
+    [repair.beaconId]: {
+      ...state.run.beacons[repair.beaconId],
+      bossDefeated: true,
+      repaired: true,
+      coreQuality: repair.coreQuality,
+    },
+  };
+  const allBeaconsLit = beacons.every((beacon) => beaconsProgress[beacon.id].repaired);
+
   const nextState: GameState = {
     ...state,
     run: {
       ...state.run,
-      screen: "end",
+      screen: allBeaconsLit ? "end" : "camp",
+      beacons: beaconsProgress,
       beaconRepair: { ...repair, progress: repair.requiredProgress, status: "lit" },
+      bossBattle: allBeaconsLit ? state.run.bossBattle : null,
       survivors: state.run.survivors.map((survivor) =>
         repair.assignedSurvivorIds.includes(survivor.id)
           ? { ...survivor, onExpedition: false, fatigue: Math.min(100, survivor.fatigue + 8) }
           : survivor,
       ),
-      log: [`${repair.beaconName} is lit. The demo run is complete.`, ...state.run.log].slice(0, 12),
+      log: [
+        allBeaconsLit ? `${repair.beaconName} is lit. All five Beacons answer the camp.` : `${repair.beaconName} is lit.`,
+        ...state.run.log,
+      ].slice(0, 12),
     },
   };
 
+  if (!allBeaconsLit) return nextState;
+
   const result = calculateScore(nextState);
-  return {
-    ...nextState,
-    run: {
-      ...nextState.run,
-      endRun: { ...result, reward: null, claimed: false },
-    },
-  };
+  return { ...nextState, run: { ...nextState.run, endRun: { ...result, reward: null, claimed: false } } };
 }
 
 export function resolveExpedition(state: GameState, now: number): GameState {
@@ -146,35 +158,40 @@ export function resolveExpedition(state: GameState, now: number): GameState {
   } else {
     const bossBeacon = getBeaconByBossRoute(route.id);
     if (bossBeacon) {
-      log.unshift(`${route.name} opens into a guardian arena.`);
-      const battleSurvivors = survivors.map((survivor) =>
-        expedition.survivorIds.includes(survivor.id) ? { ...survivor, onExpedition: false } : survivor,
-      );
-      return {
-        ...state,
-        run: {
-          ...state.run,
-          resources,
-          routes,
-          survivors: battleSurvivors,
-          activeExpedition: null,
-          screen: "boss",
-          bossBattle: createGuardianBattle(
-            {
-              ...state,
-              run: {
-                ...state.run,
-                resources,
-                routes,
-                survivors: battleSurvivors,
+      if (state.run.beacons[bossBeacon.id]?.repaired) {
+        routes[route.id] = { ...progress, completed: progress.completed + 1 };
+        log.unshift(`${bossBeacon.name} is already lit. The party gathers spare supplies instead.`);
+      } else {
+        log.unshift(`${route.name} opens into a guardian arena.`);
+        const battleSurvivors = survivors.map((survivor) =>
+          expedition.survivorIds.includes(survivor.id) ? { ...survivor, onExpedition: false } : survivor,
+        );
+        return {
+          ...state,
+          run: {
+            ...state.run,
+            resources,
+            routes,
+            survivors: battleSurvivors,
+            activeExpedition: null,
+            screen: "boss",
+            bossBattle: createGuardianBattle(
+              {
+                ...state,
+                run: {
+                  ...state.run,
+                  resources,
+                  routes,
+                  survivors: battleSurvivors,
+                },
               },
-            },
-            expedition.survivorIds,
-            bossBeacon,
-          ),
-          log: log.slice(0, 12),
-        },
-      };
+              expedition.survivorIds,
+              bossBeacon,
+            ),
+            log: log.slice(0, 12),
+          },
+        };
+      }
     }
 
     for (const [key, range] of Object.entries(route.rewards) as [ResourceKey, [number, number]][]) {

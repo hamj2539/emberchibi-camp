@@ -102,6 +102,14 @@ export type BeaconRepair = {
   usedRepairKit: boolean;
 };
 
+export type BeaconProgress = {
+  discovered: boolean;
+  bossDefeated: boolean;
+  repaired: boolean;
+  coreQuality: CoreQuality | null;
+  repairBonusClaimed: boolean;
+};
+
 export type ScoreLine = {
   label: string;
   points: number;
@@ -129,6 +137,7 @@ export type RunState = {
   items: Inventory;
   survivors: Survivor[];
   routes: Record<RouteId, RouteProgress>;
+  beacons: Record<BeaconId, BeaconProgress>;
   activeExpedition: Expedition | null;
   craftQueue: CraftTask[];
   recruitEvent: RecruitEvent | null;
@@ -186,6 +195,14 @@ export const emptyInventory: Inventory = {
   repairKit: 0,
 };
 
+export const emptyBeaconProgress: Record<BeaconId, BeaconProgress> = {
+  ember: { discovered: true, bossDefeated: false, repaired: false, coreQuality: null, repairBonusClaimed: false },
+  tidal: { discovered: true, bossDefeated: false, repaired: false, coreQuality: null, repairBonusClaimed: false },
+  gale: { discovered: true, bossDefeated: false, repaired: false, coreQuality: null, repairBonusClaimed: false },
+  root: { discovered: true, bossDefeated: false, repaired: false, coreQuality: null, repairBonusClaimed: false },
+  lunar: { discovered: true, bossDefeated: false, repaired: false, coreQuality: null, repairBonusClaimed: false },
+};
+
 export function createInitialState(now = Date.now()): GameState {
   return {
     version: 1,
@@ -210,6 +227,7 @@ export function createInitialState(now = Date.now()): GameState {
         moonwellPath: { discovered: true, completed: 0, failed: 0 },
         lunarBeaconSite: { discovered: false, completed: 0, failed: 0 },
       },
+      beacons: { ...emptyBeaconProgress },
       activeExpedition: null,
       craftQueue: [],
       recruitEvent: null,

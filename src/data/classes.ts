@@ -1,4 +1,4 @@
-import type { StarterClassId, Stats } from "../game/state";
+import type { StarterClassId, Stats } from "../game/state.js";
 
 export type StarterClass = {
   id: StarterClassId;

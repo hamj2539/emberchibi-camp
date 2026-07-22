@@ -170,6 +170,27 @@ select {
   align-items: start;
 }
 
+.beacon-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: 10px;
+}
+
+.beacon-chip {
+  display: grid;
+  gap: 4px;
+  min-height: 68px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.beacon-chip span {
+  color: #d7c8b7;
+  font-size: 0.85rem;
+}
+
 .panel,
 .class-card,
 .route-card,

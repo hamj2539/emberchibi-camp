@@ -1,4 +1,4 @@
-import type { ChestGrade, ChestReward, GameState, RewardType } from "./state";
+import type { ChestGrade, ChestReward, GameState, RewardType } from "./state.js";
 
 const rates: Record<ChestGrade, { type: RewardType; weight: number }[]> = {
   broken: [

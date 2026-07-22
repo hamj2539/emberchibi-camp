@@ -1,4 +1,5 @@
-import type { GameState } from "./state";
+import { beacons } from "../data/beacons.js";
+import type { GameState } from "./state.js";
 
 export type Objective = {
   title: string;
@@ -31,22 +32,25 @@ export function getCurrentObjective(state: GameState): Objective {
     };
   }
 
-  if (state.run.bossBattle?.status !== "won") {
+  const litCount = beacons.filter((beacon) => state.run.beacons[beacon.id].repaired).length;
+  const nextBeacon = beacons.find((beacon) => !state.run.beacons[beacon.id].repaired);
+
+  if (nextBeacon && state.run.bossBattle?.beaconId !== nextBeacon.id && !state.run.beacons[nextBeacon.id].bossDefeated) {
     return {
-      title: "Defeat Cinder Stag",
-      detail: "Craft prep items, then send 2 survivors to Ember Beacon Site.",
-      progress: state.run.bossBattle ? 80 : 60,
+      title: `Defeat ${nextBeacon.bossName}`,
+      detail: `Clear ${nextBeacon.name}'s prep route, then challenge its Guardian site.`,
+      progress: 55 + litCount * 8,
     };
   }
 
-  if (state.run.beaconRepair?.status !== "lit") {
+  if (nextBeacon && !state.run.beacons[nextBeacon.id].repaired) {
     return {
-      title: "Repair Ember Beacon",
+      title: `Repair ${nextBeacon.name}`,
       detail: "Spend Wood and Stone, then assign a repair crew.",
       progress:
         state.run.beaconRepair?.status === "active"
           ? Math.round((state.run.beaconRepair.progress / state.run.beaconRepair.requiredProgress) * 100)
-          : 85,
+          : 70 + litCount * 5,
     };
   }
 

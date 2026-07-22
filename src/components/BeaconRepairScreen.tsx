@@ -17,7 +17,7 @@ export function BeaconRepairScreen({ state, dispatch }: Props) {
   const selected = available.slice(0, 2);
   const canStart =
     Boolean(quality) &&
-    !repair &&
+    repair?.status !== "active" &&
     selected.length > 0 &&
     Boolean(beacon) &&
     state.run.resources.wood >= (beacon?.repairCost.wood ?? 0) &&

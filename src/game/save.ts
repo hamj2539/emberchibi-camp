@@ -1,4 +1,4 @@
-import { createInitialState, emptyInventory, type GameState } from "./state";
+import { createInitialState, emptyBeaconProgress, emptyInventory, type GameState } from "./state.js";
 
 const SAVE_KEY = "emberchibiCamp.v1";
 
@@ -24,6 +24,7 @@ export function deleteSave(): void {
 }
 
 function migrateV1(state: GameState): GameState {
+  const defaults = createInitialState(state.savedAt);
   return {
     ...state,
     legacy: {
@@ -35,6 +36,8 @@ function migrateV1(state: GameState): GameState {
     run: {
       ...state.run,
       items: { ...emptyInventory, ...(state.run.items ?? {}) },
+      routes: { ...defaults.run.routes, ...(state.run.routes ?? {}) },
+      beacons: { ...emptyBeaconProgress, ...(state.run.beacons ?? {}) },
       craftQueue: state.run.craftQueue ?? [],
       recruitEvent: state.run.recruitEvent ?? null,
       bossBattle: state.run.bossBattle ?? null,

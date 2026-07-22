@@ -1,5 +1,5 @@
-import type { BeaconDefinition } from "../data/beacons";
-import type { BossAction, BossBattle, CoreQuality, GameState, Survivor } from "./state";
+import type { BeaconDefinition } from "../data/beacons.js";
+import type { BossAction, BossBattle, CoreQuality, GameState, Survivor } from "./state.js";
 
 export function createGuardianBattle(state: GameState, partyIds: string[], beacon: BeaconDefinition): BossBattle {
   const party = state.run.survivors.filter((survivor) => partyIds.includes(survivor.id));
