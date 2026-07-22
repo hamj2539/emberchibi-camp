@@ -2,6 +2,7 @@ import { useState, type Dispatch } from "react";
 import { beacons, getBeaconByBossRoute, getBeaconByPrepRoute } from "../data/beacons";
 import { routes } from "../data/routes";
 import type { GameAction, GameState, RouteId } from "../game/state";
+import { calculateExpeditionDuration, calculateExpeditionSafety, expeditionSuccessChance, labelSuccessChance } from "../game/expedition";
 import { CrewPicker } from "./CrewPicker";
 
 type Props = {
@@ -111,6 +112,9 @@ export function ExploreScreen({ state, dispatch }: Props) {
           const needsParty = route.kind === "boss" ? selectedSurvivors.length !== 2 : selectedSurvivors.length < 1;
           const disabled = locked || needsParty || Boolean(state.run.activeExpedition);
           const beacon = getBeaconByBossRoute(route.id) ?? getBeaconByPrepRoute(route.id);
+          const safety = calculateExpeditionSafety(state, selectedSurvivors.map((survivor) => survivor.id), route, { useRation, useTorch });
+          const successChance = expeditionSuccessChance(safety, route.danger);
+          const duration = calculateExpeditionDuration(route, selectedSurvivors);
 
           return (
             <article className={`route-card route-${route.id}`} key={route.id}>
@@ -118,8 +122,10 @@ export function ExploreScreen({ state, dispatch }: Props) {
               <h2>{route.name}</h2>
               <p>{route.purpose}</p>
               <div className="route-meta">
-                <span>{route.durationSeconds}s</span>
+                <span>{duration}s</span>
                 <span>Danger {route.danger}</span>
+                <span>Safety {safety}</span>
+                <span>{labelSuccessChance(successChance)} {successChance}%</span>
                 <span>Clears {progress.completed}</span>
                 <span>Fails {progress.failed}</span>
                 <span>{selectedSurvivors.length} selected</span>

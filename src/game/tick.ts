@@ -1,6 +1,7 @@
 import { beacons, getBeaconByBossRoute, getBeaconByPrepRoute } from "../data/beacons.js";
 import { getRoute } from "../data/routes.js";
 import { createGuardianBattle } from "./combat.js";
+import { calculateExpeditionSafety } from "./expedition.js";
 import type { GameState, ItemId, ResourceKey, Resources } from "./state.js";
 
 export function resolveIdleProgress(state: GameState, elapsedSeconds: number): GameState {
@@ -143,14 +144,10 @@ export function resolveExpedition(state: GameState, now: number): GameState {
 
   const route = getRoute(expedition.routeId);
   const party = state.run.survivors.filter((survivor) => expedition.survivorIds.includes(survivor.id));
-  const campGuards = state.run.survivors.filter(
-    (survivor) => !expedition.survivorIds.includes(survivor.id) && !survivor.onExpedition && survivor.job === "guard",
-  ).length;
-  const safety =
-    party.reduce((sum, survivor) => sum + survivor.stats.surv + survivor.stats.spd + survivor.stats.luck, 0) +
-    campGuards * 4 +
-    (expedition.usedRation ? 6 : 0) +
-    (expedition.usedTorch && route.danger >= 35 ? 5 : 0);
+  const safety = calculateExpeditionSafety(state, expedition.survivorIds, route, {
+    useRation: Boolean(expedition.usedRation),
+    useTorch: Boolean(expedition.usedTorch),
+  });
   const failed = safety + roll(1, 24) < route.danger;
   const resources: Resources = { ...state.run.resources };
   const routes = { ...state.run.routes };
@@ -159,11 +156,12 @@ export function resolveExpedition(state: GameState, now: number): GameState {
 
   const survivors = state.run.survivors.map((survivor) => {
     if (!expedition.survivorIds.includes(survivor.id)) return survivor;
+    const hasHerbalist = party.some((member) => member.classId === "herbalist");
     return {
       ...survivor,
       onExpedition: false,
-      fatigue: Math.min(100, survivor.fatigue + (failed ? 18 : 10) - (expedition.usedRation ? 4 : 0)),
-      injury: Math.min(100, survivor.injury + (failed ? (expedition.usedTorch ? 6 : 12) : 0)),
+      fatigue: Math.min(100, survivor.fatigue + (failed ? 18 : 10) - (expedition.usedRation ? 4 : 0) - (hasHerbalist ? 3 : 0)),
+      injury: Math.min(100, survivor.injury + (failed ? (expedition.usedTorch ? 6 : 12) - (hasHerbalist ? 4 : 0) : 0)),
       currentHp: Math.max(1, survivor.currentHp - (failed ? 5 : 1)),
     };
   });
@@ -211,7 +209,9 @@ export function resolveExpedition(state: GameState, now: number): GameState {
     }
 
     for (const [key, range] of Object.entries(route.rewards) as [ResourceKey, [number, number]][]) {
-      resources[key] += roll(range[0], range[1]);
+      const reward = roll(range[0], range[1]);
+      const hunterBonus = key === "food" && party.some((survivor) => survivor.classId === "hunter") ? Math.ceil(reward * 0.25) : 0;
+      resources[key] += reward + hunterBonus;
     }
     routes[route.id] = { ...progress, completed: progress.completed + 1 };
     const prepBeacon = getBeaconByPrepRoute(route.id);

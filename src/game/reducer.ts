@@ -4,6 +4,7 @@ import { getRecipe } from "../data/recipes.js";
 import { getRoute } from "../data/routes.js";
 import { resolveBossAction } from "./combat.js";
 import { openGate, resolveGateAction } from "./gate.js";
+import { calculateExpeditionDuration } from "./expedition.js";
 import { applyLegacyStartBonuses } from "./meta.js";
 import { applyReward, rollChestReward } from "./rewards.js";
 import { resolveExpedition, resolveIdleProgress } from "./tick.js";
@@ -73,6 +74,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const selected = new Set(action.survivorIds);
       const useRation = Boolean(action.useRation && state.run.items.ration > 0);
       const useTorch = Boolean(action.useTorch && state.run.items.torch > 0);
+      const durationSeconds = calculateExpeditionDuration(route, validParty);
       const items = {
         ...state.run.items,
         ration: state.run.items.ration - (useRation ? 1 : 0),
@@ -89,7 +91,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             routeId: action.routeId,
             survivorIds: action.survivorIds,
             startedAt: now,
-            endsAt: now + route.durationSeconds * 1000,
+            endsAt: now + durationSeconds * 1000,
             usedRation: useRation,
             usedTorch: useTorch,
           },

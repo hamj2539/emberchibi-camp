@@ -1,14 +1,54 @@
 import { getCurrentObjective } from "../src/game/objectives.js";
 import { getBeacon } from "../src/data/beacons.js";
+import { getRoute } from "../src/data/routes.js";
 import { createGuardianBattle, resolveBossAction } from "../src/game/combat.js";
 import { gameReducer } from "../src/game/reducer.js";
 import { migrateV1 } from "../src/game/save.js";
 import { applyReward } from "../src/game/rewards.js";
 import { calculateScore } from "../src/game/scoring.js";
 import { resolveExpedition, resolveIdleProgress } from "../src/game/tick.js";
+import { calculateExpeditionDuration, expeditionSuccessChance } from "../src/game/expedition.js";
 import { createInitialState, type GameState } from "../src/game/state.js";
 
 const tests: { name: string; run: () => void }[] = [
+  {
+    name: "Scout shortens routes and forecast reports exact success chance",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "scout" });
+      assertEqual(calculateExpeditionDuration(getRoute("rootBeaconSite"), started.run.survivors), 16);
+      assertEqual(expeditionSuccessChance(20, 30), 63);
+    },
+  },
+  {
+    name: "Hunter boosts Food while Herbalist reduces failed-route injuries",
+    run: () => {
+      const hunter = gameReducer(createInitialState(), { type: "chooseStarter", classId: "hunter" });
+      const suppliedHunter = { ...hunter, run: { ...hunter.run, items: { ...hunter.run.items, ration: 1 } } };
+      const hunterRun = gameReducer(suppliedHunter, {
+        type: "startExpedition",
+        routeId: "mistwoodEdge",
+        survivorIds: ["survivor-hunter"],
+        useRation: true,
+      });
+      const herbalist = gameReducer(createInitialState(), { type: "chooseStarter", classId: "herbalist" });
+      const herbalistRun = gameReducer(herbalist, {
+        type: "startExpedition",
+        routeId: "burntGrove",
+        survivorIds: ["survivor-herbalist"],
+      });
+      const originalRandom = Math.random;
+      Math.random = () => 0;
+      try {
+        const hunterResult = resolveExpedition(hunterRun, hunterRun.run.activeExpedition?.endsAt ?? 0);
+        const herbalistResult = resolveExpedition(herbalistRun, herbalistRun.run.activeExpedition?.endsAt ?? 0);
+        assertEqual(hunterResult.run.resources.food, 14);
+        assertEqual(herbalistResult.run.survivors[0].injury, 8);
+        assertEqual(herbalistResult.run.survivors[0].fatigue, 15);
+      } finally {
+        Math.random = originalRandom;
+      }
+    },
+  },
   {
     name: "Expedition validation rejects locked routes and incomplete boss crews",
     run: () => {
