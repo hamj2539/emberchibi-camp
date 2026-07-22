@@ -44,6 +44,11 @@ export type RouteProgress = {
   failed: number;
 };
 
+export type RecruitEvent = {
+  id: "rook";
+  status: "available" | "resolved";
+};
+
 export type RunState = {
   started: boolean;
   screen: Screen;
@@ -52,6 +57,7 @@ export type RunState = {
   survivors: Survivor[];
   routes: Record<RouteId, RouteProgress>;
   activeExpedition: Expedition | null;
+  recruitEvent: RecruitEvent | null;
   log: string[];
   routeFailures: number;
   bossFailures: number;
@@ -74,6 +80,7 @@ export type GameAction =
   | { type: "setScreen"; screen: Screen }
   | { type: "assignJob"; survivorId: string; job: IdleJob }
   | { type: "startExpedition"; routeId: RouteId; survivorIds: string[] }
+  | { type: "resolveRecruit"; choice: "herb" | "food" | "ignore" }
   | { type: "tick"; now: number }
   | { type: "resetRun"; keepLegacy: boolean };
 
@@ -102,6 +109,7 @@ export function createInitialState(now = Date.now()): GameState {
         emberBeaconSite: { discovered: false, completed: 0, failed: 0 },
       },
       activeExpedition: null,
+      recruitEvent: null,
       log: ["A cold ember waits under the campfire ash."],
       routeFailures: 0,
       bossFailures: 0,

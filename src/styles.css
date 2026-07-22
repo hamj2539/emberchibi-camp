@@ -158,6 +158,20 @@ select {
     #221a14;
 }
 
+.recruit-panel {
+  grid-column: 1 / -1;
+  background:
+    linear-gradient(135deg, rgba(255, 189, 115, 0.18), rgba(31, 51, 43, 0.42)),
+    rgba(27, 24, 20, 0.88);
+}
+
+.choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
 .class-card,
 .route-card,
 .recipe-card,

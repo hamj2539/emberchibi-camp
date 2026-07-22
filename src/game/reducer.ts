@@ -78,6 +78,42 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         },
       });
     }
+    case "resolveRecruit": {
+      if (state.run.recruitEvent?.id !== "rook" || state.run.recruitEvent.status !== "available") return state;
+
+      const resources = { ...state.run.resources };
+      const log = [...state.run.log];
+      const survivors = [...state.run.survivors];
+
+      if (action.choice === "herb") {
+        if (resources.herb < 2) return state;
+        resources.herb -= 2;
+        survivors.push(createRook());
+        log.unshift("Rook joins the camp after you bind his burned trail wounds.");
+      }
+
+      if (action.choice === "food") {
+        if (resources.food < 4) return state;
+        resources.food -= 4;
+        survivors.push(createRook());
+        log.unshift("Rook follows the scent of warm rations back to camp.");
+      }
+
+      if (action.choice === "ignore") {
+        log.unshift("The party leaves the wounded hunter behind and presses deeper into the mist.");
+      }
+
+      return stamp({
+        ...state,
+        run: {
+          ...state.run,
+          resources,
+          survivors,
+          recruitEvent: { ...state.run.recruitEvent, status: "resolved" },
+          log: log.slice(0, 12),
+        },
+      });
+    }
     case "tick": {
       const elapsedSeconds = Math.max(0, Math.floor((action.now - state.savedAt) / 1000));
       let next = resolveIdleProgress(state, elapsedSeconds);
@@ -95,4 +131,19 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
 function stamp(state: GameState, savedAt = Date.now()): GameState {
   return { ...state, savedAt };
+}
+
+function createRook(): Survivor {
+  return {
+    id: "survivor-rook",
+    name: "Rook",
+    classId: "hunter",
+    role: "Lost Hunter",
+    stats: { hp: 28, atk: 7, def: 4, spd: 5, wis: 3, craft: 3, surv: 8, luck: 4 },
+    currentHp: 21,
+    fatigue: 12,
+    injury: 8,
+    job: "rest",
+    onExpedition: false,
+  };
 }

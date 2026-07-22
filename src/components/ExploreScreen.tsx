@@ -36,6 +36,7 @@ export function ExploreScreen({ state, dispatch }: Props) {
               <span>{route.durationSeconds}s</span>
               <span>Danger {route.danger}</span>
               <span>Clears {progress.completed}</span>
+              <span>{availableSurvivors.length} ready</span>
             </div>
             <div className="reward-list">
               {Object.keys(route.rewards).map((reward) => (

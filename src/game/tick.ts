@@ -70,6 +70,8 @@ export function resolveExpedition(state: GameState, now: number): GameState {
     if (route.id === "burntGrove") {
       routes.emberBeaconSite = { ...routes.emberBeaconSite, discovered: true };
       log.unshift("Burnt Grove revealed the Ember Beacon Site.");
+    } else if (route.id === "mistwoodEdge" && !hasRook(state) && !state.run.recruitEvent) {
+      log.unshift("The party found a wounded hunter near a burned trail.");
     } else {
       log.unshift(`${route.name} completed. Supplies were added to camp.`);
     }
@@ -83,10 +85,18 @@ export function resolveExpedition(state: GameState, now: number): GameState {
       routes,
       survivors,
       activeExpedition: null,
+      recruitEvent:
+        !failed && route.id === "mistwoodEdge" && !hasRook(state) && !state.run.recruitEvent
+          ? { id: "rook", status: "available" }
+          : state.run.recruitEvent,
       routeFailures: state.run.routeFailures + (failed ? 1 : 0),
       log: log.slice(0, 12),
     },
   };
+}
+
+function hasRook(state: GameState): boolean {
+  return state.run.survivors.some((survivor) => survivor.id === "survivor-rook");
 }
 
 function roll(min: number, max: number): number {

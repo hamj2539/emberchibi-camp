@@ -29,6 +29,32 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
         {expedition && <strong>Expedition returns in {secondsLeft}s</strong>}
       </div>
 
+      {state.run.recruitEvent?.id === "rook" && state.run.recruitEvent.status === "available" && (
+        <div className="panel recruit-panel">
+          <p className="eyebrow">Recruit Event</p>
+          <h3>Rook, Lost Hunter</h3>
+          <p>The party found a wounded hunter beside a burned trail. He watches the campfire like it might vanish.</p>
+          <div className="choice-row">
+            <button
+              className="primary"
+              disabled={state.run.resources.herb < 2}
+              onClick={() => dispatch({ type: "resolveRecruit", choice: "herb" })}
+            >
+              Spend 2 Herb
+            </button>
+            <button
+              disabled={state.run.resources.food < 4}
+              onClick={() => dispatch({ type: "resolveRecruit", choice: "food" })}
+            >
+              Spend 4 Food
+            </button>
+            <button className="danger" onClick={() => dispatch({ type: "resolveRecruit", choice: "ignore" })}>
+              Ignore
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="panel">
         <h3>Resources</h3>
         <div className="resource-grid">
