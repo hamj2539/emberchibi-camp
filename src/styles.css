@@ -1,0 +1,338 @@
+:root {
+  color: #f5efe3;
+  background: #171411;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at 15% 5%, rgba(226, 86, 48, 0.22), transparent 28rem),
+    linear-gradient(135deg, #1b1814 0%, #262018 42%, #101313 100%);
+}
+
+button,
+select {
+  font: inherit;
+}
+
+button {
+  min-height: 42px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  padding: 0.65rem 0.9rem;
+  color: #f9f1df;
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+select {
+  min-height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 0.45rem 0.6rem;
+  color: #f9f1df;
+  background: #272019;
+}
+
+.app {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 24px 0 48px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 0 28px;
+}
+
+.topbar h1,
+.intro h2,
+.panel h2,
+.route-card h2 {
+  margin: 0;
+  letter-spacing: 0;
+}
+
+.topbar h1 {
+  font-size: clamp(1.8rem, 4vw, 3.8rem);
+}
+
+.eyebrow {
+  margin: 0 0 0.35rem;
+  color: #ffbd73;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.nav button.active,
+.primary {
+  border-color: rgba(255, 185, 104, 0.55);
+  color: #1c130e;
+  background: linear-gradient(180deg, #ffd38f, #f08245);
+  font-weight: 800;
+}
+
+.danger {
+  border-color: rgba(255, 119, 91, 0.35);
+  background: rgba(171, 57, 43, 0.35);
+}
+
+.screen {
+  display: grid;
+  gap: 16px;
+}
+
+.starter-screen {
+  gap: 24px;
+}
+
+.intro {
+  width: min(820px, 100%);
+}
+
+.intro h2 {
+  font-size: clamp(2rem, 5vw, 4.8rem);
+  line-height: 1.02;
+}
+
+.class-grid,
+.route-grid,
+.survivor-grid,
+.recipe-grid,
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.dashboard {
+  align-items: start;
+}
+
+.panel,
+.class-card,
+.route-card,
+.recipe-card {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 18px;
+  background: rgba(27, 24, 20, 0.82);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.2);
+}
+
+.camp-hero {
+  min-height: 280px;
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  background:
+    linear-gradient(180deg, transparent, rgba(22, 15, 11, 0.9)),
+    linear-gradient(135deg, rgba(239, 111, 57, 0.24), rgba(45, 77, 65, 0.3)),
+    #221a14;
+}
+
+.class-card,
+.route-card,
+.recipe-card,
+.survivor-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.class-card h3,
+.recipe-card h3,
+.survivor-card h2 {
+  margin: 0;
+}
+
+.class-card p,
+.route-card p,
+.recipe-card p,
+.panel p,
+.survivor-card p {
+  margin: 0;
+  color: #d7c8b7;
+  line-height: 1.55;
+}
+
+.class-card ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: #efe2cf;
+}
+
+.portrait,
+.item-icon {
+  display: grid;
+  width: 86px;
+  height: 86px;
+  place-items: center;
+  border: 2px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  font-size: 2.2rem;
+  font-weight: 900;
+}
+
+.portrait-scout {
+  background: linear-gradient(135deg, #95d5b2, #2d6a4f);
+}
+
+.portrait-hunter {
+  background: linear-gradient(135deg, #f4a261, #7f5539);
+}
+
+.portrait-herbalist {
+  background: linear-gradient(135deg, #b7e4c7, #40916c);
+}
+
+.portrait-tinker {
+  background: linear-gradient(135deg, #ffd166, #577590);
+}
+
+.stat-row,
+.route-meta,
+.reward-list,
+.meters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stat-row span,
+.route-meta span,
+.reward-list span,
+.meters span {
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 999px;
+  padding: 0.25rem 0.55rem;
+  color: #f4dec4;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 0.78rem;
+}
+
+.resource-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.resource,
+.survivor-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.resource span,
+.survivor-row span {
+  display: block;
+  color: #cdbba4;
+  font-size: 0.85rem;
+}
+
+.resource strong {
+  font-size: 1.35rem;
+}
+
+.survivor-list,
+.log {
+  display: grid;
+  gap: 10px;
+}
+
+.log {
+  max-height: 260px;
+  margin: 0 0 16px;
+  padding-left: 1.2rem;
+  color: #e8d8c2;
+}
+
+.route-card {
+  min-height: 360px;
+  justify-content: end;
+}
+
+.route-mistwoodEdge {
+  background:
+    linear-gradient(180deg, rgba(23, 20, 17, 0.1), rgba(23, 20, 17, 0.95)),
+    linear-gradient(135deg, #253c2f, #617064);
+}
+
+.route-burntGrove {
+  background:
+    linear-gradient(180deg, rgba(23, 20, 17, 0.1), rgba(23, 20, 17, 0.95)),
+    linear-gradient(135deg, #532b22, #a24936);
+}
+
+.route-emberBeaconSite {
+  background:
+    linear-gradient(180deg, rgba(23, 20, 17, 0.1), rgba(23, 20, 17, 0.95)),
+    linear-gradient(135deg, #2b1b17, #d05a2a);
+}
+
+.item-icon {
+  width: 62px;
+  height: 62px;
+  color: #21150f;
+  background: #ffca7a;
+  font-size: 1rem;
+}
+
+.compact {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 760px) {
+  .app {
+    width: min(100% - 20px, 1180px);
+    padding-top: 12px;
+  }
+
+  .topbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .nav {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .camp-hero {
+    grid-column: auto;
+    min-height: 220px;
+  }
+}
