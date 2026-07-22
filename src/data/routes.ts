@@ -61,7 +61,7 @@ export const routes: RouteDefinition[] = [
     beaconId: "tidal",
     kind: "prep",
     name: "Saltmarsh Run",
-    purpose: "Placeholder prep route that reveals the Tidal Beacon.",
+    purpose: "Cross the drowned causeway to reveal the Tidal Beacon.",
     durationSeconds: 12,
     danger: 24,
     rewards: {
@@ -76,7 +76,7 @@ export const routes: RouteDefinition[] = [
     beaconId: "tidal",
     kind: "boss",
     name: "Tidal Beacon Site",
-    purpose: "Placeholder boss route leading to the Brine Warden.",
+    purpose: "Challenge the Brine Warden above the flooded ruins.",
     durationSeconds: 18,
     danger: 38,
     rewards: {
@@ -90,7 +90,7 @@ export const routes: RouteDefinition[] = [
     beaconId: "gale",
     kind: "prep",
     name: "Windscar Cliffs",
-    purpose: "Placeholder prep route that reveals the Gale Beacon.",
+    purpose: "Climb the broken sky path to reveal the Gale Beacon.",
     durationSeconds: 13,
     danger: 30,
     rewards: {
@@ -105,7 +105,7 @@ export const routes: RouteDefinition[] = [
     beaconId: "gale",
     kind: "boss",
     name: "Gale Beacon Site",
-    purpose: "Placeholder boss route leading to the Hollow Roc.",
+    purpose: "Challenge the Hollow Roc at the storm altar.",
     durationSeconds: 19,
     danger: 42,
     rewards: {
@@ -119,7 +119,7 @@ export const routes: RouteDefinition[] = [
     beaconId: "root",
     kind: "prep",
     name: "Rootwarren Trail",
-    purpose: "Placeholder prep route that reveals the Root Beacon.",
+    purpose: "Follow the living roots to reveal the Root Beacon.",
     durationSeconds: 15,
     danger: 32,
     rewards: {
@@ -134,7 +134,7 @@ export const routes: RouteDefinition[] = [
     beaconId: "root",
     kind: "boss",
     name: "Root Beacon Site",
-    purpose: "Placeholder boss route leading to the Briar Colossus.",
+    purpose: "Challenge the Briar Colossus in the ancient grove.",
     durationSeconds: 20,
     danger: 44,
     rewards: {
@@ -148,7 +148,7 @@ export const routes: RouteDefinition[] = [
     beaconId: "lunar",
     kind: "prep",
     name: "Moonwell Path",
-    purpose: "Placeholder prep route that reveals the Lunar Beacon.",
+    purpose: "Trace the moonstones to reveal the Lunar Beacon.",
     durationSeconds: 16,
     danger: 34,
     rewards: {
@@ -163,7 +163,7 @@ export const routes: RouteDefinition[] = [
     beaconId: "lunar",
     kind: "boss",
     name: "Lunar Beacon Site",
-    purpose: "Placeholder boss route leading to the Night Herald.",
+    purpose: "Challenge the Lunar Sentinel beneath the full moon.",
     durationSeconds: 22,
     danger: 48,
     rewards: {

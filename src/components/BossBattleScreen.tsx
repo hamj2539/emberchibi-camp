@@ -35,10 +35,12 @@ export function BossBattleScreen({ state, dispatch }: Props) {
 
   return (
     <section className="screen boss-layout">
-      <div className="panel boss-scene">
+      <div className={`panel boss-scene scene-${battle.beaconId}`}>
         <p className="eyebrow">Beacon Guardian</p>
         <h2>{battle.bossName}</h2>
-        <div className="boss-art">{battle.bossName.split(" ").map((word) => word[0]).join("")}</div>
+        <div className={`boss-art boss-${battle.bossId}`} aria-label={battle.bossName}>
+          {battle.bossName.split(" ").map((word) => word[0]).join("")}
+        </div>
         <p>{beacon.name}</p>
         <div className="meter">
           <span aria-label={`${battle.bossName} health ${bossHpPercent}%`} style={{ width: `${bossHpPercent}%` }} />

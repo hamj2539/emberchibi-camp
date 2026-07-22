@@ -307,13 +307,26 @@ select {
   margin: 12px auto 18px;
   border: 2px solid rgba(255, 222, 176, 0.2);
   border-radius: 8px;
-  color: #2b1510;
-  background:
-    radial-gradient(circle at 50% 35%, #ffd79b, transparent 25%),
-    linear-gradient(135deg, #e76f51, #4d2b1f);
+  color: transparent;
+  background-color: #2b1510;
+  background-position: center;
+  background-size: cover;
   font-size: 4rem;
   font-weight: 900;
 }
+
+.boss-cinderStag { background-image: url("/emberchibi-camp/assets/guardians/cinder-stag.png"); }
+.boss-brineWarden { background-image: url("/emberchibi-camp/assets/guardians/brine-warden.png"); }
+.boss-hollowRoc { background-image: url("/emberchibi-camp/assets/guardians/hollow-roc.png"); }
+.boss-briarColossus { background-image: url("/emberchibi-camp/assets/guardians/briar-colossus.png"); }
+.boss-lunarSentinel { background-image: url("/emberchibi-camp/assets/guardians/lunar-sentinel.png"); }
+.boss-nightHerald { background-image: url("/emberchibi-camp/assets/guardians/night-herald.png"); }
+
+.scene-tidal { background-image: linear-gradient(180deg, rgba(23, 20, 17, 0.06), rgba(23, 20, 17, 0.92)), url("/emberchibi-camp/assets/backgrounds/tidal-beacon-site.png"); }
+.scene-gale { background-image: linear-gradient(180deg, rgba(23, 20, 17, 0.06), rgba(23, 20, 17, 0.92)), url("/emberchibi-camp/assets/backgrounds/gale-beacon-site.png"); }
+.scene-root { background-image: linear-gradient(180deg, rgba(23, 20, 17, 0.06), rgba(23, 20, 17, 0.92)), url("/emberchibi-camp/assets/backgrounds/root-beacon-site.png"); }
+.scene-lunar,
+.gate-scene { background-image: linear-gradient(180deg, rgba(23, 20, 17, 0.06), rgba(23, 20, 17, 0.92)), url("/emberchibi-camp/assets/backgrounds/lunar-beacon-site.png"); }
 
 .meter {
   height: 14px;
@@ -657,6 +670,15 @@ select {
     url("/emberchibi-camp/assets/backgrounds/ember-beacon-site.png") center / cover,
     linear-gradient(135deg, #2b1b17, #d05a2a);
 }
+
+.route-saltmarshRun { background-image: linear-gradient(180deg, rgba(23, 20, 17, 0.1), rgba(23, 20, 17, 0.95)), url("/emberchibi-camp/assets/backgrounds/saltmarsh-run.png"); }
+.route-tidalBeaconSite { background-image: linear-gradient(180deg, rgba(23, 20, 17, 0.1), rgba(23, 20, 17, 0.95)), url("/emberchibi-camp/assets/backgrounds/tidal-beacon-site.png"); }
+.route-windscarCliffs { background-image: linear-gradient(180deg, rgba(23, 20, 17, 0.1), rgba(23, 20, 17, 0.95)), url("/emberchibi-camp/assets/backgrounds/windscar-cliffs.png"); }
+.route-galeBeaconSite { background-image: linear-gradient(180deg, rgba(23, 20, 17, 0.1), rgba(23, 20, 17, 0.95)), url("/emberchibi-camp/assets/backgrounds/gale-beacon-site.png"); }
+.route-rootwarrenTrail { background-image: linear-gradient(180deg, rgba(23, 20, 17, 0.1), rgba(23, 20, 17, 0.95)), url("/emberchibi-camp/assets/backgrounds/rootwarren-trail.png"); }
+.route-rootBeaconSite { background-image: linear-gradient(180deg, rgba(23, 20, 17, 0.1), rgba(23, 20, 17, 0.95)), url("/emberchibi-camp/assets/backgrounds/root-beacon-site.png"); }
+.route-moonwellPath { background-image: linear-gradient(180deg, rgba(23, 20, 17, 0.1), rgba(23, 20, 17, 0.95)), url("/emberchibi-camp/assets/backgrounds/moonwell-path.png"); }
+.route-lunarBeaconSite { background-image: linear-gradient(180deg, rgba(23, 20, 17, 0.1), rgba(23, 20, 17, 0.95)), url("/emberchibi-camp/assets/backgrounds/lunar-beacon-site.png"); }
 
 .item-icon {
   width: 62px;

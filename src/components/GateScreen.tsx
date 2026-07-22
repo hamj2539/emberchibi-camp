@@ -25,7 +25,7 @@ export function GateScreen({ state, dispatch }: Props) {
       <div className="panel boss-scene gate-scene">
         <p className="eyebrow">Cinder Gate</p>
         <h2>{gate.status === "active" ? "Night Herald" : "The Gate Is Open"}</h2>
-        <div className="boss-art">NH</div>
+        <div className="boss-art boss-nightHerald" aria-label="Night Herald">NH</div>
         {gate.status === "active" ? (
           <>
             <div className="meter">
