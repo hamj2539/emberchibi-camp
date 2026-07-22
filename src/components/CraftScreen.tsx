@@ -28,7 +28,12 @@ export function CraftScreen({ state, dispatch }: Props) {
               const recipe = getRecipe(task.recipeId);
               return (
                 <div className="queue-row" key={task.id}>
-                  <strong>{recipe.name}</strong>
+                  <div>
+                    <strong>{recipe.name}</strong>
+                    <div className="mini-meter">
+                      <span style={{ width: `${craftProgress(recipe.craftSeconds, task.remainingSeconds)}%` }} />
+                    </div>
+                  </div>
                   <span>{Math.ceil(task.remainingSeconds)}s left</span>
                 </div>
               );
@@ -64,8 +69,9 @@ export function CraftScreen({ state, dispatch }: Props) {
         })}
       </div>
       <div className="panel compact">
-        <strong>Current stock:</strong> {state.run.resources.wood} wood, {state.run.resources.food} food,{" "}
-        {state.run.resources.herb} herb, {state.run.resources.stone} stone
+        <strong>Current stock:</strong> {formatAmount(state.run.resources.wood)} wood,{" "}
+        {formatAmount(state.run.resources.food)} food, {formatAmount(state.run.resources.herb)} herb,{" "}
+        {formatAmount(state.run.resources.stone)} stone
       </div>
     </section>
   );
@@ -73,4 +79,12 @@ export function CraftScreen({ state, dispatch }: Props) {
 
 function canAfford(state: GameState, cost: Partial<Record<ResourceKey, number>>): boolean {
   return Object.entries(cost).every(([key, amount]) => state.run.resources[key as ResourceKey] >= amount);
+}
+
+function craftProgress(totalSeconds: number, remainingSeconds: number): number {
+  return Math.max(0, Math.min(100, ((totalSeconds - remainingSeconds) / totalSeconds) * 100));
+}
+
+function formatAmount(value: number): string {
+  return value % 1 === 0 ? `${value}` : value.toFixed(1);
 }

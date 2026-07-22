@@ -26,6 +26,11 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
         <p className="eyebrow">Campfire Status</p>
         <h2>Camp holds for {formatTime(state.run.daySeconds)}</h2>
         <p>Assign idle jobs, gather enough supplies, and send careful expeditions into the dark forest.</p>
+        <div className="status-strip">
+          <span>{state.run.survivors.filter((survivor) => !survivor.onExpedition).length} ready</span>
+          <span>{state.run.craftQueue.length} craft queued</span>
+          <span>{state.run.beaconRepair?.status === "lit" ? "Beacon lit" : "Beacon dark"}</span>
+        </div>
         {expedition && <strong>Expedition returns in {secondsLeft}s</strong>}
       </div>
 

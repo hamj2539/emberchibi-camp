@@ -278,6 +278,22 @@ select {
   margin-top: 16px;
 }
 
+.status-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.status-strip span {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  color: #f4dec4;
+  background: rgba(0, 0, 0, 0.18);
+  font-size: 0.85rem;
+}
+
 .class-card,
 .route-card,
 .recipe-card,
@@ -405,6 +421,27 @@ select {
   border-radius: 8px;
   padding: 12px;
   background: rgba(255, 255, 255, 0.05);
+}
+
+.queue-row > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.mini-meter {
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  margin-top: 8px;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.mini-meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ffd38f, #f08245);
 }
 
 .helper-text {
