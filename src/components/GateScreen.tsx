@@ -1,5 +1,6 @@
 import { useState, type Dispatch } from "react";
 import type { GameAction, GameState, GateAction } from "../game/state";
+import { calculateGateStability } from "../game/gate";
 import { CrewPicker } from "./CrewPicker";
 
 type Props = {
@@ -23,6 +24,7 @@ export function GateScreen({ state, dispatch }: Props) {
   const party = state.run.survivors.filter((survivor) => gate.partyIds.includes(survivor.id));
   const selected = available.filter((survivor) => selectedIds.includes(survivor.id) && survivor.currentHp > 0);
   const hpPercent = Math.max(0, Math.round((gate.heraldHp / gate.heraldMaxHp) * 100));
+  const stability = calculateGateStability(state);
 
   return (
     <section className="screen boss-layout">
@@ -30,6 +32,10 @@ export function GateScreen({ state, dispatch }: Props) {
         <p className="eyebrow">Cinder Gate</p>
         <h2>{gate.status === "active" ? "Night Herald" : "The Gate Is Open"}</h2>
         <div className="boss-art boss-nightHerald" aria-label="Night Herald">NH</div>
+        <div className="status-strip">
+          <span>Beacon Stability {stability}/15</span>
+          <span>Herald HP penalty −{stability * 3}</span>
+        </div>
         {gate.status === "active" ? (
           <>
             <div className="meter">

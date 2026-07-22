@@ -65,7 +65,7 @@ export function migrateV1(state: GameState): GameState {
       screen: unsafeEncounterScreen ? "camp" : state.run.screen,
       items: { ...emptyInventory, ...(state.run.items ?? {}) },
       routes: { ...defaults.run.routes, ...(state.run.routes ?? {}) },
-      beacons: { ...emptyBeaconProgress, ...(state.run.beacons ?? {}) },
+      beacons: migrateBeacons(state, defaults),
       craftQueue: state.run.craftQueue ?? [],
       recruitEvent: state.run.recruitEvent ?? null,
       bossBattle,
@@ -74,4 +74,13 @@ export function migrateV1(state: GameState): GameState {
       endRun: state.run.endRun ?? null,
     },
   };
+}
+
+function migrateBeacons(state: GameState, defaults: GameState): GameState["run"]["beacons"] {
+  return Object.fromEntries(
+    Object.entries(defaults.run.beacons).map(([id, fallback]) => [
+      id,
+      { ...fallback, ...(state.run.beacons?.[id as keyof typeof state.run.beacons] ?? {}) },
+    ]),
+  ) as GameState["run"]["beacons"];
 }

@@ -72,7 +72,7 @@ export function resolveBossAction(state: GameState, action: BossAction): GameSta
   }
 
   if (bossHp <= 0) {
-    const quality = coreQualityForFailures(state.run.bossFailures);
+    const quality = coreQualityForFailures(state.run.beacons[battle.beaconId].failedAttempts ?? 0);
     return {
       ...state,
       run: {
@@ -111,6 +111,13 @@ export function resolveBossAction(state: GameState, action: BossAction): GameSta
         items,
         survivors,
         bossFailures: state.run.bossFailures + 1,
+        beacons: {
+          ...state.run.beacons,
+          [battle.beaconId]: {
+            ...state.run.beacons[battle.beaconId],
+            failedAttempts: (state.run.beacons[battle.beaconId].failedAttempts ?? 0) + 1,
+          },
+        },
         bossBattle: {
           ...battle,
           bossHp,

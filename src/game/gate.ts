@@ -1,9 +1,12 @@
 import { calculateScore } from "./scoring.js";
-import type { GameState, GateAction, GateProgress, Survivor } from "./state.js";
+import type { CoreQuality, GameState, GateAction, GateProgress, Survivor } from "./state.js";
 
 export function openGate(state: GameState, partyIds: string[]): GameState {
   const party = state.run.survivors.filter((survivor) => partyIds.includes(survivor.id));
   if (party.length < 2 || party.length > 3 || !allBeaconsLit(state) || state.run.gate.status === "cleared") return state;
+  const stability = calculateGateStability(state);
+  const heraldMaxHp = Math.max(115, 160 - stability * 3);
+  const startingPressure = Math.max(2, 5 - Math.floor(stability / 4));
 
   return {
     ...state,
@@ -12,13 +15,16 @@ export function openGate(state: GameState, partyIds: string[]): GameState {
       screen: "gate",
       gate: {
         status: "active",
-        heraldHp: 160,
-        heraldMaxHp: 160,
+        heraldHp: heraldMaxHp,
+        heraldMaxHp,
         guardStacks: 0,
-        nightPressure: 4,
+        nightPressure: startingPressure,
         turn: 1,
         partyIds: party.map((survivor) => survivor.id),
-        log: [`Night Herald steps through the Cinder Gate. Party resolve ${partyResolve(party)}.`],
+        log: [
+          `Night Herald steps through the Cinder Gate. Party resolve ${partyResolve(party)}.`,
+          `Beacon Stability ${stability}/15 weakens the Herald to ${heraldMaxHp} HP and ${startingPressure} Night pressure.`,
+        ],
       },
       survivors: state.run.survivors.map((survivor) =>
         partyIds.includes(survivor.id) ? { ...survivor, onExpedition: true } : survivor,
@@ -126,6 +132,14 @@ export function finishGate(state: GameState, gate: GateProgress): GameState {
 
 function allBeaconsLit(state: GameState): boolean {
   return Object.values(state.run.beacons).every((beacon) => beacon.repaired);
+}
+
+export function calculateGateStability(state: GameState): number {
+  const qualityPoints: Record<CoreQuality, number> = { pristine: 3, stable: 2, cracked: 1, faded: 0 };
+  return Object.values(state.run.beacons).reduce(
+    (total, beacon) => total + (beacon.coreQuality ? qualityPoints[beacon.coreQuality] : 0),
+    0,
+  );
 }
 
 function resolveHeraldTurn(

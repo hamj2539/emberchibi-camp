@@ -51,7 +51,7 @@ export function BossBattleScreen({ state, dispatch }: Props) {
         </div>
         <p>
           HP {Math.ceil(battle.bossHp)}/{battle.bossMaxHp} · Burn {battle.burnPressure} · Guard {battle.guardStacks} ·
-          Turn {battle.turn}
+          Turn {battle.turn} · Attempt {(state.run.beacons[battle.beaconId].failedAttempts ?? 0) + 1}
         </p>
       </div>
 

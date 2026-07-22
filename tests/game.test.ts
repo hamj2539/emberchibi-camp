@@ -3,6 +3,7 @@ import { getBeacon } from "../src/data/beacons.js";
 import { getRoute } from "../src/data/routes.js";
 import { createGuardianBattle, resolveBossAction } from "../src/game/combat.js";
 import { calculateIdleElapsed, gameReducer, MAX_OFFLINE_SECONDS } from "../src/game/reducer.js";
+import { calculateGateStability, openGate } from "../src/game/gate.js";
 import { migrateV1, parseGame } from "../src/game/save.js";
 import { applyReward } from "../src/game/rewards.js";
 import { calculateScore } from "../src/game/scoring.js";
@@ -11,6 +12,46 @@ import { calculateExpeditionDuration, expeditionSuccessChance } from "../src/gam
 import { createInitialState, type GameState } from "../src/game/state.js";
 
 const tests: { name: string; run: () => void }[] = [
+  {
+    name: "Guardian failures only reduce Core quality for that Beacon",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "hunter" });
+      const fragile = {
+        ...started,
+        run: { ...started.run, survivors: started.run.survivors.map((survivor) => ({ ...survivor, currentHp: 2 })) },
+      };
+      const emberBattle = createGuardianBattle(fragile, ["survivor-hunter"], getBeacon("ember"));
+      const originalRandom = Math.random;
+      Math.random = () => 0;
+      try {
+        const failed = resolveBossAction({ ...fragile, run: { ...fragile.run, bossBattle: emberBattle } }, "attack");
+        assertEqual(failed.run.beacons.ember.failedAttempts, 1);
+        assertEqual(failed.run.beacons.tidal.failedAttempts, 0);
+        const recovered = {
+          ...failed,
+          run: {
+            ...failed.run,
+            survivors: failed.run.survivors.map((survivor) => ({ ...survivor, currentHp: survivor.stats.hp })),
+          },
+        };
+        const tidalBattle = { ...createGuardianBattle(recovered, ["survivor-hunter"], getBeacon("tidal")), bossHp: 1 };
+        const won = resolveBossAction({ ...recovered, run: { ...recovered.run, bossBattle: tidalBattle } }, "attack");
+        assertEqual(won.run.bossBattle?.coreQuality, "pristine");
+      } finally {
+        Math.random = originalRandom;
+      }
+    },
+  },
+  {
+    name: "Core quality creates Gate Stability and weakens the Night Herald",
+    run: () => {
+      const state = allBeaconsCompletedRun("pristine");
+      assertEqual(calculateGateStability(state), 15);
+      const opened = openGate(state, ["survivor-scout", "survivor-rook"]);
+      assertEqual(opened.run.gate.heraldMaxHp, 115);
+      assertEqual(opened.run.gate.nightPressure, 2);
+    },
+  },
   {
     name: "save parser rejects corrupt data without throwing",
     run: () => {

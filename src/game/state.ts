@@ -113,6 +113,7 @@ export type BeaconProgress = {
   repaired: boolean;
   coreQuality: CoreQuality | null;
   repairBonusClaimed: boolean;
+  failedAttempts: number;
 };
 
 export type ScoreLine = {
@@ -219,11 +220,11 @@ export const emptyInventory: Inventory = {
 };
 
 export const emptyBeaconProgress: Record<BeaconId, BeaconProgress> = {
-  ember: { discovered: true, bossDefeated: false, repaired: false, coreQuality: null, repairBonusClaimed: false },
-  tidal: { discovered: true, bossDefeated: false, repaired: false, coreQuality: null, repairBonusClaimed: false },
-  gale: { discovered: true, bossDefeated: false, repaired: false, coreQuality: null, repairBonusClaimed: false },
-  root: { discovered: true, bossDefeated: false, repaired: false, coreQuality: null, repairBonusClaimed: false },
-  lunar: { discovered: true, bossDefeated: false, repaired: false, coreQuality: null, repairBonusClaimed: false },
+  ember: { discovered: true, bossDefeated: false, repaired: false, coreQuality: null, repairBonusClaimed: false, failedAttempts: 0 },
+  tidal: { discovered: true, bossDefeated: false, repaired: false, coreQuality: null, repairBonusClaimed: false, failedAttempts: 0 },
+  gale: { discovered: true, bossDefeated: false, repaired: false, coreQuality: null, repairBonusClaimed: false, failedAttempts: 0 },
+  root: { discovered: true, bossDefeated: false, repaired: false, coreQuality: null, repairBonusClaimed: false, failedAttempts: 0 },
+  lunar: { discovered: true, bossDefeated: false, repaired: false, coreQuality: null, repairBonusClaimed: false, failedAttempts: 0 },
 };
 
 export function createInitialState(now = Date.now()): GameState {
