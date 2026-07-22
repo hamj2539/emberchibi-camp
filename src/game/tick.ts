@@ -1,4 +1,5 @@
 import { getRoute } from "../data/routes";
+import { createCinderStagBattle } from "./combat";
 import type { GameState, ItemId, ResourceKey, Resources } from "./state";
 
 export function resolveIdleProgress(state: GameState, elapsedSeconds: number): GameState {
@@ -92,6 +93,37 @@ export function resolveExpedition(state: GameState, now: number): GameState {
     routes[route.id] = { ...progress, failed: progress.failed + 1 };
     log.unshift(`${route.name} failed. The party returned early with burns and lost packs.`);
   } else {
+    if (route.id === "emberBeaconSite") {
+      log.unshift("The Ember Beacon Site opens into a ring of living coals.");
+      const battleSurvivors = survivors.map((survivor) =>
+        expedition.survivorIds.includes(survivor.id) ? { ...survivor, onExpedition: false } : survivor,
+      );
+      return {
+        ...state,
+        run: {
+          ...state.run,
+          resources,
+          routes,
+          survivors: battleSurvivors,
+          activeExpedition: null,
+          screen: "boss",
+          bossBattle: createCinderStagBattle(
+            {
+              ...state,
+              run: {
+                ...state.run,
+                resources,
+                routes,
+                survivors: battleSurvivors,
+              },
+            },
+            expedition.survivorIds,
+          ),
+          log: log.slice(0, 12),
+        },
+      };
+    }
+
     for (const [key, range] of Object.entries(route.rewards) as [ResourceKey, [number, number]][]) {
       resources[key] += roll(range[0], range[1]);
     }

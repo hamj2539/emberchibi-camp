@@ -31,6 +31,7 @@ function migrateV1(state: GameState): GameState {
       items: { ...emptyInventory, ...(state.run.items ?? {}) },
       craftQueue: state.run.craftQueue ?? [],
       recruitEvent: state.run.recruitEvent ?? null,
+      bossBattle: state.run.bossBattle ?? null,
     },
   };
 }

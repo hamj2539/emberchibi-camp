@@ -1,4 +1,6 @@
 import { useEffect, useReducer } from "react";
+import { BeaconRepairScreen } from "./components/BeaconRepairScreen";
+import { BossBattleScreen } from "./components/BossBattleScreen";
 import { CampScreen } from "./components/CampScreen";
 import { CraftScreen } from "./components/CraftScreen";
 import { ExploreScreen } from "./components/ExploreScreen";
@@ -8,11 +10,13 @@ import { gameReducer } from "./game/reducer";
 import { deleteSave, loadGame, saveGame } from "./game/save";
 import type { Screen } from "./game/state";
 
-const navItems: { screen: Screen; label: string }[] = [
+const navItems: { screen: Screen; label: string; when?: "boss" | "repair" }[] = [
   { screen: "camp", label: "Camp" },
   { screen: "explore", label: "Explore" },
   { screen: "survivors", label: "Survivors" },
   { screen: "craft", label: "Craft" },
+  { screen: "boss", label: "Boss", when: "boss" },
+  { screen: "repair", label: "Repair", when: "repair" },
 ];
 
 export default function App() {
@@ -44,15 +48,21 @@ export default function App() {
         </div>
         {state.run.started && (
           <nav className="nav" aria-label="Main screens">
-            {navItems.map((item) => (
-              <button
-                className={screen === item.screen ? "active" : ""}
-                key={item.screen}
-                onClick={() => dispatch({ type: "setScreen", screen: item.screen })}
-              >
-                {item.label}
-              </button>
-            ))}
+            {navItems
+              .filter((item) => {
+                if (item.when === "boss") return Boolean(state.run.bossBattle);
+                if (item.when === "repair") return state.run.bossBattle?.status === "won";
+                return true;
+              })
+              .map((item) => (
+                <button
+                  className={screen === item.screen ? "active" : ""}
+                  key={item.screen}
+                  onClick={() => dispatch({ type: "setScreen", screen: item.screen })}
+                >
+                  {item.label}
+                </button>
+              ))}
           </nav>
         )}
       </header>
@@ -63,6 +73,8 @@ export default function App() {
         {screen === "explore" && <ExploreScreen dispatch={dispatch} state={state} />}
         {screen === "survivors" && <SurvivorsScreen dispatch={dispatch} state={state} />}
         {screen === "craft" && <CraftScreen dispatch={dispatch} state={state} />}
+        {screen === "boss" && <BossBattleScreen dispatch={dispatch} state={state} />}
+        {screen === "repair" && <BeaconRepairScreen dispatch={dispatch} state={state} />}
       </main>
     </div>
   );

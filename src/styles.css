@@ -125,7 +125,8 @@ select {
 .route-grid,
 .survivor-grid,
 .recipe-grid,
-.dashboard {
+.dashboard,
+.boss-layout {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 16px;
@@ -156,6 +157,85 @@ select {
     linear-gradient(180deg, transparent, rgba(22, 15, 11, 0.9)),
     linear-gradient(135deg, rgba(239, 111, 57, 0.24), rgba(45, 77, 65, 0.3)),
     #221a14;
+}
+
+.boss-scene {
+  min-height: 390px;
+  grid-row: span 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  background:
+    linear-gradient(180deg, rgba(23, 20, 17, 0.05), rgba(23, 20, 17, 0.96)),
+    radial-gradient(circle at 50% 28%, rgba(255, 113, 67, 0.38), transparent 12rem),
+    linear-gradient(135deg, #2a1712, #593120);
+}
+
+.boss-art {
+  display: grid;
+  width: min(100%, 280px);
+  aspect-ratio: 1;
+  place-items: center;
+  margin: 12px auto 18px;
+  border: 2px solid rgba(255, 222, 176, 0.2);
+  border-radius: 8px;
+  color: #2b1510;
+  background:
+    radial-gradient(circle at 50% 35%, #ffd79b, transparent 25%),
+    linear-gradient(135deg, #e76f51, #4d2b1f);
+  font-size: 4rem;
+  font-weight: 900;
+}
+
+.meter {
+  height: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ffba6b, #ef5d3c);
+  transition: width 180ms ease;
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.action-grid button {
+  min-height: 92px;
+  text-align: left;
+}
+
+.action-grid strong,
+.action-grid span {
+  display: block;
+}
+
+.action-grid span {
+  margin-top: 6px;
+  color: #3b2718;
+  font-size: 0.85rem;
+}
+
+.action-grid button:not(.primary) span {
+  color: #d7c8b7;
+}
+
+.result-box {
+  display: grid;
+  gap: 10px;
+}
+
+.result-box p {
+  color: #d7c8b7;
 }
 
 .recruit-panel {

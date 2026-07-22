@@ -14,6 +14,8 @@ export type IdleJob = "rest" | "forage" | "craft" | "guard" | "cook" | "research
 export type StarterClassId = "scout" | "hunter" | "herbalist" | "tinker";
 export type RouteId = "mistwoodEdge" | "burntGrove" | "emberBeaconSite";
 export type ItemId = "torch" | "ration" | "stoneSpear" | "herbSalve" | "warmCloak" | "repairKit";
+export type BossAction = "attack" | "guard" | "useTorch" | "useSalve";
+export type CoreQuality = "pristine" | "stable" | "cracked" | "faded";
 
 export type Stats = Record<StatKey, number>;
 export type Resources = Record<ResourceKey, number>;
@@ -59,6 +61,19 @@ export type RecruitEvent = {
   status: "available" | "resolved";
 };
 
+export type BossBattle = {
+  bossId: "cinderStag";
+  bossHp: number;
+  bossMaxHp: number;
+  guardStacks: number;
+  burnPressure: number;
+  partyIds: string[];
+  turn: number;
+  status: "active" | "won" | "lost";
+  coreQuality: CoreQuality | null;
+  log: string[];
+};
+
 export type RunState = {
   started: boolean;
   screen: Screen;
@@ -70,6 +85,7 @@ export type RunState = {
   activeExpedition: Expedition | null;
   craftQueue: CraftTask[];
   recruitEvent: RecruitEvent | null;
+  bossBattle: BossBattle | null;
   log: string[];
   routeFailures: number;
   bossFailures: number;
@@ -94,6 +110,8 @@ export type GameAction =
   | { type: "startExpedition"; routeId: RouteId; survivorIds: string[] }
   | { type: "resolveRecruit"; choice: "herb" | "food" | "ignore" }
   | { type: "startCraft"; recipeId: ItemId }
+  | { type: "bossAction"; action: BossAction }
+  | { type: "leaveBossResult" }
   | { type: "tick"; now: number }
   | { type: "resetRun"; keepLegacy: boolean };
 
@@ -134,6 +152,7 @@ export function createInitialState(now = Date.now()): GameState {
       activeExpedition: null,
       craftQueue: [],
       recruitEvent: null,
+      bossBattle: null,
       log: ["A cold ember waits under the campfire ash."],
       routeFailures: 0,
       bossFailures: 0,

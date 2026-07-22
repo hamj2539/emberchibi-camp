@@ -1,6 +1,7 @@
 import { getStarterClass } from "../data/classes";
 import { getRecipe } from "../data/recipes";
 import { getRoute } from "../data/routes";
+import { resolveBossAction } from "./combat";
 import { resolveExpedition, resolveIdleProgress } from "./tick";
 import type { GameAction, GameState, IdleJob, ResourceKey, Survivor } from "./state";
 import { createInitialState } from "./state";
@@ -141,6 +142,24 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             },
           ],
           log: [`Craft started: ${recipe.name}.`, ...state.run.log].slice(0, 12),
+        },
+      });
+    }
+    case "bossAction":
+      return stamp(resolveBossAction(state, action.action));
+    case "leaveBossResult": {
+      if (!state.run.bossBattle || state.run.bossBattle.status === "active") return state;
+      const won = state.run.bossBattle.status === "won";
+      return stamp({
+        ...state,
+        run: {
+          ...state.run,
+          screen: won ? "repair" : "camp",
+          bossBattle: won ? state.run.bossBattle : null,
+          log: [won ? "The Cinder Heart waits for Beacon repair." : "The party retreats to camp.", ...state.run.log].slice(
+            0,
+            12,
+          ),
         },
       });
     }
