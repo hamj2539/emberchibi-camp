@@ -65,22 +65,35 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const route = getRoute(action.routeId);
       const now = Date.now();
       const selected = new Set(action.survivorIds);
+      const useRation = Boolean(action.useRation && state.run.items.ration > 0);
+      const useTorch = Boolean(action.useTorch && state.run.items.torch > 0);
+      const items = {
+        ...state.run.items,
+        ration: state.run.items.ration - (useRation ? 1 : 0),
+        torch: state.run.items.torch - (useTorch ? 1 : 0),
+      };
       return stamp({
         ...state,
         run: {
           ...state.run,
           screen: "explore",
+          items,
           activeExpedition: {
             id: `expedition-${now}`,
             routeId: action.routeId,
             survivorIds: action.survivorIds,
             startedAt: now,
             endsAt: now + route.durationSeconds * 1000,
+            usedRation: useRation,
+            usedTorch: useTorch,
           },
           survivors: state.run.survivors.map((survivor) =>
             selected.has(survivor.id) ? { ...survivor, onExpedition: true } : survivor,
           ),
-          log: [`Expedition started: ${route.name}.`, ...state.run.log].slice(0, 12),
+          log: [
+            `Expedition started: ${route.name}${useRation || useTorch ? ` with ${[useRation ? "Ration" : "", useTorch ? "Torch" : ""].filter(Boolean).join(" and ")}` : ""}.`,
+            ...state.run.log,
+          ].slice(0, 12),
         },
       });
     }

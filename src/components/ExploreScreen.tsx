@@ -1,4 +1,4 @@
-import type { Dispatch } from "react";
+import { useState, type Dispatch } from "react";
 import { beacons, getBeaconByBossRoute, getBeaconByPrepRoute } from "../data/beacons";
 import { routes } from "../data/routes";
 import type { GameAction, GameState, RouteId } from "../game/state";
@@ -9,6 +9,8 @@ type Props = {
 };
 
 export function ExploreScreen({ state, dispatch }: Props) {
+  const [useRation, setUseRation] = useState(false);
+  const [useTorch, setUseTorch] = useState(false);
   const availableSurvivors = state.run.survivors.filter((survivor) => !survivor.onExpedition);
   const expedition = state.run.activeExpedition;
 
@@ -19,7 +21,11 @@ export function ExploreScreen({ state, dispatch }: Props) {
       type: "startExpedition",
       routeId,
       survivorIds: availableSurvivors.slice(0, partySize).map((survivor) => survivor.id),
+      useRation,
+      useTorch,
     });
+    setUseRation(false);
+    setUseTorch(false);
   }
 
   return (
@@ -32,6 +38,38 @@ export function ExploreScreen({ state, dispatch }: Props) {
             <span style={{ width: `${expeditionProgress(expedition.startedAt, expedition.endsAt)}%` }} />
           </div>
           <p>{Math.max(0, Math.ceil((expedition.endsAt - Date.now()) / 1000))}s until return</p>
+          {(expedition.usedRation || expedition.usedTorch) && (
+            <div className="status-strip">
+              {expedition.usedRation && <span>Ration: +6 safety, -4 fatigue</span>}
+              {expedition.usedTorch && <span>Torch: +5 high-danger safety</span>}
+            </div>
+          )}
+        </div>
+      )}
+      {!expedition && (
+        <div className="panel compact expedition-prep">
+          <div>
+            <p className="eyebrow">Expedition Supplies</p>
+            <h3>Prepare the next route</h3>
+          </div>
+          <label>
+            <input
+              type="checkbox"
+              checked={useRation}
+              disabled={state.run.items.ration < 1}
+              onChange={(event) => setUseRation(event.target.checked)}
+            />
+            <span><strong>Ration ({state.run.items.ration})</strong> +6 safety and -4 fatigue</span>
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={useTorch}
+              disabled={state.run.items.torch < 1}
+              onChange={(event) => setUseTorch(event.target.checked)}
+            />
+            <span><strong>Torch ({state.run.items.torch})</strong> +5 safety on Danger 35+ routes</span>
+          </label>
         </div>
       )}
       <div className="panel compact">

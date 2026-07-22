@@ -148,7 +148,9 @@ export function resolveExpedition(state: GameState, now: number): GameState {
   ).length;
   const safety =
     party.reduce((sum, survivor) => sum + survivor.stats.surv + survivor.stats.spd + survivor.stats.luck, 0) +
-    campGuards * 4;
+    campGuards * 4 +
+    (expedition.usedRation ? 6 : 0) +
+    (expedition.usedTorch && route.danger >= 35 ? 5 : 0);
   const failed = safety + roll(1, 24) < route.danger;
   const resources: Resources = { ...state.run.resources };
   const routes = { ...state.run.routes };
@@ -160,8 +162,8 @@ export function resolveExpedition(state: GameState, now: number): GameState {
     return {
       ...survivor,
       onExpedition: false,
-      fatigue: Math.min(100, survivor.fatigue + (failed ? 18 : 10)),
-      injury: Math.min(100, survivor.injury + (failed ? 12 : 0)),
+      fatigue: Math.min(100, survivor.fatigue + (failed ? 18 : 10) - (expedition.usedRation ? 4 : 0)),
+      injury: Math.min(100, survivor.injury + (failed ? (expedition.usedTorch ? 6 : 12) : 0)),
       currentHp: Math.max(1, survivor.currentHp - (failed ? 5 : 1)),
     };
   });

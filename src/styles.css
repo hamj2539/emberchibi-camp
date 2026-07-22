@@ -241,6 +241,45 @@ select {
   gap: 10px;
 }
 
+.expedition-prep {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) repeat(2, minmax(210px, 0.8fr));
+  gap: 12px;
+  align-items: center;
+}
+
+.expedition-prep h3 {
+  margin: 0;
+}
+
+.expedition-prep label {
+  display: flex;
+  min-height: 64px;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+}
+
+.expedition-prep input {
+  width: 20px;
+  height: 20px;
+  accent-color: #f08245;
+}
+
+.expedition-prep span,
+.expedition-prep strong {
+  display: block;
+}
+
+.expedition-prep span {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
 .beacon-chip {
   display: grid;
   gap: 4px;
@@ -822,6 +861,10 @@ select {
   }
 
   .encounter-hints {
+    grid-template-columns: 1fr;
+  }
+
+  .expedition-prep {
     grid-template-columns: 1fr;
   }
 }

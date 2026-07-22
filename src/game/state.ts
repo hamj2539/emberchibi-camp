@@ -56,6 +56,8 @@ export type Expedition = {
   survivorIds: string[];
   startedAt: number;
   endsAt: number;
+  usedRation?: boolean;
+  usedTorch?: boolean;
 };
 
 export type RouteProgress = {
@@ -185,7 +187,7 @@ export type GameAction =
   | { type: "chooseStarter"; classId: StarterClassId }
   | { type: "setScreen"; screen: Screen }
   | { type: "assignJob"; survivorId: string; job: IdleJob }
-  | { type: "startExpedition"; routeId: RouteId; survivorIds: string[] }
+  | { type: "startExpedition"; routeId: RouteId; survivorIds: string[]; useRation?: boolean; useTorch?: boolean }
   | { type: "resolveRecruit"; choice: "herb" | "food" | "ignore" }
   | { type: "startCraft"; recipeId: ItemId }
   | { type: "bossAction"; action: BossAction }

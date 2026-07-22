@@ -10,6 +10,36 @@ import { createInitialState, type GameState } from "../src/game/state.js";
 
 const tests: { name: string; run: () => void }[] = [
   {
+    name: "Expedition supplies are consumed and improve route safety",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "scout" });
+      const supplied = {
+        ...started,
+        run: { ...started.run, items: { ...started.run.items, ration: 1, torch: 1 } },
+      };
+      const launched = gameReducer(supplied, {
+        type: "startExpedition",
+        routeId: "burntGrove",
+        survivorIds: ["survivor-scout"],
+        useRation: true,
+        useTorch: true,
+      });
+      assertEqual(launched.run.items.ration, 0);
+      assertEqual(launched.run.items.torch, 0);
+      assertEqual(launched.run.activeExpedition?.usedRation, true);
+      assertEqual(launched.run.activeExpedition?.usedTorch, true);
+      const originalRandom = Math.random;
+      Math.random = () => 0;
+      try {
+        const resolved = resolveExpedition(launched, launched.run.activeExpedition?.endsAt ?? 0);
+        assertEqual(resolved.run.routes.burntGrove.completed, 1);
+        assertEqual(resolved.run.routes.burntGrove.failed, 0);
+      } finally {
+        Math.random = originalRandom;
+      }
+    },
+  },
+  {
     name: "Cook converts Food into Rations across timer boundaries",
     run: () => {
       const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "herbalist" });
