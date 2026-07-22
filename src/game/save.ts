@@ -26,6 +26,12 @@ export function deleteSave(): void {
 function migrateV1(state: GameState): GameState {
   return {
     ...state,
+    legacy: {
+      shards: state.legacy.shards ?? 0,
+      unlocks: state.legacy.unlocks ?? [],
+      relics: state.legacy.relics ?? [],
+      blueprints: state.legacy.blueprints ?? [],
+    },
     run: {
       ...state.run,
       items: { ...emptyInventory, ...(state.run.items ?? {}) },
@@ -33,6 +39,7 @@ function migrateV1(state: GameState): GameState {
       recruitEvent: state.run.recruitEvent ?? null,
       bossBattle: state.run.bossBattle ?? null,
       beaconRepair: state.run.beaconRepair ?? null,
+      endRun: state.run.endRun ?? null,
     },
   };
 }

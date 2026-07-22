@@ -1,5 +1,6 @@
 import { getRoute } from "../data/routes";
 import { createCinderStagBattle } from "./combat";
+import { calculateScore } from "./scoring";
 import type { GameState, ItemId, ResourceKey, Resources } from "./state";
 
 export function resolveIdleProgress(state: GameState, elapsedSeconds: number): GameState {
@@ -89,7 +90,7 @@ function resolveRepairProgress(state: GameState, elapsedSeconds: number): GameSt
     };
   }
 
-  return {
+  const nextState: GameState = {
     ...state,
     run: {
       ...state.run,
@@ -101,6 +102,15 @@ function resolveRepairProgress(state: GameState, elapsedSeconds: number): GameSt
           : survivor,
       ),
       log: ["Ember Beacon is lit. The demo run is complete.", ...state.run.log].slice(0, 12),
+    },
+  };
+
+  const result = calculateScore(nextState);
+  return {
+    ...nextState,
+    run: {
+      ...nextState.run,
+      endRun: { ...result, reward: null, claimed: false },
     },
   };
 }

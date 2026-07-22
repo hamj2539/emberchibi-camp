@@ -16,6 +16,8 @@ export type RouteId = "mistwoodEdge" | "burntGrove" | "emberBeaconSite";
 export type ItemId = "torch" | "ration" | "stoneSpear" | "herbSalve" | "warmCloak" | "repairKit";
 export type BossAction = "attack" | "guard" | "useTorch" | "useSalve";
 export type CoreQuality = "pristine" | "stable" | "cracked" | "faded";
+export type ChestGrade = "broken" | "faded" | "iron" | "ancient";
+export type RewardType = "legacyShards" | "blueprint" | "relic" | "survivorUnlock" | "classUnlock";
 
 export type Stats = Record<StatKey, number>;
 export type Resources = Record<ResourceKey, number>;
@@ -83,6 +85,25 @@ export type BeaconRepair = {
   usedRepairKit: boolean;
 };
 
+export type ScoreLine = {
+  label: string;
+  points: number;
+};
+
+export type ChestReward = {
+  type: RewardType;
+  label: string;
+  amount?: number;
+};
+
+export type EndRunResult = {
+  score: number;
+  lines: ScoreLine[];
+  chestGrade: ChestGrade;
+  reward: ChestReward | null;
+  claimed: boolean;
+};
+
 export type RunState = {
   started: boolean;
   screen: Screen;
@@ -96,6 +117,7 @@ export type RunState = {
   recruitEvent: RecruitEvent | null;
   bossBattle: BossBattle | null;
   beaconRepair: BeaconRepair | null;
+  endRun: EndRunResult | null;
   log: string[];
   routeFailures: number;
   bossFailures: number;
@@ -104,6 +126,8 @@ export type RunState = {
 export type LegacyState = {
   shards: number;
   unlocks: string[];
+  relics: string[];
+  blueprints: string[];
 };
 
 export type GameState = {
@@ -123,6 +147,7 @@ export type GameAction =
   | { type: "bossAction"; action: BossAction }
   | { type: "leaveBossResult" }
   | { type: "startRepair"; survivorIds: string[]; useRepairKit: boolean }
+  | { type: "claimChest" }
   | { type: "tick"; now: number }
   | { type: "resetRun"; keepLegacy: boolean };
 
@@ -165,6 +190,7 @@ export function createInitialState(now = Date.now()): GameState {
       recruitEvent: null,
       bossBattle: null,
       beaconRepair: null,
+      endRun: null,
       log: ["A cold ember waits under the campfire ash."],
       routeFailures: 0,
       bossFailures: 0,
@@ -172,6 +198,8 @@ export function createInitialState(now = Date.now()): GameState {
     legacy: {
       shards: 0,
       unlocks: [],
+      relics: [],
+      blueprints: [],
     },
   };
 }

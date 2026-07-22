@@ -127,7 +127,8 @@ select {
 .recipe-grid,
 .dashboard,
 .boss-layout,
-.repair-layout {
+.repair-layout,
+.end-layout {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 16px;
@@ -237,6 +238,30 @@ select {
 
 .result-box p {
   color: #d7c8b7;
+}
+
+.score-list {
+  display: grid;
+  gap: 8px;
+}
+
+.score-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 8px 0;
+}
+
+.score-row span {
+  color: #d7c8b7;
+}
+
+.chest-panel {
+  background:
+    linear-gradient(135deg, rgba(255, 211, 143, 0.16), rgba(87, 117, 144, 0.2)),
+    rgba(27, 24, 20, 0.88);
 }
 
 .recruit-panel {

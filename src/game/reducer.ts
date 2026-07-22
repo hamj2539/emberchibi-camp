@@ -2,6 +2,7 @@ import { getStarterClass } from "../data/classes";
 import { getRecipe } from "../data/recipes";
 import { getRoute } from "../data/routes";
 import { resolveBossAction } from "./combat";
+import { applyReward, rollChestReward } from "./rewards";
 import { resolveExpedition, resolveIdleProgress } from "./tick";
 import type { GameAction, GameState, IdleJob, ResourceKey, Survivor } from "./state";
 import { createInitialState } from "./state";
@@ -192,6 +193,20 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             selected.has(survivor.id) ? { ...survivor, onExpedition: true } : survivor,
           ),
           log: ["Ember Beacon repair has begun.", ...state.run.log].slice(0, 12),
+        },
+      });
+    }
+    case "claimChest": {
+      const endRun = state.run.endRun;
+      if (!endRun || endRun.claimed) return state;
+      const reward = rollChestReward(endRun.chestGrade);
+      const rewarded = applyReward(state, reward);
+      return stamp({
+        ...rewarded,
+        run: {
+          ...rewarded.run,
+          endRun: { ...endRun, reward, claimed: true },
+          log: [`Legacy Chest opened: ${reward.label}.`, ...rewarded.run.log].slice(0, 12),
         },
       });
     }
