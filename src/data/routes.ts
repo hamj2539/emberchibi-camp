@@ -29,10 +29,10 @@ export const routes: RouteDefinition[] = [
     name: "Burnt Grove",
     purpose: "Ember prep route that reveals the Beacon site.",
     durationSeconds: 14,
-    danger: 32,
+    danger: 28,
     rewards: {
       wood: [3, 7],
-      stone: [2, 5],
+      stone: [4, 7],
       herb: [0, 2],
     },
     requirement: "1 survivor",
@@ -42,7 +42,7 @@ export const routes: RouteDefinition[] = [
     name: "Ember Beacon Site",
     purpose: "Boss route leading to the Cinder Stag.",
     durationSeconds: 18,
-    danger: 48,
+    danger: 40,
     rewards: {
       stone: [3, 6],
       relicShard: [1, 2],

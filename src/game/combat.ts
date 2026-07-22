@@ -7,8 +7,8 @@ export function createCinderStagBattle(state: GameState, partyIds: string[]): Bo
 
   return {
     bossId: "cinderStag",
-    bossHp: 120,
-    bossMaxHp: 120,
+    bossHp: 100,
+    bossMaxHp: 100,
     guardStacks: 0,
     burnPressure: Math.max(1, 3 + cloakBonus),
     partyIds: party.map((survivor) => survivor.id),
@@ -149,7 +149,7 @@ function resolveBossTurn(
   const target = survivors.find((survivor) => partyIds.includes(survivor.id) && survivor.currentHp > 1);
   if (!target) return { survivors, guardStacks, burnPressure, message: "Cinder Stag circles through the ash." };
 
-  const damage = Math.max(2, 11 + burnPressure * 2 - guardStacks * 3 - Math.floor(target.stats.def / 2));
+  const damage = Math.max(2, 9 + burnPressure * 2 - guardStacks * 3 - Math.floor(target.stats.def / 2));
   const nextSurvivors = survivors.map((survivor) =>
     survivor.id === target.id
       ? {

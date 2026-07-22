@@ -46,8 +46,8 @@ export function labelChestGrade(grade: ChestGrade): string {
 }
 
 function chestGradeForScore(score: number): ChestGrade {
-  if (score >= 350) return "ancient";
-  if (score >= 200) return "iron";
+  if (score >= 250) return "ancient";
+  if (score >= 170) return "iron";
   if (score >= 100) return "faded";
   return "broken";
 }
