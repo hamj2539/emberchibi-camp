@@ -1,4 +1,4 @@
-# Emberchibi Camp Alpha 1 QA
+# Emberchibi Camp Alpha 2 QA
 
 Last updated: 2026-07-23
 
@@ -6,11 +6,13 @@ Build target: GitHub Pages static build
 
 ## Automated Checks
 
-- `npm run test`: 36 passing game-logic tests.
+- `npm run test`: 42 passing game-logic tests.
 - `npm run build`: production build passes.
 - Full clean-run simulation reaches the Cinder Gate, defeats Night Herald, and awards an Ancient Chest.
 - Route events, choice requirements/effects, normal encounters, all four modifiers,
   recruit branches, malformed pending decisions, and pre-Alpha saves have focused tests.
+- Crisis definitions, triggers, requirements, resolution, expiry, collapse,
+  and pre-Alpha 2 migration have focused tests.
 - GitHub Pages deployment completed successfully.
 - Production page, manifest, and service worker return HTTP 200.
 
@@ -21,6 +23,8 @@ Vite reports expected build-time warnings for absolute asset paths under
 
 - Starter selection opens Camp correctly.
 - Camp resources, idle jobs, upgrades, Camp Log, and navigation render correctly.
+- Camp shows Fire, Morale, Shelter, Supplies, and Collapse pressure without overflow.
+- Crisis panel shows severity, deadline, trigger reason, consequence, and 2-3 responses.
 - Meta screen shows shard projects, relic slots, and permanent collections.
 - Explore shows the run modifier and pending route decisions lock new expeditions.
 - Route Event and Normal Encounter choices resolve back into the existing route flow.
@@ -28,7 +32,23 @@ Vite reports expected build-time warnings for absolute asset paths under
 - Buttons and text remain inside their containers.
 - No browser console errors were observed in the production preview.
 
-## Alpha 1 Exploration Checklist
+## Alpha 2 Crisis Checklist
+
+1. Let Fire fall below 30 and verify The Fire Is Dying appears.
+2. Verify the crisis shows its trigger reason, countdown, and ignored consequence.
+3. Verify unavailable resource/class/stat/item/job responses are disabled.
+4. Resolve a crisis and confirm pressure, inventory, score, and Camp Log update.
+5. Let a crisis expire and confirm its visible consequence and collapse increase.
+6. Fail two routes and verify Broken Shelter can trigger.
+7. Raise survivor Fatigue or Injury and verify Wounded Camp can trigger.
+8. Ignore a recruit event and verify Morale falls and Camp Despair can trigger.
+9. Verify crisis route-risk and repair-speed effects alter their real calculations.
+10. Ignore multiple severe crises and verify Run Collapse retains partial score
+    and awards a Broken or Faded Chest.
+11. Reload during an active crisis and confirm its deadline and reason persist.
+12. Load a pre-Alpha 2 save and confirm pressure defaults appear without reset.
+
+## Alpha 1 Exploration Regression Checklist
 
 1. Start a fresh run and open Explore; confirm the active Run Modifier is visible.
 2. Finish successful non-boss routes until both a Route Event and Normal Encounter appear.
@@ -60,7 +80,7 @@ Vite reports expected build-time warnings for absolute asset paths under
 12. Verify score lines, chest grade, reward claim, and permanent legacy values.
 13. Spend Legacy Shards on a project and equip no more than two relics.
 14. Start a new run and verify equipped relic and project bonuses apply.
-15. Test Abandon Run and an all-survivors-downed collapse; both must award half score and a Broken Chest.
+15. Test Abandon Run and all-survivors-downed collapse; both must award partial score.
 16. Reload online and offline to verify local save recovery and PWA shell behavior.
 
 ## Known Limits
@@ -69,7 +89,8 @@ Vite reports expected build-time warnings for absolute asset paths under
 - Boss AI remains intentionally simple.
 - Normal encounters use one tactical decision and do not have a separate combat screen.
 - Route events are single-step decisions; multi-event chains are deferred.
-- Camp crises and run-only relics are not implemented.
+- Crisis tuning is intentionally simple; only one crisis is active at a time.
+- Run-only relics are not implemented.
 - Sound is lightweight synthesized UI feedback; there is no music system.
 - PWA caching provides an offline shell, not cloud save or account sync.
 - Browser checks are manual; there is no automated end-to-end browser suite yet.

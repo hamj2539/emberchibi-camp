@@ -100,7 +100,7 @@ function resolveRepairProgress(state: GameState, elapsedSeconds: number): GameSt
   const workshopBonus = state.run.campUpgrades.includes("workshop") ? 1.35 : 1;
   const nextProgress = Math.min(
     repair.requiredProgress,
-    repair.progress + elapsedSeconds * repairPower * qualityBonus * workshopBonus,
+    repair.progress + elapsedSeconds * repairPower * qualityBonus * workshopBonus * state.run.repairSpeedModifier,
   );
 
   if (nextProgress < repair.requiredProgress) {
@@ -278,6 +278,18 @@ export function resolveExpedition(state: GameState, now: number): GameState {
       activeRouteDecision,
       recruitEvent,
       routeFailures: state.run.routeFailures + (failed ? 1 : 0),
+      campPressure: failed
+        ? {
+            ...state.run.campPressure,
+            morale: Math.max(0, state.run.campPressure.morale - 8),
+            shelter: Math.max(0, state.run.campPressure.shelter - 7),
+            supplies: Math.max(0, state.run.campPressure.supplies - 6),
+          }
+        : {
+            ...state.run.campPressure,
+            morale: Math.min(100, state.run.campPressure.morale + 2),
+            supplies: Math.min(100, state.run.campPressure.supplies + 3),
+          },
       log: log.slice(0, 12),
     },
   };

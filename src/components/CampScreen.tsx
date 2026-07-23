@@ -3,7 +3,9 @@ import { beacons } from "../data/beacons";
 import { GameIcon, type GameIconName } from "./GameIcon";
 import { campUpgrades } from "../data/progression";
 import { getRecruitDefinition } from "../data/events";
-import type { GameAction, GameState, ResourceKey } from "../game/state";
+import { getCrisis } from "../data/crises";
+import { canResolveCrisisChoice } from "../game/crises";
+import type { CampPressureKey, GameAction, GameState, ResourceKey } from "../game/state";
 
 type Props = {
   state: GameState;
@@ -38,11 +40,21 @@ const jobDescriptions = {
   research: "Lower new Guardian pressure",
 };
 
+const pressureLabels: Record<CampPressureKey, string> = {
+  fire: "Fire",
+  morale: "Morale",
+  shelter: "Shelter",
+  supplies: "Supplies",
+};
+
 export function CampScreen({ state, dispatch, onReset }: Props) {
   const expedition = state.run.activeExpedition;
   const secondsLeft = expedition ? Math.max(0, Math.ceil((expedition.endsAt - Date.now()) / 1000)) : 0;
   const litBeacons = beacons.filter((beacon) => state.run.beacons[beacon.id].repaired).length;
   const recruitDefinition = state.run.recruitEvent ? getRecruitDefinition(state.run.recruitEvent.id) : null;
+  const activeCrisis = state.run.activeCrisis;
+  const crisis = activeCrisis ? getCrisis(activeCrisis.id) : null;
+  const crisisSecondsLeft = activeCrisis ? Math.max(0, Math.ceil(activeCrisis.deadlineAt - state.run.daySeconds)) : 0;
 
   return (
     <section className="screen dashboard">
@@ -58,6 +70,64 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
         </div>
         {expedition && <strong>Expedition returns in {secondsLeft}s</strong>}
       </div>
+
+      <div className="panel pressure-panel">
+        <div className="panel-heading">
+          <div>
+            <p className="eyebrow">Camp Pressure</p>
+            <h3>Survival stability</h3>
+          </div>
+          <strong className={state.run.collapseMeter >= 70 ? "critical-text" : ""}>
+            Collapse {Math.round(state.run.collapseMeter)}%
+          </strong>
+        </div>
+        <div className="pressure-grid">
+          {(Object.entries(state.run.campPressure) as [CampPressureKey, number][]).map(([key, value]) => (
+            <div className="pressure-item" key={key}>
+              <div>
+                <span>{pressureLabels[key]}</span>
+                <strong>{Math.round(value)}</strong>
+              </div>
+              <div className="pressure-meter" aria-label={`${pressureLabels[key]} ${Math.round(value)} percent`}>
+                <span className={value <= 30 ? "danger-fill" : ""} style={{ width: `${value}%` }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {crisis && activeCrisis && (
+        <div className={`panel crisis-panel severity-${crisis.severity}`}>
+          <div className="panel-heading">
+            <div>
+              <p className="eyebrow">{crisis.severity} crisis</p>
+              <h3>{crisis.name}</h3>
+            </div>
+            <strong className="crisis-deadline">{crisisSecondsLeft}s remaining</strong>
+          </div>
+          <p>{crisis.warning}</p>
+          <div className="crisis-facts">
+            <span><strong>Triggered:</strong> {activeCrisis.reason}</span>
+            <span><strong>If ignored:</strong> {crisis.consequence}</span>
+          </div>
+          <div className="crisis-choices">
+            {crisis.choices.map((choice) => {
+              const available = canResolveCrisisChoice(state, choice);
+              return (
+                <button
+                  className={available ? "primary" : ""}
+                  disabled={!available}
+                  key={choice.id}
+                  onClick={() => dispatch({ type: "resolveCrisis", choiceId: choice.id })}
+                >
+                  <strong>{choice.label}</strong>
+                  <span>{choice.detail}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {state.run.recruitEvent?.status === "available" && (
         <div className="panel recruit-panel">

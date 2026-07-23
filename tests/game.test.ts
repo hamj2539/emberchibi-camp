@@ -3,7 +3,9 @@ import { getBeacon } from "../src/data/beacons.js";
 import { getRoute } from "../src/data/routes.js";
 import { getRecruitDefinition } from "../src/data/events.js";
 import { normalEncounters, routeEvents, runModifiers } from "../src/data/routeContent.js";
+import { crises, getCrisis } from "../src/data/crises.js";
 import { createGuardianBattle, resolveBossAction } from "../src/game/combat.js";
+import { advanceCampSystems, canResolveCrisisChoice, resolveCrisisChoice } from "../src/game/crises.js";
 import { calculateIdleElapsed, gameReducer, MAX_OFFLINE_SECONDS } from "../src/game/reducer.js";
 import { calculateGateStability, openGate } from "../src/game/gate.js";
 import { migrateV1, parseGame } from "../src/game/save.js";
@@ -732,6 +734,118 @@ const tests: { name: string; run: () => void }[] = [
         },
       };
       assertEqual(getCurrentObjective(missed).detail.includes("Saltmarsh"), true);
+    },
+  },
+  {
+    name: "five data-driven crises cover gameplay pressure triggers",
+    run: () => {
+      assertEqual(crises.length, 5);
+      const triggerTypes = new Set(crises.flatMap((crisis) => crisis.triggers.map((trigger) => trigger.type)));
+      assertEqual(triggerTypes.has("pressure"), true);
+      assertEqual(triggerTypes.has("resource"), true);
+      assertEqual(triggerTypes.has("survivorStrain"), true);
+      assertEqual(triggerTypes.has("routeFailures"), true);
+      assertEqual(crises.every((crisis) => crisis.choices.length >= 2 && crisis.deadlineSeconds > 0), true);
+    },
+  },
+  {
+    name: "low fire triggers a visible crisis with a deadline and reason",
+    run: () => {
+      const started = gameReducer(createInitialState(0), { type: "chooseStarter", classId: "hunter" });
+      const strained = {
+        ...started,
+        run: { ...started.run, campPressure: { ...started.run.campPressure, fire: 29 } },
+      };
+      const next = advanceCampSystems(strained, 1);
+      assertEqual(next.run.activeCrisis?.id, "dyingFire");
+      assertEqual(next.run.activeCrisis?.reason.includes("Fire fell"), true);
+      assertEqual(next.run.activeCrisis?.deadlineAt, next.run.daySeconds + getCrisis("dyingFire").deadlineSeconds);
+    },
+  },
+  {
+    name: "crisis choices enforce requirements and apply resolution effects",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "hunter" });
+      const active = {
+        ...started,
+        run: {
+          ...started.run,
+          resources: { ...started.run.resources, wood: 5 },
+          campPressure: { ...started.run.campPressure, fire: 20 },
+          activeCrisis: { id: "dyingFire" as const, triggeredAt: 0, deadlineAt: 50, reason: "Low fire." },
+        },
+      };
+      const definition = getCrisis("dyingFire");
+      assertEqual(canResolveCrisisChoice(active, definition.choices[0]), true);
+      assertEqual(canResolveCrisisChoice(active, definition.choices[1]), false);
+      const resolved = resolveCrisisChoice(active, "fuel");
+      assertEqual(resolved.run.activeCrisis, null);
+      assertEqual(resolved.run.resources.wood, 1);
+      assertEqual(resolved.run.campPressure.fire, 65);
+      assertEqual(resolved.run.crisesResolved, 1);
+      assertEqual(resolved.run.log[0].includes("resolved"), true);
+    },
+  },
+  {
+    name: "expired crisis applies its visible consequence",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "scout" });
+      const active = {
+        ...started,
+        run: {
+          ...started.run,
+          daySeconds: 60,
+          campPressure: { ...started.run.campPressure, fire: 20 },
+          activeCrisis: { id: "dyingFire" as const, triggeredAt: 0, deadlineAt: 50, reason: "Low fire." },
+        },
+      };
+      const expired = advanceCampSystems(active, 1);
+      assertEqual(expired.run.crisesIgnored, 1);
+      assertEqual(expired.run.collapseMeter, 32);
+      assertEqual(expired.run.activeCrisis, null);
+      assertEqual(expired.run.log[0].includes("expired"), true);
+    },
+  },
+  {
+    name: "multiple severe ignored crises cause partial-score Run Collapse",
+    run: () => {
+      const progressed = completedRun("pristine", 0, 0);
+      const active = {
+        ...progressed,
+        run: {
+          ...progressed.run,
+          daySeconds: 80,
+          collapseMeter: 76,
+          campPressure: { ...progressed.run.campPressure, morale: 10 },
+          activeCrisis: { id: "campDespair" as const, triggeredAt: 0, deadlineAt: 70, reason: "Low morale." },
+        },
+      };
+      const collapsed = advanceCampSystems(active, 1);
+      assertEqual(collapsed.run.endRun?.outcome, "collapse");
+      assertEqual((collapsed.run.endRun?.score ?? 0) > 0, true);
+      assertEqual(["broken", "faded"].includes(collapsed.run.endRun?.chestGrade ?? ""), true);
+      assertEqual(collapsed.run.screen, "end");
+    },
+  },
+  {
+    name: "save migration fills Alpha 2 crisis state safely",
+    run: () => {
+      const old = createInitialState();
+      delete (old.run as Partial<GameState["run"]>).campPressure;
+      delete (old.run as Partial<GameState["run"]>).collapseMeter;
+      delete (old.run as Partial<GameState["run"]>).activeCrisis;
+      delete (old.run as Partial<GameState["run"]>).crisisCooldowns;
+      delete (old.run as Partial<GameState["run"]>).crisisFlags;
+      delete (old.run as Partial<GameState["run"]>).crisesResolved;
+      delete (old.run as Partial<GameState["run"]>).crisesIgnored;
+      delete (old.run as Partial<GameState["run"]>).crisisScore;
+      delete (old.run as Partial<GameState["run"]>).crisisRouteRisk;
+      delete (old.run as Partial<GameState["run"]>).repairSpeedModifier;
+      const migrated = migrateV1(old);
+      assertEqual(migrated.run.campPressure.fire, 80);
+      assertEqual(migrated.run.collapseMeter, 0);
+      assertEqual(migrated.run.activeCrisis, null);
+      assertEqual(migrated.run.repairSpeedModifier, 1);
     },
   },
 ];

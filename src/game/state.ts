@@ -47,6 +47,8 @@ export type RouteEventId =
   | "cinderCache"
   | "galeNest";
 export type NormalEncounterId = "ashWolves" | "mireLeeches" | "rootboundRaiders";
+export type CrisisId = "dyingFire" | "emptyStores" | "woundedCamp" | "brokenShelter" | "campDespair";
+export type CampPressureKey = "fire" | "morale" | "shelter" | "supplies";
 
 export type Stats = Record<StatKey, number>;
 export type Resources = Record<ResourceKey, number>;
@@ -104,6 +106,15 @@ export type ActiveRouteDecision = {
   id: RouteEventId | NormalEncounterId;
   routeId: RouteId;
   partyIds: string[];
+};
+
+export type CampPressure = Record<CampPressureKey, number>;
+
+export type ActiveCrisis = {
+  id: CrisisId;
+  triggeredAt: number;
+  deadlineAt: number;
+  reason: string;
 };
 
 export type BossBattle = {
@@ -195,6 +206,16 @@ export type RunState = {
   eventFlags: string[];
   eventScore: number;
   decisionsResolved: number;
+  campPressure: CampPressure;
+  collapseMeter: number;
+  activeCrisis: ActiveCrisis | null;
+  crisisCooldowns: Partial<Record<CrisisId, number>>;
+  crisisFlags: string[];
+  crisesResolved: number;
+  crisesIgnored: number;
+  crisisScore: number;
+  crisisRouteRisk: number;
+  repairSpeedModifier: number;
   gate: GateProgress;
   endRun: EndRunResult | null;
   log: string[];
@@ -229,6 +250,7 @@ export type GameAction =
   | { type: "startExpedition"; routeId: RouteId; survivorIds: string[]; useRation?: boolean; useTorch?: boolean }
   | { type: "resolveRouteDecision"; choiceId: string }
   | { type: "resolveRecruit"; choice: "herb" | "food" | "ignore" }
+  | { type: "resolveCrisis"; choiceId: string }
   | { type: "startCraft"; recipeId: ItemId }
   | { type: "bossAction"; action: BossAction }
   | { type: "leaveBossResult" }
@@ -305,6 +327,16 @@ export function createInitialState(now = Date.now()): GameState {
       eventFlags: [],
       eventScore: 0,
       decisionsResolved: 0,
+      campPressure: { fire: 80, morale: 75, shelter: 80, supplies: 75 },
+      collapseMeter: 0,
+      activeCrisis: null,
+      crisisCooldowns: {},
+      crisisFlags: [],
+      crisesResolved: 0,
+      crisesIgnored: 0,
+      crisisScore: 0,
+      crisisRouteRisk: 0,
+      repairSpeedModifier: 1,
       gate: {
         status: "sealed",
         heraldHp: 160,

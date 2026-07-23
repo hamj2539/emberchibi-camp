@@ -24,7 +24,8 @@ export function calculateExpeditionSafety(
     (state.legacy.projects.includes("fieldManual") ? 3 : 0) +
     getRunModifier(state.run.runModifier).safety +
     (supplies.useRation ? 6 : 0) +
-    (supplies.useTorch && route.danger >= 35 ? 5 : 0)
+    (supplies.useTorch && route.danger >= 35 ? 5 : 0) -
+    state.run.crisisRouteRisk
   );
 }
 

@@ -2,6 +2,7 @@ import { createInitialState, emptyBeaconProgress, emptyInventory, type GameState
 import { getRecruitDefinition } from "../data/events.js";
 import { runModifiers } from "../data/routeContent.js";
 import { getRouteDecision } from "../data/routeContent.js";
+import { crises } from "../data/crises.js";
 
 const SAVE_KEY = "emberchibiCamp.v1";
 const BACKUP_KEY = "emberchibiCamp.v1.backup";
@@ -83,6 +84,19 @@ export function migrateV1(state: GameState): GameState {
       eventFlags: state.run.eventFlags ?? [],
       eventScore: state.run.eventScore ?? 0,
       decisionsResolved: state.run.decisionsResolved ?? 0,
+      campPressure: { ...defaults.run.campPressure, ...(state.run.campPressure ?? {}) },
+      collapseMeter: state.run.collapseMeter ?? 0,
+      activeCrisis:
+        state.run.activeCrisis && crises.some((crisis) => crisis.id === state.run.activeCrisis?.id)
+          ? state.run.activeCrisis
+          : null,
+      crisisCooldowns: state.run.crisisCooldowns ?? {},
+      crisisFlags: state.run.crisisFlags ?? [],
+      crisesResolved: state.run.crisesResolved ?? 0,
+      crisesIgnored: state.run.crisesIgnored ?? 0,
+      crisisScore: state.run.crisisScore ?? 0,
+      crisisRouteRisk: state.run.crisisRouteRisk ?? 0,
+      repairSpeedModifier: state.run.repairSpeedModifier ?? 1,
       gate: state.run.gate ? { ...state.run.gate, usedSkills: state.run.gate.usedSkills ?? [] } : defaults.run.gate,
       endRun: state.run.endRun
         ? { ...state.run.endRun, outcome: state.run.endRun.outcome ?? "victory" }

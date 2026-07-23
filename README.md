@@ -1,7 +1,7 @@
 # Emberchibi Camp
 
-Alpha 1 survival roguelite RPG with idle camp management, exploration decisions,
-and turn-based key encounters.
+Alpha 2 survival roguelite RPG with camp crises, exploration decisions,
+idle management, and turn-based key encounters.
 
 **Live build:** https://hamj2539.github.io/emberchibi-camp/
 
@@ -9,6 +9,7 @@ and turn-based key encounters.
 
 - Four starter classes and three recruitable survivors.
 - Idle camp jobs, offline progress, crafting, supplies, and three camp upgrades.
+- Four camp pressure values and five deadline-based crises with choice-driven consequences.
 - Eight data-driven route events with resource, stat, class, supply, and relic choices.
 - Three lightweight normal encounters with one-choice tactical resolution.
 - Four run modifiers that alter route risk, event odds, encounter odds, or Guardian pressure.
@@ -40,10 +41,10 @@ The app is configured for GitHub Pages under `/emberchibi-camp/`.
 npm run test
 ```
 
-The suite currently covers 36 game-logic cases, including save migration,
+The suite currently covers 42 game-logic cases, including save migration,
 offline progress, expeditions, combat, upgrades, meta progression, collapse,
-route decisions, encounters, recruit branches, run modifiers, and a clean
-full-run Gate simulation.
+route decisions, encounters, recruit branches, run modifiers, crisis triggers,
+deadlines, choices, ignored consequences, and a clean full-run Gate simulation.
 
 ## Save Data
 

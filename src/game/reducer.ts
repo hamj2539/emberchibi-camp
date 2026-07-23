@@ -5,6 +5,7 @@ import { campUpgrades, legacyProjects } from "../data/progression.js";
 import { getRecipe } from "../data/recipes.js";
 import { getRoute } from "../data/routes.js";
 import { resolveBossAction } from "./combat.js";
+import { advanceCampSystems, resolveCrisisChoice } from "./crises.js";
 import { openGate, resolveGateAction } from "./gate.js";
 import { calculateExpeditionDuration } from "./expedition.js";
 import { applyLegacyStartBonuses } from "./meta.js";
@@ -130,6 +131,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
     case "resolveRouteDecision":
       return stamp(resolveRouteChoice(state, action.choiceId));
+    case "resolveCrisis":
+      return stamp(resolveCrisisChoice(state, action.choiceId));
     case "resolveRecruit": {
       if (!state.run.recruitEvent || state.run.recruitEvent.status !== "available") return state;
       const definition = getRecruitDefinition(state.run.recruitEvent.id);
@@ -178,6 +181,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             status === "missed" && !state.run.eventFlags.includes(missedFlag)
               ? [...state.run.eventFlags, missedFlag]
               : state.run.eventFlags,
+          campPressure:
+            status === "missed"
+              ? { ...state.run.campPressure, morale: Math.max(0, state.run.campPressure.morale - 8) }
+              : state.run.campPressure,
           log: log.slice(0, 12),
         },
       });
@@ -346,6 +353,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const idleSeconds = calculateIdleElapsed(elapsedSeconds);
       let next = resolveIdleProgress(state, idleSeconds);
       next = resolveExpedition(next, action.now);
+      next = advanceCampSystems(next, idleSeconds);
       if (state.run.started && elapsedSeconds >= 60) {
         next = {
           ...next,

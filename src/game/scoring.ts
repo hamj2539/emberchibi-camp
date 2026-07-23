@@ -36,6 +36,12 @@ export function calculateScore(state: GameState): { score: number; lines: ScoreL
   if (state.run.eventScore > 0) {
     lines.push({ label: `Exploration decisions (${state.run.decisionsResolved})`, points: state.run.eventScore });
   }
+  if (state.run.crisisScore > 0) {
+    lines.push({ label: `Camp crises resolved (${state.run.crisesResolved})`, points: state.run.crisisScore });
+  }
+  if (state.run.crisesIgnored > 0) {
+    lines.push({ label: "Camp crises ignored", points: state.run.crisesIgnored * -20 });
+  }
   if (state.run.routeFailures > 0) {
     lines.push({ label: "Route failures", points: state.run.routeFailures * -15 });
   }
@@ -56,7 +62,7 @@ export function calculateCollapseScore(state: GameState): { score: number; lines
   return {
     score: Math.max(0, result.score + penalty),
     lines: [...result.lines, { label: "Run Collapse (score x0.5)", points: penalty }],
-    chestGrade: "broken",
+    chestGrade: Math.max(0, result.score + penalty) >= 550 ? "faded" : "broken",
   };
 }
 

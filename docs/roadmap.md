@@ -4,17 +4,17 @@ Last updated: 2026-07-23
 
 ## Current Release
 
-**Alpha 1: Exploration Depth**
+**Alpha 2: Camp Survival Pressure**
 
-The repository now moves beyond the timer-only exploration prototype. Successful
-routes can produce a data-driven event or lightweight encounter before the next
-expedition begins.
+The camp now has explicit Fire, Morale, Shelter, and Supplies pressure. Gameplay
+states trigger deadline-based crises whose choices or ignored consequences alter
+the current run and can build toward Run Collapse.
 
 | Area | Status | Current implementation |
 | --- | --- | --- |
 | Project shell | Complete | Vite, React, TypeScript, reducer architecture |
 | Save and offline | Complete | localStorage, backup recovery, migration, 8h offline cap |
-| Camp | Complete | six idle jobs and three run upgrades |
+| Camp | Alpha 2 | six idle jobs, three upgrades, four pressure values, five crises |
 | Exploration | Alpha 1 | eleven routes, eight events, three normal encounters |
 | Run variation | Alpha 1 | four modifiers affecting risk, event odds, encounters, or boss prep |
 | Survivors | Alpha 1 | four starters plus branched/delayed Rook, Mira, and Bram recruitment |
@@ -22,7 +22,7 @@ expedition begins.
 | Guardians | Complete | five bosses, distinct tuning, Core quality |
 | Beacon repair | Complete | assigned crew, costs, quality and tool modifiers |
 | Final encounter | Complete | Gate Stability and Night Herald |
-| Run ending | Complete | victory, collapse, score, chest grade and reward |
+| Run ending | Alpha 2 | victory or pressure-driven collapse, partial score, graded chest |
 | Meta progression | Complete | shards, projects, blueprints, unlocks, relic loadout |
 | Assets and UI | Complete for prototype | route art, Guardian art, responsive layouts |
 | Production | Complete for prototype | GitHub Pages workflow and installable PWA shell |
@@ -62,22 +62,34 @@ expedition begins.
 - Added exploration score, event flags, pending-decision saves, and safe migration.
 - Expanded the automated suite from 26 to 36 game-logic tests.
 
+### Alpha 2 - Camp Survival Pressure
+
+- Added five data-driven crises: Dying Fire, Empty Stores, Wounded Camp,
+  Broken Shelter, and Camp Despair.
+- Connected crisis triggers to camp pressure, food, survivor strain, route
+  failures, Hungry Night, and ignored recruit events.
+- Added 2-3 responses per crisis with resource, item, class, stat, and job checks.
+- Added visible deadlines, trigger reasons, ignored consequences, and Camp Log entries.
+- Added crisis effects for route risk, repair speed, injuries, fatigue, score,
+  pressure, and collapse.
+- Tuned crisis-chain collapse to retain partial score and award Broken or Faded Chests.
+- Added safe migration defaults and expanded the automated suite from 36 to 42 tests.
+
 ## Next Phase
 
-### P1 - Alpha 1 Playtest and Balance
+### P1 - Alpha 2 Playtest and Balance
 
-- Measure route decision frequency by modifier and biome.
-- Check that every event always has at least one available fallback choice.
-- Tune event rewards, fatigue, injury, and exploration score values.
-- Review delayed recruit discovery and completion rates.
+- Measure crisis trigger frequency and time-to-response.
+- Tune Fire and Supplies decay against the short prototype route timers.
+- Verify every crisis always has at least one no-cost or achievable response.
+- Review collapse-meter pacing after two and three ignored crises.
 - Record average run duration and resource bottlenecks.
 - Measure route, Guardian, and Gate failure rates by starter class.
 - Tune camp upgrade and Legacy Project costs.
 - Review chest reward duplication and long-term shard pacing.
 
-### P2 - Alpha 2 Candidates
+### P2 - Alpha 3 Candidates
 
-- Add camp crises with explicit deadlines and consequences.
 - Add run-only relic drops and three temporary equipment slots.
 - Add event chains that react to flags from earlier choices.
 - Add more biome-specific normal encounter variants.
@@ -101,4 +113,4 @@ The current prototype is complete when:
 - Automated tests and production build pass.
 - GitHub Pages serves the app, manifest, and service worker successfully.
 
-All prototype criteria remain met in Alpha 1.
+All prototype criteria remain met in Alpha 2.
