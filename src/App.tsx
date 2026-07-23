@@ -6,6 +6,7 @@ import { CraftScreen } from "./components/CraftScreen";
 import { EndRunScreen } from "./components/EndRunScreen";
 import { ExploreScreen } from "./components/ExploreScreen";
 import { GateScreen } from "./components/GateScreen";
+import { JournalScreen } from "./components/JournalScreen";
 import { MetaScreen } from "./components/MetaScreen";
 import { ObjectivePanel } from "./components/ObjectivePanel";
 import { OnboardingGuide } from "./components/OnboardingGuide";
@@ -22,6 +23,7 @@ const navItems: { screen: Screen; label: string; when?: "boss" | "repair" | "gat
   { screen: "survivors", label: "Survivors" },
   { screen: "craft", label: "Craft" },
   { screen: "meta", label: "Meta" },
+  { screen: "journal", label: "Journal" },
   { screen: "boss", label: "Boss", when: "boss" },
   { screen: "repair", label: "Repair", when: "repair" },
   { screen: "gate", label: "Gate", when: "gate" },
@@ -100,6 +102,9 @@ export default function App() {
               ))}
           </nav>
         )}
+        {!state.run.started && (
+          <button onClick={() => dispatch({ type: "setScreen", screen: "journal" })}>Journal</button>
+        )}
         <button
           className="sound-toggle"
           aria-label={muted ? "Enable sound" : "Mute sound"}
@@ -122,6 +127,7 @@ export default function App() {
         {screen === "repair" && <BeaconRepairScreen dispatch={dispatch} state={state} />}
         {screen === "gate" && <GateScreen dispatch={dispatch} state={state} />}
         {screen === "meta" && <MetaScreen dispatch={dispatch} state={state} />}
+        {screen === "journal" && <JournalScreen dispatch={dispatch} state={state} />}
         {screen === "end" && <EndRunScreen dispatch={dispatch} state={state} />}
       </main>
     </div>

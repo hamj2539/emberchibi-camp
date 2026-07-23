@@ -8,6 +8,7 @@ export type Screen =
   | "repair"
   | "gate"
   | "meta"
+  | "journal"
   | "end";
 
 export type StatKey = "hp" | "atk" | "def" | "spd" | "wis" | "craft" | "surv" | "luck";
@@ -65,6 +66,15 @@ export type RouteEventId =
 export type NormalEncounterId = "ashWolves" | "mireLeeches" | "rootboundRaiders";
 export type CrisisId = "dyingFire" | "emptyStores" | "woundedCamp" | "brokenShelter" | "campDespair";
 export type CampPressureKey = "fire" | "morale" | "shelter" | "supplies";
+export type CollectionCategory =
+  | "relics"
+  | "runItems"
+  | "blueprints"
+  | "survivors"
+  | "beacons"
+  | "guardians"
+  | "endings"
+  | "routeEvents";
 
 export type Stats = Record<StatKey, number>;
 export type Resources = Record<ResourceKey, number>;
@@ -278,6 +288,13 @@ export type RunState = {
   log: string[];
   routeFailures: number;
   bossFailures: number;
+  secretsFound: string[];
+  challengeState: {
+    minFire: number;
+    openingRoutes: number;
+    openingUsedNonScout: boolean;
+    usedRepairKit: boolean;
+  };
 };
 
 export type LegacyState = {
@@ -293,6 +310,11 @@ export type LegacyState = {
   onboardingStep: number;
   onboardingComplete: boolean;
   runHistory: RunMetrics[];
+  collection: Record<CollectionCategory, string[]>;
+  bonds: Record<string, number>;
+  discoveredSecrets: string[];
+  completedChallenges: string[];
+  titles: string[];
 };
 
 export type GameState = {
@@ -428,6 +450,13 @@ export function createInitialState(now = Date.now()): GameState {
       log: ["A cold ember waits under the campfire ash."],
       routeFailures: 0,
       bossFailures: 0,
+      secretsFound: [],
+      challengeState: {
+        minFire: 80,
+        openingRoutes: 0,
+        openingUsedNonScout: false,
+        usedRepairKit: false,
+      },
     },
     legacy: {
       shards: 0,
@@ -442,6 +471,20 @@ export function createInitialState(now = Date.now()): GameState {
       onboardingStep: 0,
       onboardingComplete: false,
       runHistory: [],
+      collection: {
+        relics: [],
+        runItems: [],
+        blueprints: [],
+        survivors: [],
+        beacons: [],
+        guardians: [],
+        endings: [],
+        routeEvents: [],
+      },
+      bonds: {},
+      discoveredSecrets: [],
+      completedChallenges: [],
+      titles: [],
     },
   };
 }

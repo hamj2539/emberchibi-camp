@@ -9,6 +9,7 @@ import type {
 } from "./state.js";
 import { acquireRunItem, hasRunItemEquipped, triggerRunEffect } from "./runItems.js";
 import { appendRunHistory, buildRunMetrics } from "./metrics.js";
+import { discoverSecret, evaluateEndRunDiscoveries } from "./journal.js";
 
 const RESOLVED_COOLDOWN_SECONDS = 90;
 const IGNORED_COOLDOWN_SECONDS = 45;
@@ -17,11 +18,16 @@ export const COLLAPSE_THRESHOLD = 100;
 export function advanceCampSystems(state: GameState, elapsedSeconds: number): GameState {
   if (!state.run.started || state.run.endRun || elapsedSeconds <= 0) return state;
 
+  const campPressure = driftPressure(state, elapsedSeconds);
   let next = {
     ...state,
     run: {
       ...state.run,
-      campPressure: driftPressure(state, elapsedSeconds),
+      campPressure,
+      challengeState: {
+        ...state.run.challengeState,
+        minFire: Math.min(state.run.challengeState.minFire, campPressure.fire),
+      },
     },
   };
 
@@ -148,10 +154,13 @@ export function resolveCrisisChoice(state: GameState, choiceId: string): GameSta
       log: [`${definition.name} resolved: ${choice.result}`, ...resolved.run.log].slice(0, 12),
     },
   };
+  const spentResources = Object.values(choice.effect.resources ?? {}).some((amount) => (amount ?? 0) < 0);
+  const spentItems = Object.values(choice.effect.items ?? {}).some((amount) => (amount ?? 0) < 0);
+  const discovered = !spentResources && !spentItems ? discoverSecret(next, "emptyHandsMercy") : next;
 
-  return next.run.collapseMeter >= COLLAPSE_THRESHOLD
-    ? collapseFromCrises(next, `${definition.name} was resolved too late to save the camp.`)
-    : next;
+  return discovered.run.collapseMeter >= COLLAPSE_THRESHOLD
+    ? collapseFromCrises(discovered, `${definition.name} was resolved too late to save the camp.`)
+    : discovered;
 }
 
 export function applyCrisisEffect(state: GameState, effect: CrisisEffect): GameState {
@@ -255,22 +264,23 @@ function triggerReason(state: GameState, triggers: CrisisTrigger[]): string {
 }
 
 function collapseFromCrises(state: GameState, message: string): GameState {
-  const result = calculateCollapseScore(state);
-  const metrics = buildRunMetrics(state, result.chestGrade, message);
+  const discovered = evaluateEndRunDiscoveries(state);
+  const result = calculateCollapseScore(discovered);
+  const metrics = buildRunMetrics(discovered, result.chestGrade, message);
   return {
-    ...state,
-    legacy: appendRunHistory(state, metrics),
+    ...discovered,
+    legacy: appendRunHistory(discovered, metrics),
     run: {
-      ...state.run,
+      ...discovered.run,
       screen: "end",
       activeExpedition: null,
       activeRouteDecision: null,
       activeCrisis: null,
       runItems: [],
       runLoadout: { tool: null, charm: null, provision: null },
-      survivors: state.run.survivors.map((survivor) => ({ ...survivor, onExpedition: false })),
+      survivors: discovered.run.survivors.map((survivor) => ({ ...survivor, onExpedition: false })),
       endRun: { outcome: "collapse", ...result, reward: null, claimed: false, metrics },
-      log: [message, ...state.run.log].slice(0, 12),
+      log: [message, ...discovered.run.log].slice(0, 12),
     },
   };
 }

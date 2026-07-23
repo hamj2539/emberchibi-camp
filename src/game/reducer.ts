@@ -11,6 +11,7 @@ import { openGate, resolveGateAction } from "./gate.js";
 import { calculateExpeditionDuration } from "./expedition.js";
 import { applyLegacyStartBonuses } from "./meta.js";
 import { appendRunHistory, buildRunMetrics } from "./metrics.js";
+import { addBond, discoverEntry, evaluateEndRunDiscoveries } from "./journal.js";
 import { applyReward, rollChestReward } from "./rewards.js";
 import { calculateCollapseScore } from "./scoring.js";
 import { modifierFromRoll, resolveRouteChoice } from "./routeDecisions.js";
@@ -48,7 +49,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         onExpedition: false,
       };
 
-      return stamp(applyLegacyStartBonuses({
+      return stamp(discoverEntry(applyLegacyStartBonuses({
         ...state,
         run: {
           ...state.run,
@@ -58,7 +59,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           survivors: [survivor],
           log: [`${starter.name} raises the first ember at camp.`, ...state.run.log],
         },
-      }));
+      }), "survivors", survivor.id));
     }
     case "setScreen":
       return stamp({ ...state, run: { ...state.run, screen: action.screen } });
@@ -180,7 +181,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             : "waiting";
       const missedFlag = `recruit-${definition.id}-missed`;
 
-      return stamp({
+      let next: GameState = {
         ...state,
         run: {
           ...state.run,
@@ -201,7 +202,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
               : state.run.campPressure,
           log: log.slice(0, 12),
         },
-      });
+      };
+      if (status === "resolved") {
+        next = discoverEntry(next, "survivors", definition.survivor.id);
+        next = addBond(next, [definition.survivor.id], 2);
+      }
+      return stamp(next);
     }
     case "startCraft": {
       if (state.run.craftQueue.length >= 3) return state;
@@ -305,6 +311,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             requiredProgress: 35,
             coreQuality: quality,
             usedRepairKit: action.useRepairKit,
+          },
+          challengeState: {
+            ...state.run.challengeState,
+            usedRepairKit: state.run.challengeState.usedRepairKit || action.useRepairKit,
           },
           survivors: state.run.survivors.map((survivor) =>
             selected.has(survivor.id) ? { ...survivor, onExpedition: true } : survivor,
@@ -437,20 +447,21 @@ function collapseIfStranded(state: GameState): GameState {
 
 function finalizeCollapse(state: GameState, message: string): GameState {
   if (state.run.endRun) return state;
-  const result = calculateCollapseScore(state);
-  const metrics = buildRunMetrics(state, result.chestGrade, message);
+  const discovered = evaluateEndRunDiscoveries(state);
+  const result = calculateCollapseScore(discovered);
+  const metrics = buildRunMetrics(discovered, result.chestGrade, message);
   return {
-    ...state,
-    legacy: appendRunHistory(state, metrics),
+    ...discovered,
+    legacy: appendRunHistory(discovered, metrics),
     run: {
-      ...state.run,
+      ...discovered.run,
       screen: "end",
       activeExpedition: null,
       runItems: [],
       runLoadout: { tool: null, charm: null, provision: null },
-      survivors: state.run.survivors.map((survivor) => ({ ...survivor, onExpedition: false })),
+      survivors: discovered.run.survivors.map((survivor) => ({ ...survivor, onExpedition: false })),
       endRun: { outcome: "collapse", ...result, reward: null, claimed: false, metrics },
-      log: [message, ...state.run.log].slice(0, 12),
+      log: [message, ...discovered.run.log].slice(0, 12),
     },
   };
 }

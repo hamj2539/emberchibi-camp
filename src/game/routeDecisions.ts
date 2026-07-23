@@ -14,6 +14,7 @@ import type {
   RunModifierId,
 } from "./state.js";
 import { getRunModifier } from "../data/routeContent.js";
+import { addBond, discoverEntry } from "./journal.js";
 import { acquireRunItem, hasRunItemEquipped } from "./runItems.js";
 
 const BASE_EVENT_CHANCE = 35;
@@ -109,7 +110,7 @@ export function resolveRouteChoice(state: GameState, choiceId: string): GameStat
   if (choice.effect.flag && !eventFlags.includes(choice.effect.flag)) eventFlags.push(choice.effect.flag);
   if (firstResolution) eventFlags.push(outcomeFlag);
 
-  const resolved = {
+  let resolved: GameState = {
     ...state,
     run: {
       ...state.run,
@@ -124,6 +125,8 @@ export function resolveRouteChoice(state: GameState, choiceId: string): GameStat
       log: [`${definition.name}: ${choice.result}`, ...state.run.log].slice(0, 12),
     },
   };
+  resolved = discoverEntry(resolved, "routeEvents", definition.id);
+  resolved = addBond(resolved, decision.partyIds, 1);
   return choice.effect.runItem
     ? acquireRunItem(resolved, choice.effect.runItem, `${definition.kind === "event" ? "Route event" : "Encounter"}: ${definition.name}`)
     : resolved;

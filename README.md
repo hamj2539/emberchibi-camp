@@ -1,6 +1,6 @@
 # Emberchibi Camp
 
-Alpha 5 survival roguelite RPG with guided onboarding, tuned pacing, phased boss combat, temporary run builds, camp crises,
+Solo Alpha 6 survival roguelite RPG with collections, survivor bonds, secret discoveries, optional challenges, guided onboarding, phased boss combat,
 exploration decisions, idle management, and turn-based key encounters.
 
 **Live build:** https://hamj2539.github.io/emberchibi-camp/
@@ -25,6 +25,8 @@ exploration decisions, idle management, and turn-based key encounters.
 - Temporary run items track their source, trigger effects in the Camp Log, and reset at run end.
 - Skippable seven-step first-run guide and recommended-action navigation.
 - Local-only run summaries for pacing, failures, crises, Guardians, Cores, Gate, and chest results.
+- Persistent Collection Journal covering relics, equipment, blueprints, survivors, Beacons, Guardians, endings, and route events.
+- Lightweight survivor Bonds, four secret discoveries, four offline solo challenges, and cosmetic titles.
 - Local save migration, responsive layout, sound feedback, and PWA support.
 
 ## Development
@@ -48,13 +50,14 @@ The app is configured for GitHub Pages under `/emberchibi-camp/`.
 npm run test
 ```
 
-The suite currently covers 63 game-logic cases, including save migration,
+The suite currently covers 69 game-logic cases, including save migration,
 offline progress, expeditions, combat, upgrades, meta progression, collapse,
 route decisions, encounters, recruit branches, run modifiers, crisis triggers,
 deadlines, choices, ignored consequences, run item acquisition, loadout limits,
 biome counters, run-end reset, boss phases, telegraphs, counters, statuses,
 Core quality performance, balance thresholds, onboarding, local metrics,
-all four starter smoke paths, and a clean full-run Gate simulation.
+all four starter smoke paths, collection discovery, Bond progression, secrets,
+challenge completion, and a clean full-run Gate simulation.
 
 ## Save Data
 

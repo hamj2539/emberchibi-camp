@@ -43,6 +43,9 @@ export function calculateScore(state: GameState): { score: number; lines: ScoreL
   if (state.run.crisesIgnored > 0) {
     lines.push({ label: "Camp crises ignored", points: state.run.crisesIgnored * -20 });
   }
+  if (state.run.secretsFound.includes("coalglassEcho")) {
+    lines.push({ label: "Secret: Coalglass Echo", points: 40 });
+  }
   if (state.run.routeFailures > 0) {
     lines.push({ label: "Route failures", points: state.run.routeFailures * -15 });
   }

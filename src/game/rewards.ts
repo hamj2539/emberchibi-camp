@@ -56,11 +56,18 @@ export function applyReward(state: GameState, reward: ChestReward): GameState {
     unlocks: [...state.legacy.unlocks],
     relics: [...state.legacy.relics],
     blueprints: [...state.legacy.blueprints],
+    collection: {
+      ...state.legacy.collection,
+      relics: [...state.legacy.collection.relics],
+      blueprints: [...state.legacy.collection.blueprints],
+    },
   };
 
   if (reward.type === "legacyShards") legacy.shards += reward.amount ?? 0;
   if (reward.type === "blueprint" && !legacy.blueprints.includes(reward.label)) legacy.blueprints.push(reward.label);
+  if (reward.type === "blueprint" && !legacy.collection.blueprints.includes(reward.label)) legacy.collection.blueprints.push(reward.label);
   if (reward.type === "relic" && !legacy.relics.includes(reward.label)) legacy.relics.push(reward.label);
+  if (reward.type === "relic" && !legacy.collection.relics.includes(reward.label)) legacy.collection.relics.push(reward.label);
   if ((reward.type === "survivorUnlock" || reward.type === "classUnlock") && !legacy.unlocks.includes(reward.label)) {
     legacy.unlocks.push(reward.label);
   }

@@ -1,4 +1,4 @@
-# Emberchibi Camp Alpha 5 QA
+# Emberchibi Camp Solo Alpha 6 QA
 
 Last updated: 2026-07-23
 
@@ -6,7 +6,7 @@ Build target: GitHub Pages static build
 
 ## Automated Checks
 
-- `npm run test`: 63 passing game-logic tests.
+- `npm run test`: 69 passing game-logic tests.
 - `npm run build`: production build passes.
 - Full clean-run simulation reaches the Cinder Gate, defeats Night Herald, and awards an Ancient Chest.
 - Route events, choice requirements/effects, normal encounters, all four modifiers,
@@ -19,6 +19,8 @@ Build target: GitHub Pages static build
   class cleanse interaction, Core quality, and battle migration have focused tests.
 - Balance thresholds, pacing totals, onboarding persistence, local run metrics,
   and simplified Gate clears for all four starters have focused tests.
+- Collection deduplication, Bond levels, secret conditions, optional challenges,
+  and Alpha 6 save migration have focused tests.
 - GitHub Pages deployment completed successfully.
 - Production page, manifest, and service worker return HTTP 200.
 
@@ -37,6 +39,7 @@ Vite reports expected build-time warnings for absolute asset paths under
   active statuses, class actions, and counter feedback.
 - First-run guide, recommended CTA, disabled reasons, and end-run metrics render.
 - Meta screen shows shard projects, relic slots, and permanent collections.
+- Journal shows hidden collection entries, Bonds, secret hints, challenges, and titles.
 - Explore shows the run modifier and pending route decisions lock new expeditions.
 - Route Event and Normal Encounter choices resolve back into the existing route flow.
 - Desktop and 390x844 mobile layouts have no horizontal overflow.
@@ -115,6 +118,19 @@ Vite reports expected build-time warnings for absolute asset paths under
     crisis choices, and navigation remain usable without horizontal overflow.
 13. Tab through major actions and confirm visible focus and logical order.
 14. Load a pre-Alpha 5 save and confirm onboarding/metrics defaults migrate safely.
+
+## Solo Alpha 6 Checklist
+
+1. Open Journal before and during a run; verify unknown entries display as `???`.
+2. Discover a route event, run item, Guardian, Beacon, and ending; verify each persists.
+3. Recruit a survivor, use them on routes, and survive a boss to increase Bond progress.
+4. Verify Bond story notes change at 2, 5, and 9 points.
+5. Resolve a crisis without spending resources or an item to reveal its secret.
+6. Carry Coalglass Charm through Moonwell Path and verify the secret score line.
+7. Win with three Pristine Cores and with no Herald downed count to reveal both secrets.
+8. Complete each of the four optional challenges and verify it stays completed.
+9. Start a new run and confirm collection, Bonds, secrets, titles, and challenges persist.
+10. Load a pre-Alpha 6 save and confirm all Journal defaults migrate safely.
 
 ## Alpha 1 Exploration Regression Checklist
 

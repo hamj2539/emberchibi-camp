@@ -71,6 +71,16 @@ export function migrateV1(state: GameState): GameState {
       onboardingStep: state.legacy.onboardingStep ?? 0,
       onboardingComplete: state.legacy.onboardingComplete ?? false,
       runHistory: state.legacy.runHistory ?? [],
+      collection: {
+        ...defaults.legacy.collection,
+        ...(state.legacy.collection ?? {}),
+        relics: state.legacy.collection?.relics ?? state.legacy.relics ?? [],
+        blueprints: state.legacy.collection?.blueprints ?? state.legacy.blueprints ?? [],
+      },
+      bonds: state.legacy.bonds ?? {},
+      discoveredSecrets: state.legacy.discoveredSecrets ?? [],
+      completedChallenges: state.legacy.completedChallenges ?? [],
+      titles: state.legacy.titles ?? [],
     },
     run: {
       ...state.run,
@@ -107,6 +117,11 @@ export function migrateV1(state: GameState): GameState {
       crisisScore: state.run.crisisScore ?? 0,
       crisisRouteRisk: state.run.crisisRouteRisk ?? 0,
       repairSpeedModifier: state.run.repairSpeedModifier ?? 1,
+      secretsFound: state.run.secretsFound ?? [],
+      challengeState: {
+        ...defaults.run.challengeState,
+        ...(state.run.challengeState ?? {}),
+      },
       gate: state.run.gate ? migrateGate(state.run.gate) : defaults.run.gate,
       endRun: state.run.endRun
         ? {

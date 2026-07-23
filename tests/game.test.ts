@@ -26,6 +26,7 @@ import {
 import { createInitialState, type GameState } from "../src/game/state.js";
 import { acquireRunItem } from "../src/game/runItems.js";
 import { buildRunMetrics } from "../src/game/metrics.js";
+import { addBond, bondLevel, discoverEntry, evaluateEndRunDiscoveries } from "../src/game/journal.js";
 
 const tests: { name: string; run: () => void }[] = [
   {
@@ -1185,6 +1186,85 @@ const tests: { name: string; run: () => void }[] = [
       assertEqual(migrated.legacy.onboardingStep, 0);
       assertEqual(migrated.legacy.onboardingComplete, false);
       assertEqual(migrated.legacy.runHistory.length, 0);
+    },
+  },
+  {
+    name: "Alpha 6 collection discovery is persistent and deduplicated",
+    run: () => {
+      const state = createInitialState();
+      const once = discoverEntry(state, "routeEvents", "oldTrailMarkers");
+      const twice = discoverEntry(once, "routeEvents", "oldTrailMarkers");
+      assertEqual(twice.legacy.collection.routeEvents.length, 1);
+      assertEqual(twice.legacy.collection.routeEvents[0], "oldTrailMarkers");
+    },
+  },
+  {
+    name: "survivor bonds gain progress and unlock story-note levels",
+    run: () => {
+      const state = createInitialState();
+      const trusted = addBond(state, ["survivor-rook"], 2);
+      const kindred = addBond(trusted, ["survivor-rook"], 3);
+      assertEqual(trusted.legacy.bonds["survivor-rook"], 2);
+      assertEqual(bondLevel(kindred.legacy.bonds["survivor-rook"]), 2);
+    },
+  },
+  {
+    name: "secret checks unlock pristine and no-downed discoveries",
+    run: () => {
+      const discovered = evaluateEndRunDiscoveries(gateClearedRun("pristine", 0, 0));
+      assertEqual(discovered.legacy.discoveredSecrets.includes("fivefoldConcord"), true);
+      assertEqual(discovered.legacy.discoveredSecrets.includes("unbrokenDawn"), true);
+      assertEqual(discovered.legacy.titles.includes("Pristine Keeper"), true);
+    },
+  },
+  {
+    name: "resource-free crisis response discovers Empty Hands Mercy",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "scout" });
+      const crisisState = {
+        ...started,
+        run: {
+          ...started.run,
+          activeCrisis: { id: "dyingFire" as const, triggeredAt: 0, deadlineAt: 60, reason: "Fire is low." },
+        },
+      };
+      const resolved = resolveCrisisChoice(crisisState, "endure");
+      assertEqual(resolved.legacy.discoveredSecrets.includes("emptyHandsMercy"), true);
+    },
+  },
+  {
+    name: "optional challenge completion evaluates local run trackers",
+    run: () => {
+      const state = gateClearedRun("stable", 0, 0);
+      state.run.challengeState = {
+        minFire: 20,
+        openingRoutes: 2,
+        openingUsedNonScout: false,
+        usedRepairKit: false,
+      };
+      const completed = evaluateEndRunDiscoveries(state).legacy.completedChallenges;
+      assertEqual(completed.includes("noCollapse"), true);
+      assertEqual(completed.includes("lowCampfire"), true);
+      assertEqual(completed.includes("scoutOpening"), true);
+      assertEqual(completed.includes("noRepairKitGate"), true);
+    },
+  },
+  {
+    name: "save migration adds Alpha 6 journal and challenge defaults",
+    run: () => {
+      const old = createInitialState();
+      old.legacy.relics = ["Coalglass Charm"];
+      delete (old.legacy as Partial<GameState["legacy"]>).collection;
+      delete (old.legacy as Partial<GameState["legacy"]>).bonds;
+      delete (old.legacy as Partial<GameState["legacy"]>).discoveredSecrets;
+      delete (old.legacy as Partial<GameState["legacy"]>).completedChallenges;
+      delete (old.legacy as Partial<GameState["legacy"]>).titles;
+      delete (old.run as Partial<GameState["run"]>).challengeState;
+      delete (old.run as Partial<GameState["run"]>).secretsFound;
+      const migrated = migrateV1(old);
+      assertEqual(migrated.legacy.collection.relics.includes("Coalglass Charm"), true);
+      assertEqual(migrated.legacy.discoveredSecrets.length, 0);
+      assertEqual(migrated.run.challengeState.minFire, 80);
     },
   },
 ];

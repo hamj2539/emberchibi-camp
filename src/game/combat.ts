@@ -12,6 +12,7 @@ import type {
   Survivor,
 } from "./state.js";
 import { acquireRunItem, hasRunItemEquipped, triggerRunEffect } from "./runItems.js";
+import { addBond, discoverEntry } from "./journal.js";
 
 export function createGuardianBattle(state: GameState, partyIds: string[], beacon: BeaconDefinition): BossBattle {
   const party = state.run.survivors.filter((survivor) => partyIds.includes(survivor.id));
@@ -319,6 +320,12 @@ function finishGuardianVictory(
       log: [`${battle.bossName} defeated. ${labelCoreQuality(quality, battle.coreName)} recovered.`, ...state.run.log].slice(0, 12),
     },
   };
+  won = discoverEntry(won, "guardians", battle.beaconId);
+  won = addBond(
+    won,
+    battle.partyIds.filter((id) => survivors.some((survivor) => survivor.id === id && survivor.currentHp > 0)),
+    2,
+  );
   won = acquireRunItem(won, guardianRunItemRewards[battle.beaconId], `Guardian: ${battle.bossName}`);
   if (
     action === "useTorch" &&

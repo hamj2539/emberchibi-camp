@@ -1,6 +1,7 @@
 import { getIntent, heraldCombat, nextIntent, phaseForHp } from "../data/bossCombat.js";
 import { calculateScore } from "./scoring.js";
 import { appendRunHistory, buildRunMetrics } from "./metrics.js";
+import { addBond, evaluateEndRunDiscoveries } from "./journal.js";
 import type {
   CombatStatuses,
   CoreQuality,
@@ -253,7 +254,7 @@ export function resolveGateAction(state: GameState, action: GateAction): GameSta
 }
 
 export function finishGate(state: GameState, gate: GateProgress): GameState {
-  const nextState = {
+  let nextState = {
     ...state,
     run: {
       ...state.run,
@@ -266,6 +267,12 @@ export function finishGate(state: GameState, gate: GateProgress): GameState {
     },
   };
   if (gate.status !== "cleared") return nextState;
+  nextState = addBond(
+    nextState,
+    gate.partyIds.filter((id) => nextState.run.survivors.some((survivor) => survivor.id === id && survivor.currentHp > 0)),
+    3,
+  );
+  nextState = evaluateEndRunDiscoveries(nextState);
   const result = calculateScore(nextState);
   const metrics = buildRunMetrics(nextState, result.chestGrade, null);
   return {

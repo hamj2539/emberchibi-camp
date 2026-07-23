@@ -4,6 +4,7 @@ import { getRunModifier } from "../data/routeContent.js";
 import { getRoute } from "../data/routes.js";
 import { createGuardianBattle } from "./combat.js";
 import { calculateExpeditionSafety } from "./expedition.js";
+import { addBond, discoverEntry, discoverSecret } from "./journal.js";
 import { rollRouteDecision } from "./routeDecisions.js";
 import { hasRunItemEquipped, triggerRunEffect } from "./runItems.js";
 import type { GameState, ItemId, RecruitEvent, ResourceKey, Resources, Survivor } from "./state.js";
@@ -129,7 +130,7 @@ function resolveRepairProgress(state: GameState, elapsedSeconds: number): GameSt
   };
   const allBeaconsLit = beacons.every((beacon) => beaconsProgress[beacon.id].repaired);
 
-  const nextState: GameState = {
+  let nextState: GameState = {
     ...state,
     run: {
       ...state.run,
@@ -149,6 +150,7 @@ function resolveRepairProgress(state: GameState, elapsedSeconds: number): GameSt
       ].slice(0, 12),
     },
   };
+  nextState = discoverEntry(nextState, "beacons", repair.beaconId);
 
   return gaugeBonus > 1
     ? triggerRunEffect(nextState, "cinder-gauge-repair", `Cinder Gauge doubled the repair speed of ${repair.beaconName}.`)
@@ -328,14 +330,38 @@ export function resolveExpedition(state: GameState, now: number): GameState {
             shelter: Math.max(0, state.run.campPressure.shelter - 7),
             supplies: Math.max(0, state.run.campPressure.supplies - 6),
           }
-        : {
+          : {
             ...state.run.campPressure,
             morale: Math.min(100, state.run.campPressure.morale + 2),
             supplies: Math.min(100, state.run.campPressure.supplies + 3),
           },
+      challengeState:
+        !failed && route.kind !== "boss" && state.run.challengeState.openingRoutes < 2
+          ? {
+              ...state.run.challengeState,
+              openingRoutes: state.run.challengeState.openingRoutes + 1,
+              openingUsedNonScout:
+                state.run.challengeState.openingUsedNonScout ||
+                party.some((survivor) => survivor.classId !== "scout"),
+            }
+          : state.run.challengeState,
       log: log.slice(0, 12),
     },
   };
+  for (const survivor of survivors) {
+    if (!state.run.survivors.some((existing) => existing.id === survivor.id)) {
+      result = discoverEntry(result, "survivors", survivor.id);
+      result = addBond(result, [survivor.id], 2);
+    }
+  }
+  if (!failed) result = addBond(result, expedition.survivorIds, 1);
+  if (
+    !failed &&
+    route.id === "moonwellPath" &&
+    state.legacy.equippedRelics.includes("Coalglass Charm")
+  ) {
+    result = discoverSecret(result, "coalglassEcho");
+  }
   if (compassRecovery) result = triggerRunEffect(result, "old-compass-reroll", `Old Compass recovered the failed ${route.name} expedition.`);
   if (
     hasRunItemEquipped(state, "bitterTonic") &&

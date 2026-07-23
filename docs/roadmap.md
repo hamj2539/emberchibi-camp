@@ -4,11 +4,10 @@ Last updated: 2026-07-23
 
 ## Current Release
 
-**Alpha 5: Balance, Onboarding, and Playtest Readiness**
+**Solo Alpha 6: Collections and Replay Goals**
 
-The system-complete build now has intentional pacing targets, a skippable
-first-run guide, recommended-action navigation, clearer disabled reasons,
-local-only run metrics, and starter viability smoke coverage.
+The solo build now records discoveries across runs, grows survivor Bonds,
+reveals conditional secrets, and tracks optional offline challenge goals.
 
 | Area | Status | Current implementation |
 | --- | --- | --- |
@@ -27,6 +26,9 @@ local-only run metrics, and starter viability smoke coverage.
 | Onboarding | Alpha 5 | seven-step first-run guide, skippable and locally persisted |
 | Instrumentation | Alpha 5 | latest ten local run summaries, no analytics/backend |
 | Meta progression | Complete | shards, projects, blueprints, unlocks, relic loadout |
+| Collection Journal | Alpha 6 | eight discovery categories with hidden entries and flavor text |
+| Survivor Bonds | Alpha 6 | route, recruit, and boss progress with four story-note levels |
+| Secrets and challenges | Alpha 6 | four conditional secrets, four offline goals, cosmetic titles |
 | Assets and UI | Complete for prototype | route art, Guardian art, responsive layouts |
 | Production | Complete for prototype | GitHub Pages workflow and installable PWA shell |
 
@@ -119,6 +121,15 @@ local-only run metrics, and starter viability smoke coverage.
 - Added balance formula, onboarding, metrics, and four-starter smoke tests.
 - Expanded the automated suite from 58 to 63 game-logic tests.
 
+### Solo Alpha 6 - Collections and Replay Goals
+
+- Added a persistent Collection Journal with unknown entries shown as `???`.
+- Added survivor Bond progress from routes, recruit branches, and survived boss fights.
+- Added four condition-based secrets with lore, score, and cosmetic title rewards.
+- Added No Collapse, Low Campfire, Scout-only Opening, and No Repair Kit Gate challenges.
+- Added safe migration for all journal and per-run challenge tracker fields.
+- Expanded the automated suite from 63 to 69 game-logic tests.
+
 ## Next Phase
 
 ### P1 - External Alpha Playtest
@@ -157,4 +168,4 @@ The current prototype is complete when:
 - Automated tests and production build pass.
 - GitHub Pages serves the app, manifest, and service worker successfully.
 
-All prototype criteria remain met in Alpha 5.
+All prototype criteria remain met in Solo Alpha 6.

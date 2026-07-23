@@ -1,4 +1,5 @@
 import { getRunItem } from "../data/runItems.js";
+import { discoverEntry } from "./journal.js";
 import type { GameState, RunEquipmentSlot, RunItemId } from "./state.js";
 
 export function hasRunItemEquipped(state: GameState, itemId: RunItemId): boolean {
@@ -6,14 +7,15 @@ export function hasRunItemEquipped(state: GameState, itemId: RunItemId): boolean
 }
 
 export function acquireRunItem(state: GameState, itemId: RunItemId, source: string): GameState {
-  if (state.run.runItems.some((pickup) => pickup.id === itemId)) return state;
+  const discovered = discoverEntry(state, "runItems", itemId);
+  if (discovered.run.runItems.some((pickup) => pickup.id === itemId)) return discovered;
   const definition = getRunItem(itemId);
   return {
-    ...state,
+    ...discovered,
     run: {
-      ...state.run,
-      runItems: [...state.run.runItems, { id: itemId, source }],
-      log: [`Run item found: ${definition.name} (${source}).`, ...state.run.log].slice(0, 12),
+      ...discovered.run,
+      runItems: [...discovered.run.runItems, { id: itemId, source }],
+      log: [`Run item found: ${definition.name} (${source}).`, ...discovered.run.log].slice(0, 12),
     },
   };
 }

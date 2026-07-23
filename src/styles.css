@@ -1305,6 +1305,85 @@ select {
   grid-column: 1 / -1;
 }
 
+.journal-layout {
+  display: grid;
+  gap: 16px;
+}
+
+.journal-hero {
+  display: grid;
+  gap: 8px;
+}
+
+.journal-hero h2,
+.journal-entry p,
+.challenge-row p {
+  margin: 0;
+}
+
+.journal-titles {
+  color: #ffca7a;
+}
+
+.journal-sections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.collection-panel h3 {
+  margin-top: 0;
+}
+
+.journal-entry-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.journal-entry {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  min-height: 104px;
+  padding: 12px;
+  border: 1px solid rgba(255, 202, 122, 0.22);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.journal-entry span,
+.journal-entry p,
+.challenge-row p {
+  color: #cbbba8;
+  line-height: 1.35;
+}
+
+.journal-entry.unknown {
+  border-style: dashed;
+  color: #918477;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.challenge-list {
+  display: grid;
+  gap: 8px;
+}
+
+.challenge-row {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.challenge-row > span {
+  color: #ffca7a;
+  font-weight: 800;
+}
+
 @media (max-width: 760px) {
   .app {
     width: min(100% - 20px, 1180px);
@@ -1389,6 +1468,11 @@ select {
   }
 
   .expedition-prep {
+    grid-template-columns: 1fr;
+  }
+
+  .journal-sections,
+  .journal-entry-grid {
     grid-template-columns: 1fr;
   }
 }
