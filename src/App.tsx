@@ -122,8 +122,8 @@ function GameApp() {
       </header>
 
       <main>
-        <OnboardingGuide dispatch={dispatch} state={state} />
-        <ObjectivePanel dispatch={dispatch} state={state} />
+        {screen !== "camp" && <OnboardingGuide dispatch={dispatch} state={state} />}
+        {screen !== "camp" && <ObjectivePanel dispatch={dispatch} state={state} />}
         {screen === "starter" && <StarterSelect dispatch={dispatch} state={state} />}
         {screen === "camp" && <CampScreen dispatch={dispatch} state={state} onReset={resetRun} />}
         {screen === "explore" && <ExploreScreen dispatch={dispatch} state={state} />}

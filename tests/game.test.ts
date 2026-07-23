@@ -43,6 +43,7 @@ import { shardAmount } from "../src/game/rewards.js";
 import { createTranslator, interpolate, readStoredLanguage, resolveLanguage } from "../src/i18n/core.js";
 import { en, th } from "../src/i18n/translations.js";
 import { combatCue, expeditionCue } from "../src/game/presentation.js";
+import { mapActionItems, mapBeaconStatus } from "../src/game/campMap.js";
 
 const tests: { name: string; run: () => void }[] = [
   {
@@ -1584,6 +1585,20 @@ const tests: { name: string; run: () => void }[] = [
       assertEqual(expeditionCue("clue", "reacting"), "threat");
       assertEqual(combatCue("Counter worked: Guard broke the charge."), "triumph");
       assertEqual(combatCue("Counter missed: the mark resolves."), "threat");
+    },
+  },
+  {
+    name: "living camp map reflects Beacon progression and pending action prompts",
+    run: () => {
+      const state = gameReducer(createInitialState(), { type: "chooseStarter", classId: "scout" });
+      const hidden = { ...state, run: { ...state.run, beacons: { ...state.run.beacons, ember: { ...state.run.beacons.ember, discovered: false } }, routes: { ...state.run.routes, burntGrove: { discovered: true, completed: 0, failed: 0 } } } };
+      assertEqual(mapBeaconStatus(hidden, "ember"), "hidden");
+      const found = { ...hidden, run: { ...hidden.run, routes: { ...hidden.run.routes, burntGrove: { discovered: true, completed: 1, failed: 0 } } } };
+      assertEqual(mapBeaconStatus(found, "ember"), "found");
+      const boss = { ...found, run: { ...found.run, beacons: { ...found.run.beacons, ember: { ...found.run.beacons.ember, discovered: true } } } };
+      assertEqual(mapBeaconStatus(boss, "ember"), "boss");
+      const crisis = { ...boss, run: { ...boss.run, activeCrisis: { id: "dyingFire" as const, triggeredAt: 0, deadlineAt: 60, reason: "Low fire" } } };
+      assertEqual(mapActionItems(crisis).some((action) => action.id === "crisis"), true);
     },
   },
 ];

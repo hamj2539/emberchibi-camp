@@ -235,6 +235,18 @@ Vite reports expected build-time warnings for absolute asset paths under
 8. At 390x844 in English and Thai, verify the scene remains above the fold, path objects stay visible, and decision sheet buttons remain usable without horizontal overflow.
 9. Enable reduced motion and verify party, path, particles, object pulses, and floaters settle while state remains legible.
 
+## Living Camp + World Map QA
+
+1. On a fresh started run, Camp opens to the living map before the `Manage Camp` drawer.
+2. Verify campfire, shelter, forge bench, cook fire, watch post, map table, infirmary/rest, storage, and forage edge are visible as stations.
+3. Change every idle job and confirm the survivor token moves to its matching station; verify injured/downed tokens are visually distinct.
+4. Start a route and confirm an expedition token appears and changes position as route nodes advance; pause at a manual choice and confirm its marker shows `!`.
+5. Verify all five Beacon nodes represent hidden, found, boss, Core/repair, and lit states; verify the Gate appears once it is open.
+6. Trigger a crisis, route decision, recruit lead, boss, repair, Gate, and chest state; confirm each appears as a pulsing action icon and opens the appropriate short sheet or existing screen.
+7. Open `Manage Camp` and verify previous resources, jobs, upgrades, loadout, and collapsed timeline remain usable.
+8. At desktop and 390x844 in English and Thai, confirm all map targets are tappable and the details sheet remains within the viewport without horizontal overflow.
+9. Enable reduced motion and confirm campfire, worker, Beacon, route, and action animations settle while their state remains identifiable.
+
 ## Alpha 1 Exploration Regression Checklist
 
 1. Start a fresh run and open Explore; confirm the active Run Modifier is visible.

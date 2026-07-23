@@ -4,10 +4,10 @@ Last updated: 2026-07-23
 
 ## Current Release
 
-**Alpha 13: Scene-First Expedition Redesign**
+**Fun Pivot: Living Camp + World Map**
 
-Expeditions now play as an animated route diorama, with path objects, party
-motion, biome layers, and compact overlays carrying the immediate state.
+The default Camp screen is now a living map: work stations, survivors, routes,
+Beacons, expedition progress, and urgent actions are visible at a glance.
 
 | Area | Status | Current implementation |
 | --- | --- | --- |
@@ -15,6 +15,7 @@ motion, biome layers, and compact overlays carrying the immediate state.
 | Save and offline | Complete | localStorage, backup recovery, migration, 8h offline cap |
 | Camp | Alpha 2 | six idle jobs, three upgrades, four pressure values, five crises |
 | Exploration | Alpha 13 | scene-first dioramas, route objects, compact choice sheets |
+| Camp and world map | Fun Pivot | living stations, survivor tokens, Beacon map, action prompts |
 | Run variation | Alpha 3 | five biome/run modifiers and twelve build-defining run items |
 | Run loadout | Alpha 3 | Tool, Charm, and Provision slots with source and trigger history |
 | Survivors | Alpha 1 | four starters plus branched/delayed Rook, Mira, and Bram recruitment |
@@ -222,6 +223,18 @@ motion, biome layers, and compact overlays carrying the immediate state.
   a single-line scene summary; detail remains optional.
 - Strengthened Ember, Tidal, Gale, Root, Lunar, and Mist biome motion layers
   while preserving system reduced-motion support.
+
+### Fun Pivot - Living Camp + World Map
+
+- Made Camp the default living diorama rather than a visible dashboard.
+- Added campfire, shelter, forage edge, bench, cook fire, watch post, map table,
+  and worker tokens driven by existing idle-job, HP, Injury, and expedition state.
+- Added an interactive world map for five Beacon states, active expedition travel,
+  Gate readiness, compact resource pressure, and objective focus.
+- Added pulsing action prompts for crisis, route decision, recruit, boss, repair,
+  Gate, and chest states; their details now open as short sheets.
+- Moved existing management, upgrades, run loadout, and timeline into a collapsed
+  `Manage Camp` drawer so no gameplay system is removed.
 
 ## Next Phase
 

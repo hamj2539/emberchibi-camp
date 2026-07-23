@@ -9,6 +9,7 @@ import { getRunItem } from "../data/runItems";
 import type { CampPressureKey, GameAction, GameState, ResourceKey, RunEquipmentSlot } from "../game/state";
 import { useI18n } from "../i18n";
 import { CompactTimeline, DetailsDisclosure, VisualBadge, choicePreview } from "./VisualUI";
+import { LivingCampMap } from "./LivingCampMap";
 
 type Props = {
   state: GameState;
@@ -67,7 +68,11 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
   const crisisSecondsLeft = activeCrisis ? Math.max(0, Math.ceil(activeCrisis.deadlineAt - state.run.daySeconds)) : 0;
 
   return (
-    <section className="screen dashboard">
+    <section className="screen camp-map-screen">
+      <LivingCampMap state={state} dispatch={dispatch} />
+      <details className="camp-management-drawer">
+        <summary>{t("map.manage")}</summary>
+        <div className="dashboard">
       <div className="panel camp-hero">
         <p className="eyebrow">{t("camp.status")}</p>
         <h2>Camp holds for {formatTime(state.run.daySeconds)}</h2>
@@ -325,6 +330,8 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
           {state.run.vows.includes("noRetreat") ? "No Retreat Active" : "Abandon Run"}
         </button>
       </div>
+        </div>
+      </details>
     </section>
   );
 }
