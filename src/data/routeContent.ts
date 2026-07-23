@@ -28,6 +28,7 @@ export type ChoiceEffect = {
   score?: number;
   flag?: string;
   runItem?: RunItemId;
+  bond?: number;
 };
 
 export type RouteChoice = {
@@ -37,6 +38,7 @@ export type RouteChoice = {
   requirement?: ChoiceRequirement;
   effect: ChoiceEffect;
   result: string;
+  chainOutcome?: string;
 };
 
 export type RouteDecisionDefinition = {
@@ -46,6 +48,11 @@ export type RouteDecisionDefinition = {
   description: string;
   routes: RouteId[];
   choices: RouteChoice[];
+  chainId?: import("../game/state.js").EventChainId;
+  chainStep?: number;
+  storyFor?: string;
+  minBond?: number;
+  storyId?: string;
 };
 
 export type RunModifierDefinition = {
@@ -132,7 +139,7 @@ export const runModifiers: RunModifierDefinition[] = [
   },
 ];
 
-export const routeEvents: RouteDecisionDefinition[] = [
+const baseRouteEvents: RouteDecisionDefinition[] = [
   {
     id: "oldTrailMarkers",
     kind: "event",
@@ -231,7 +238,7 @@ export const routeEvents: RouteDecisionDefinition[] = [
   },
 ];
 
-export const normalEncounters: RouteDecisionDefinition[] = [
+const baseNormalEncounters: RouteDecisionDefinition[] = [
   {
     id: "ashWolves",
     kind: "encounter",
@@ -269,6 +276,11 @@ export const normalEncounters: RouteDecisionDefinition[] = [
     ],
   },
 ];
+
+import { alpha7Encounters, alpha7Events } from "./alpha7Content.js";
+
+export const routeEvents: RouteDecisionDefinition[] = [...baseRouteEvents, ...alpha7Events];
+export const normalEncounters: RouteDecisionDefinition[] = [...baseNormalEncounters, ...alpha7Encounters];
 
 export function getRunModifier(id: RunModifierId): RunModifierDefinition {
   return runModifiers.find((modifier) => modifier.id === id) ?? runModifiers[0];

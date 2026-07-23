@@ -4,10 +4,10 @@ Last updated: 2026-07-23
 
 ## Current Release
 
-**Solo Alpha 6: Collections and Replay Goals**
+**Solo Alpha 7: Story Routes and Alternate Paths**
 
-The solo build now records discoveries across runs, grows survivor Bonds,
-reveals conditional secrets, and tracks optional offline challenge goals.
+The solo build now carries multi-route stories through a run, unlocks
+Bond-gated personal events, and offers alternate Beacon and ending paths.
 
 | Area | Status | Current implementation |
 | --- | --- | --- |
@@ -29,6 +29,10 @@ reveals conditional secrets, and tracks optional offline challenge goals.
 | Collection Journal | Alpha 6 | eight discovery categories with hidden entries and flavor text |
 | Survivor Bonds | Alpha 6 | route, recruit, and boss progress with four story-note levels |
 | Secrets and challenges | Alpha 6 | four conditional secrets, four offline goals, cosmetic titles |
+| Event chains | Alpha 7 | four three-step chains with two final outcomes each |
+| Personal stories | Alpha 7 | Rook, Mira, Bram, and four starter stories |
+| Alternate paths | Alpha 7 | standard, risky, and survivor/relic Beacon repair methods |
+| Ending variants | Alpha 7 | perfect alignment, quiet seal, and saved collapse |
 | Assets and UI | Complete for prototype | route art, Guardian art, responsive layouts |
 | Production | Complete for prototype | GitHub Pages workflow and installable PWA shell |
 
@@ -130,6 +134,16 @@ reveals conditional secrets, and tracks optional offline challenge goals.
 - Added safe migration for all journal and per-run challenge tracker fields.
 - Expanded the automated suite from 63 to 69 game-logic tests.
 
+### Solo Alpha 7 - Story Routes and Alternate Paths
+
+- Added The Ash Map, Lost Caravan, Singing Roots, and Broken Bell event chains.
+- Added personal route stories for Rook, Mira, Bram, Scout, Hunter, Herbalist, and Tinker.
+- Added ten short biome encounters focused on observation, provisions, and tradeoffs.
+- Added Standard, Risky Ritual, and class/relic repair paths for all five Beacons.
+- Added Fivefold Dawn, Quiet Seal, and Carried by the Beacons ending variants.
+- Added Journal chain progress, route story/relic hints, and end-run story outcomes.
+- Expanded the automated suite from 69 to 75 game-logic tests.
+
 ## Next Phase
 
 ### P1 - External Alpha Playtest
@@ -168,4 +182,4 @@ The current prototype is complete when:
 - Automated tests and production build pass.
 - GitHub Pages serves the app, manifest, and service worker successfully.
 
-All prototype criteria remain met in Solo Alpha 6.
+All prototype criteria remain met in Solo Alpha 7.

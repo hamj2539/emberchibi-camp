@@ -5,6 +5,8 @@ import { getRouteDecision, getRunModifier } from "../data/routeContent";
 import type { GameAction, GameState, RouteId } from "../game/state";
 import { calculateExpeditionDuration, calculateExpeditionSafety, expeditionSuccessChance, labelSuccessChance } from "../game/expedition";
 import { canResolveRouteChoice } from "../game/routeDecisions";
+import { alpha7Events } from "../data/alpha7Content";
+import { bondLevel } from "../game/journal";
 import { CrewPicker } from "./CrewPicker";
 
 type Props = {
@@ -163,6 +165,19 @@ export function ExploreScreen({ state, dispatch }: Props) {
           const safety = calculateExpeditionSafety(state, selectedSurvivors.map((survivor) => survivor.id), route, { useRation, useTorch });
           const successChance = expeditionSuccessChance(safety, route.danger);
           const duration = calculateExpeditionDuration(route, selectedSurvivors, state);
+          const routeHints = alpha7Events.filter((event) => {
+            if (!event.routes.includes(route.id)) return false;
+            if (event.chainId && event.chainStep !== undefined) {
+              const progress = state.run.eventChains[event.chainId];
+              return !progress.outcome && progress.step === event.chainStep;
+            }
+            if (event.storyFor) {
+              return selectedSurvivors.some((survivor) => survivor.id === event.storyFor) &&
+                !state.run.storyEventsSeen.includes(event.storyId ?? event.id) &&
+                bondLevel(state.legacy.bonds[event.storyFor] ?? 0) >= (event.minBond ?? 0);
+            }
+            return false;
+          });
 
           return (
             <article className={`route-card route-${route.id}`} key={route.id}>
@@ -181,6 +196,10 @@ export function ExploreScreen({ state, dispatch }: Props) {
               </div>
               <div className="reward-list">
                 {beacon && <span>{beacon.bonus}</span>}
+                {routeHints.slice(0, 2).map((hint) => <span className="story-hint" key={hint.id}>Story lead: {hint.name}</span>)}
+                {route.id === "moonwellPath" && state.legacy.equippedRelics.includes("Coalglass Charm") && (
+                  <span className="story-hint">Relic resonance: Coalglass Charm</span>
+                )}
                 {Object.keys(route.rewards).map((reward) => (
                   <span key={reward}>{reward}</span>
                 ))}

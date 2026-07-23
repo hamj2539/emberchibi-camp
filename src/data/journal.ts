@@ -41,6 +41,9 @@ export const journalCollections: Record<CollectionCategory, JournalEntry[]> = {
   endings: [
     { id: "victory", name: "Dawn Beyond the Gate", flavor: "Five lights hold while the Night Herald retreats." },
     { id: "collapse", name: "The Last Coal", flavor: "The run ended, but something was carried back." },
+    { id: "perfectAlignment", name: "Fivefold Dawn", flavor: "Five Pristine Cores sing in exact alignment and the forest remembers daylight." },
+    { id: "savedFromCollapse", name: "Carried by the Beacons", flavor: "The camp fell, but three Beacon paths guided every survivor home." },
+    { id: "heraldSealed", name: "The Quiet Seal", flavor: "The Herald is bound beyond the Gate without breaking the final Beacon line." },
   ],
   routeEvents: routeEvents.map((event) => ({ id: event.id, name: event.name, flavor: event.description })),
 };

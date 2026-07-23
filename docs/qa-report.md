@@ -1,4 +1,4 @@
-# Emberchibi Camp Solo Alpha 6 QA
+# Emberchibi Camp Solo Alpha 7 QA
 
 Last updated: 2026-07-23
 
@@ -6,7 +6,7 @@ Build target: GitHub Pages static build
 
 ## Automated Checks
 
-- `npm run test`: 69 passing game-logic tests.
+- `npm run test`: 75 passing game-logic tests.
 - `npm run build`: production build passes.
 - Full clean-run simulation reaches the Cinder Gate, defeats Night Herald, and awards an Ancient Chest.
 - Route events, choice requirements/effects, normal encounters, all four modifiers,
@@ -21,6 +21,8 @@ Build target: GitHub Pages static build
   and simplified Gate clears for all four starters have focused tests.
 - Collection deduplication, Bond levels, secret conditions, optional challenges,
   and Alpha 6 save migration have focused tests.
+- Event-chain steps/outcomes, personal stories, alternate repairs, content counts,
+  and three ending variants have focused tests.
 - GitHub Pages deployment completed successfully.
 - Production page, manifest, and service worker return HTTP 200.
 
@@ -131,6 +133,19 @@ Vite reports expected build-time warnings for absolute asset paths under
 8. Complete each of the four optional challenges and verify it stays completed.
 9. Start a new run and confirm collection, Bonds, secrets, titles, and challenges persist.
 10. Load a pre-Alpha 6 save and confirm all Journal defaults migrate safely.
+
+## Solo Alpha 7 Checklist
+
+1. Begin each of the four event chains and verify only its next step can appear.
+2. Resolve both final outcomes for each chain across separate runs.
+3. Raise Bond to level 1 and trigger the matching personal route story.
+4. Verify all seven personal stories add Bond and a lore/event record.
+5. Trigger at least two new encounters in each Beacon biome.
+6. Compare Standard Repair, Risky Ritual, and each Beacon's special method.
+7. Verify Risky Ritual lowers Core quality and raises route/crisis risk.
+8. Verify route cards hint at available chain, story, and Coalglass content.
+9. Complete Perfect Alignment and Quiet Seal endings; verify Collection entries.
+10. Collapse with three repaired Beacons and sufficient Morale; verify Saved ending.
 
 ## Alpha 1 Exploration Regression Checklist
 

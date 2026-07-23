@@ -264,7 +264,12 @@ function triggerReason(state: GameState, triggers: CrisisTrigger[]): string {
 }
 
 function collapseFromCrises(state: GameState, message: string): GameState {
-  const discovered = evaluateEndRunDiscoveries(state);
+  const endingId =
+    Object.values(state.run.beacons).filter((beacon) => beacon.repaired).length >= 3 &&
+    state.run.campPressure.morale >= 35
+      ? "savedFromCollapse" as const
+      : "collapse" as const;
+  const discovered = evaluateEndRunDiscoveries(state, endingId);
   const result = calculateCollapseScore(discovered);
   const metrics = buildRunMetrics(discovered, result.chestGrade, message);
   return {
@@ -279,7 +284,7 @@ function collapseFromCrises(state: GameState, message: string): GameState {
       runItems: [],
       runLoadout: { tool: null, charm: null, provision: null },
       survivors: discovered.run.survivors.map((survivor) => ({ ...survivor, onExpedition: false })),
-      endRun: { outcome: "collapse", ...result, reward: null, claimed: false, metrics },
+      endRun: { outcome: "collapse", endingId, ...result, reward: null, claimed: false, metrics },
       log: [message, ...discovered.run.log].slice(0, 12),
     },
   };

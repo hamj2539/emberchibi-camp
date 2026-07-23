@@ -276,7 +276,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
     case "startRepair": {
       const battle = state.run.bossBattle;
-      const quality = battle?.coreQuality;
+      const originalQuality = battle?.coreQuality;
+      const method = action.method ?? "standard";
+      const quality = originalQuality && method === "ritual" ? lowerCoreQuality(originalQuality) : originalQuality;
       if (!battle || !quality || state.run.beaconRepair?.status === "active" || action.survivorIds.length < 1 || action.survivorIds.length > 2) return state;
       if (new Set(action.survivorIds).size !== action.survivorIds.length) return state;
       const validRepairers = state.run.survivors.filter(
@@ -284,14 +286,22 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       );
       if (validRepairers.length !== action.survivorIds.length) return state;
       const beacon = getBeacon(battle.beaconId);
-      if (state.run.resources.wood < beacon.repairCost.wood || state.run.resources.stone < beacon.repairCost.stone) return state;
+      const specialAvailable =
+        (beacon.alternateRepair.classId && validRepairers.some((survivor) => survivor.classId === beacon.alternateRepair.classId)) ||
+        (beacon.alternateRepair.relic && state.legacy.equippedRelics.includes(beacon.alternateRepair.relic));
+      if (method === "special" && !specialAvailable) return state;
+      const woodCost =
+        method === "standard" ? beacon.repairCost.wood : Math.ceil(beacon.repairCost.wood / 2);
+      const stoneCost =
+        method === "standard" ? beacon.repairCost.stone : method === "ritual" ? Math.ceil(beacon.repairCost.stone / 2) : 0;
+      if (state.run.resources.wood < woodCost || state.run.resources.stone < stoneCost) return state;
       if (action.useRepairKit && state.run.items.repairKit < 1) return state;
 
       const selected = new Set(action.survivorIds.slice(0, 2));
       const resources = {
         ...state.run.resources,
-        wood: state.run.resources.wood - beacon.repairCost.wood,
-        stone: state.run.resources.stone - beacon.repairCost.stone,
+        wood: state.run.resources.wood - woodCost,
+        stone: state.run.resources.stone - stoneCost,
       };
       const items = { ...state.run.items, repairKit: state.run.items.repairKit - (action.useRepairKit ? 1 : 0) };
 
@@ -311,15 +321,22 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             requiredProgress: 35,
             coreQuality: quality,
             usedRepairKit: action.useRepairKit,
+            method,
           },
           challengeState: {
             ...state.run.challengeState,
             usedRepairKit: state.run.challengeState.usedRepairKit || action.useRepairKit,
           },
+          crisisRouteRisk: Math.min(12, state.run.crisisRouteRisk + (method === "ritual" ? 2 : 0)),
+          eventScore: state.run.eventScore + (method === "special" ? 20 : method === "ritual" ? 10 : 0),
+          eventFlags: [
+            ...state.run.eventFlags,
+            `repair-${beacon.id}-${method}`,
+          ],
           survivors: state.run.survivors.map((survivor) =>
             selected.has(survivor.id) ? { ...survivor, onExpedition: true } : survivor,
           ),
-          log: [`${beacon.repairName} has begun.`, ...state.run.log].slice(0, 12),
+          log: [`${beacon.repairName} has begun via ${method === "special" ? beacon.alternateRepair.name : method}.`, ...state.run.log].slice(0, 12),
         },
       });
     }
@@ -447,7 +464,12 @@ function collapseIfStranded(state: GameState): GameState {
 
 function finalizeCollapse(state: GameState, message: string): GameState {
   if (state.run.endRun) return state;
-  const discovered = evaluateEndRunDiscoveries(state);
+  const endingId =
+    Object.values(state.run.beacons).filter((beacon) => beacon.repaired).length >= 3 &&
+    state.run.campPressure.morale >= 35
+      ? "savedFromCollapse" as const
+      : "collapse" as const;
+  const discovered = evaluateEndRunDiscoveries(state, endingId);
   const result = calculateCollapseScore(discovered);
   const metrics = buildRunMetrics(discovered, result.chestGrade, message);
   return {
@@ -460,7 +482,7 @@ function finalizeCollapse(state: GameState, message: string): GameState {
       runItems: [],
       runLoadout: { tool: null, charm: null, provision: null },
       survivors: discovered.run.survivors.map((survivor) => ({ ...survivor, onExpedition: false })),
-      endRun: { outcome: "collapse", ...result, reward: null, claimed: false, metrics },
+      endRun: { outcome: "collapse", endingId, ...result, reward: null, claimed: false, metrics },
       log: [message, ...discovered.run.log].slice(0, 12),
     },
   };
@@ -469,4 +491,10 @@ function finalizeCollapse(state: GameState, message: string): GameState {
 function betterChestGrade(current: ChestGrade | null, next: ChestGrade): ChestGrade {
   const rank = { broken: 0, faded: 1, iron: 2, ancient: 3 } as const;
   return current && rank[current] >= rank[next] ? current : next;
+}
+
+function lowerCoreQuality(quality: NonNullable<GameState["run"]["bossBattle"]>["coreQuality"]) {
+  if (!quality) return quality;
+  const qualities = ["faded", "cracked", "stable", "pristine"] as const;
+  return qualities[Math.max(0, qualities.indexOf(quality) - 1)];
 }

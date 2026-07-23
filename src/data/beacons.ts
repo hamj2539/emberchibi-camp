@@ -1,4 +1,4 @@
-import type { BeaconId, RouteId } from "../game/state.js";
+import type { BeaconId, RouteId, StarterClassId } from "../game/state.js";
 
 export type BeaconDefinition = {
   id: BeaconId;
@@ -24,6 +24,12 @@ export type BeaconDefinition = {
   torchDamage: number;
   torchRelief: number;
   incomingBase: number;
+  alternateRepair: {
+    name: string;
+    description: string;
+    classId?: StarterClassId;
+    relic?: string;
+  };
 };
 
 export const beacons: BeaconDefinition[] = [
@@ -48,6 +54,7 @@ export const beacons: BeaconDefinition[] = [
     torchDamage: 10,
     torchRelief: 2,
     incomingBase: 9,
+    alternateRepair: { name: "Tinker's Heat Sink", description: "Tinker halves material cost and adds repair score.", classId: "tinker" },
   },
   {
     id: "tidal",
@@ -70,6 +77,7 @@ export const beacons: BeaconDefinition[] = [
     torchDamage: 6,
     torchRelief: 1,
     incomingBase: 8,
+    alternateRepair: { name: "Herbal Tide Binding", description: "Herbalist stabilizes the lens with living reeds.", classId: "herbalist" },
   },
   {
     id: "gale",
@@ -92,6 +100,7 @@ export const beacons: BeaconDefinition[] = [
     torchDamage: 8,
     torchRelief: 2,
     incomingBase: 10,
+    alternateRepair: { name: "Scout's Windline", description: "Scout aligns the vane through a hidden cliff anchor.", classId: "scout" },
   },
   {
     id: "root",
@@ -114,6 +123,7 @@ export const beacons: BeaconDefinition[] = [
     torchDamage: 6,
     torchRelief: 1,
     incomingBase: 11,
+    alternateRepair: { name: "Hunter's Heartwood Graft", description: "Hunter finds an unscarred root graft.", classId: "hunter" },
   },
   {
     id: "lunar",
@@ -136,6 +146,7 @@ export const beacons: BeaconDefinition[] = [
     torchDamage: 12,
     torchRelief: 3,
     incomingBase: 11,
+    alternateRepair: { name: "Coalglass Alignment", description: "Coalglass Charm replaces stone with reflected moonlight.", relic: "Coalglass Charm" },
   },
 ];
 

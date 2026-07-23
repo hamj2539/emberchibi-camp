@@ -39,6 +39,9 @@ export type RewardType = "legacyShards" | "blueprint" | "relic" | "survivorUnloc
 export type CampUpgradeId = "infirmary" | "workshop" | "watchtower";
 export type LegacyProjectId = "fieldManual" | "deepPockets" | "hearthstone";
 export type RunOutcome = "victory" | "collapse";
+export type EndingId = "victory" | "collapse" | "perfectAlignment" | "savedFromCollapse" | "heraldSealed";
+export type EventChainId = "ashMap" | "lostCaravan" | "singingRoots" | "brokenBell";
+export type RepairMethod = "standard" | "ritual" | "special";
 export type RunModifierId = "heavyFog" | "emberWinds" | "hungryNight" | "oldTrailSigns" | "restlessRoots";
 export type RunEquipmentSlot = "tool" | "charm" | "provision";
 export type RunItemId =
@@ -62,8 +65,18 @@ export type RouteEventId =
   | "rootWhispers"
   | "moonMirror"
   | "cinderCache"
-  | "galeNest";
-export type NormalEncounterId = "ashWolves" | "mireLeeches" | "rootboundRaiders";
+  | "galeNest"
+  | "ashMap1" | "ashMap2" | "ashMap3"
+  | "lostCaravan1" | "lostCaravan2" | "lostCaravan3"
+  | "singingRoots1" | "singingRoots2" | "singingRoots3"
+  | "brokenBell1" | "brokenBell2" | "brokenBell3"
+  | "rookStory" | "miraStory" | "bramStory"
+  | "scoutStory" | "hunterStory" | "herbalistStory" | "tinkerStory";
+export type NormalEncounterId =
+  | "ashWolves" | "mireLeeches" | "rootboundRaiders"
+  | "fogLanterns" | "emberMoths" | "cinderPilgrims"
+  | "tideCrabs" | "drownedCourier" | "galeKites"
+  | "stormShepherds" | "sporeChoir" | "thornSnare" | "moonMoths";
 export type CrisisId = "dyingFire" | "emptyStores" | "woundedCamp" | "brokenShelter" | "campDespair";
 export type CampPressureKey = "fire" | "morale" | "shelter" | "supplies";
 export type CollectionCategory =
@@ -184,6 +197,7 @@ export type BeaconRepair = {
   requiredProgress: number;
   coreQuality: CoreQuality;
   usedRepairKit: boolean;
+  method?: RepairMethod;
 };
 
 export type BeaconProgress = {
@@ -208,6 +222,7 @@ export type ChestReward = {
 
 export type EndRunResult = {
   outcome: RunOutcome;
+  endingId?: EndingId;
   score: number;
   lines: ScoreLine[];
   chestGrade: ChestGrade;
@@ -295,6 +310,8 @@ export type RunState = {
     openingUsedNonScout: boolean;
     usedRepairKit: boolean;
   };
+  eventChains: Record<EventChainId, { step: number; outcome: string | null }>;
+  storyEventsSeen: string[];
 };
 
 export type LegacyState = {
@@ -338,7 +355,7 @@ export type GameAction =
   | { type: "startCraft"; recipeId: ItemId }
   | { type: "bossAction"; action: BossAction }
   | { type: "leaveBossResult" }
-  | { type: "startRepair"; survivorIds: string[]; useRepairKit: boolean }
+  | { type: "startRepair"; survivorIds: string[]; useRepairKit: boolean; method?: RepairMethod }
   | { type: "startGate"; survivorIds: string[] }
   | { type: "gateAction"; action: GateAction }
   | { type: "leaveGateResult" }
@@ -457,6 +474,13 @@ export function createInitialState(now = Date.now()): GameState {
         openingUsedNonScout: false,
         usedRepairKit: false,
       },
+      eventChains: {
+        ashMap: { step: 0, outcome: null },
+        lostCaravan: { step: 0, outcome: null },
+        singingRoots: { step: 0, outcome: null },
+        brokenBell: { step: 0, outcome: null },
+      },
+      storyEventsSeen: [],
     },
     legacy: {
       shards: 0,

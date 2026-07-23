@@ -1,5 +1,6 @@
 import type { Dispatch } from "react";
 import { bondNotes, challengeDefinitions, journalCollections, secretDefinitions } from "../data/journal";
+import { eventChainDefinitions } from "../data/alpha7Content";
 import { bondLevel } from "../game/journal";
 import type { CollectionCategory, GameAction, GameState } from "../game/state";
 
@@ -51,6 +52,23 @@ export function JournalScreen({ state, dispatch }: Props) {
           </section>
         ))}
       </div>
+
+      <section className="panel">
+        <p className="eyebrow">This Run</p>
+        <h3>Event Chain Progress</h3>
+        <div className="journal-entry-grid">
+          {eventChainDefinitions.map((chain) => {
+            const progress = state.run.eventChains[chain.id];
+            return (
+              <article className="journal-entry" key={chain.id}>
+                <strong>{chain.name}</strong>
+                <span>Step {Math.min(progress.step, chain.steps)}/{chain.steps}</span>
+                <p>{progress.outcome ? `Outcome: ${progress.outcome}` : progress.step > 0 ? "The next clue can appear on a later route." : "No clue found this run."}</p>
+              </article>
+            );
+          })}
+        </div>
+      </section>
 
       <section className="panel">
         <p className="eyebrow">Shared Routes</p>

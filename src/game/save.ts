@@ -51,7 +51,7 @@ export function migrateV1(state: GameState): GameState {
     ? state.run.bossBattle
     : null;
   const beaconRepair = state.run.beaconRepair && validBeaconIds.has(state.run.beaconRepair.beaconId)
-    ? state.run.beaconRepair
+    ? { ...state.run.beaconRepair, method: state.run.beaconRepair.method ?? "standard" as const }
     : null;
   const unsafeEncounterScreen =
     (state.run.screen === "boss" && !bossBattle) ||
@@ -122,11 +122,19 @@ export function migrateV1(state: GameState): GameState {
         ...defaults.run.challengeState,
         ...(state.run.challengeState ?? {}),
       },
+      eventChains: {
+        ...defaults.run.eventChains,
+        ...(state.run.eventChains ?? {}),
+      },
+      storyEventsSeen: state.run.storyEventsSeen ?? [],
       gate: state.run.gate ? migrateGate(state.run.gate) : defaults.run.gate,
       endRun: state.run.endRun
         ? {
             ...state.run.endRun,
             outcome: state.run.endRun.outcome ?? "victory",
+            endingId:
+              state.run.endRun.endingId ??
+              (state.run.endRun.outcome === "collapse" ? "collapse" : "victory"),
             metrics:
               state.run.endRun.metrics ??
               buildRunMetrics(

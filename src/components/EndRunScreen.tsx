@@ -25,11 +25,12 @@ export function EndRunScreen({ state, dispatch }: Props) {
   }
   const nextGrade = nextChestTarget(endRun.score);
   const metrics = endRun.metrics;
+  const storyOutcomes = Object.entries(state.run.eventChains).filter(([, progress]) => progress.outcome);
 
   return (
     <section className="screen end-layout">
       <div className="panel camp-hero">
-        <p className="eyebrow">{endRun.outcome === "victory" ? "Run Complete" : "Run Collapsed"}</p>
+        <p className="eyebrow">{endingLabel(endRun.endingId ?? endRun.outcome)}</p>
         <h2>{endRun.score} Score</h2>
         <p>
           {endRun.outcome === "victory"
@@ -41,6 +42,17 @@ export function EndRunScreen({ state, dispatch }: Props) {
           {nextGrade ? `${nextGrade.points - endRun.score} more points needed for ${nextGrade.label}.` : "Highest chest threshold reached."}
         </span>
       </div>
+
+      {(storyOutcomes.length > 0 || state.run.storyEventsSeen.length > 0) && (
+        <div className="panel">
+          <p className="eyebrow">Story Outcomes</p>
+          <h3>Discoveries carried from this run</h3>
+          <div className="core-summary">
+            {storyOutcomes.map(([chain, progress]) => <span key={chain}>{chain}: {progress.outcome}</span>)}
+            {state.run.storyEventsSeen.map((story) => <span key={story}>{story} remembered</span>)}
+          </div>
+        </div>
+      )}
 
       <div className="panel metrics-panel">
         <p className="eyebrow">Local Playtest Metrics</p>
@@ -140,4 +152,15 @@ function nextChestTarget(score: number): { label: string; points: number } | nul
 function formatDuration(seconds: number): string {
   const minutes = Math.floor(seconds / 60);
   return `${minutes}m ${seconds % 60}s`;
+}
+
+function endingLabel(id: string): string {
+  const labels: Record<string, string> = {
+    victory: "Run Complete",
+    collapse: "Run Collapsed",
+    perfectAlignment: "Fivefold Dawn Ending",
+    savedFromCollapse: "Carried by the Beacons Ending",
+    heraldSealed: "Quiet Seal Ending",
+  };
+  return labels[id] ?? "Run Complete";
 }

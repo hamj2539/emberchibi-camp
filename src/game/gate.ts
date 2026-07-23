@@ -10,6 +10,7 @@ import type {
   GateProgress,
   StarterClassId,
   Survivor,
+  EndingId,
 } from "./state.js";
 
 export function openGate(state: GameState, partyIds: string[]): GameState {
@@ -272,7 +273,13 @@ export function finishGate(state: GameState, gate: GateProgress): GameState {
     gate.partyIds.filter((id) => nextState.run.survivors.some((survivor) => survivor.id === id && survivor.currentHp > 0)),
     3,
   );
-  nextState = evaluateEndRunDiscoveries(nextState);
+  const endingId: EndingId =
+    Object.values(nextState.run.beacons).every((beacon) => beacon.coreQuality === "pristine")
+      ? "perfectAlignment"
+      : gate.counterSuccesses >= 3 && gate.counterFailures === 0
+        ? "heraldSealed"
+        : "victory";
+  nextState = evaluateEndRunDiscoveries(nextState, endingId);
   const result = calculateScore(nextState);
   const metrics = buildRunMetrics(nextState, result.chestGrade, null);
   return {
@@ -282,7 +289,7 @@ export function finishGate(state: GameState, gate: GateProgress): GameState {
       ...nextState.run,
       runItems: [],
       runLoadout: { tool: null, charm: null, provision: null },
-      endRun: { outcome: "victory", ...result, reward: null, claimed: false, metrics },
+      endRun: { outcome: "victory", endingId, ...result, reward: null, claimed: false, metrics },
     },
   };
 }

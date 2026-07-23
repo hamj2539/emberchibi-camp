@@ -15,6 +15,7 @@ import type {
 } from "./state.js";
 import { getRunModifier } from "../data/routeContent.js";
 import { addBond, discoverEntry } from "./journal.js";
+import { bondLevel } from "./journal.js";
 import { acquireRunItem, hasRunItemEquipped } from "./runItems.js";
 
 const BASE_EVENT_CHANCE = 35;
@@ -40,7 +41,9 @@ export function rollRouteDecision(
   const kind = percentile < encounterChance ? "encounter" : percentile < encounterChance + eventChance ? "event" : null;
   if (!kind) return null;
 
-  const pool = (kind === "event" ? routeEvents : normalEncounters).filter((entry) => entry.routes.includes(routeId));
+  const pool = (kind === "event" ? routeEvents : normalEncounters).filter(
+    (entry) => entry.routes.includes(routeId) && routeDecisionAvailable(state, entry, partyIds),
+  );
   if (pool.length === 0) return null;
   const selected = pool[Math.min(pool.length - 1, Math.floor(contentRoll * pool.length))];
   return { kind, id: selected.id, routeId, partyIds };
@@ -125,9 +128,53 @@ export function resolveRouteChoice(state: GameState, choiceId: string): GameStat
       log: [`${definition.name}: ${choice.result}`, ...state.run.log].slice(0, 12),
     },
   };
+  if (definition.chainId && definition.chainStep !== undefined) {
+    resolved = {
+      ...resolved,
+      run: {
+        ...resolved.run,
+        eventChains: {
+          ...resolved.run.eventChains,
+          [definition.chainId]: {
+            step: definition.chainStep + 1,
+            outcome: choice.chainOutcome ?? null,
+          },
+        },
+      },
+    };
+  }
+  if (definition.storyId && !resolved.run.storyEventsSeen.includes(definition.storyId)) {
+    resolved = {
+      ...resolved,
+      run: {
+        ...resolved.run,
+        storyEventsSeen: [...resolved.run.storyEventsSeen, definition.storyId],
+      },
+    };
+  }
   resolved = discoverEntry(resolved, "routeEvents", definition.id);
   resolved = addBond(resolved, decision.partyIds, 1);
+  if (definition.storyFor && choice.effect.bond) {
+    resolved = addBond(resolved, [definition.storyFor], choice.effect.bond);
+  }
   return choice.effect.runItem
     ? acquireRunItem(resolved, choice.effect.runItem, `${definition.kind === "event" ? "Route event" : "Encounter"}: ${definition.name}`)
     : resolved;
+}
+
+function routeDecisionAvailable(
+  state: GameState,
+  definition: (typeof routeEvents)[number],
+  partyIds: string[],
+): boolean {
+  if (definition.chainId && definition.chainStep !== undefined) {
+    const progress = state.run.eventChains[definition.chainId];
+    if (progress.outcome || progress.step !== definition.chainStep) return false;
+  }
+  if (definition.storyFor) {
+    if (state.run.storyEventsSeen.includes(definition.storyId ?? definition.id)) return false;
+    if (!partyIds.includes(definition.storyFor)) return false;
+    if (bondLevel(state.legacy.bonds[definition.storyFor] ?? 0) < (definition.minBond ?? 0)) return false;
+  }
+  return true;
 }

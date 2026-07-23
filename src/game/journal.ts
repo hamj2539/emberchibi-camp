@@ -1,4 +1,4 @@
-import type { CollectionCategory, GameState } from "./state.js";
+import type { CollectionCategory, EndingId, GameState } from "./state.js";
 
 export function discoverEntry(state: GameState, category: CollectionCategory, id: string): GameState {
   if (state.legacy.collection[category].includes(id)) return state;
@@ -48,8 +48,8 @@ export function discoverSecret(state: GameState, id: string): GameState {
   };
 }
 
-export function evaluateEndRunDiscoveries(state: GameState): GameState {
-  let next = discoverEntry(state, "endings", state.run.gate.status === "cleared" ? "victory" : "collapse");
+export function evaluateEndRunDiscoveries(state: GameState, endingId?: EndingId): GameState {
+  let next = discoverEntry(state, "endings", endingId ?? (state.run.gate.status === "cleared" ? "victory" : "collapse"));
   if (Object.values(next.run.beacons).every((beacon) => beacon.repaired) &&
       Object.values(next.run.beacons).filter((beacon) => beacon.coreQuality === "pristine").length >= 3) {
     next = discoverSecret(next, "fivefoldConcord");

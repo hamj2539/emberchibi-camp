@@ -26,6 +26,19 @@ export function BeaconRepairScreen({ state, dispatch }: Props) {
     Boolean(beacon) &&
     state.run.resources.wood >= (beacon?.repairCost.wood ?? 0) &&
     state.run.resources.stone >= (beacon?.repairCost.stone ?? 0);
+  const specialAvailable = Boolean(
+    beacon &&
+    (
+      (beacon.alternateRepair.classId && selected.some((survivor) => survivor.classId === beacon.alternateRepair.classId)) ||
+      (beacon.alternateRepair.relic && state.legacy.equippedRelics.includes(beacon.alternateRepair.relic))
+    ),
+  );
+  const halfWood = Math.ceil((beacon?.repairCost.wood ?? 0) / 2);
+  const halfStone = Math.ceil((beacon?.repairCost.stone ?? 0) / 2);
+  const canRitual = Boolean(beacon && quality && repair?.status !== "active" && selected.length > 0 &&
+    state.run.resources.wood >= halfWood && state.run.resources.stone >= halfStone);
+  const canSpecial = Boolean(beacon && quality && repair?.status !== "active" && selected.length > 0 &&
+    specialAvailable && state.run.resources.wood >= halfWood);
 
   if (!quality) {
     return (
@@ -81,6 +94,20 @@ export function BeaconRepairScreen({ state, dispatch }: Props) {
       <div className="panel">
         <h3>Assigned Repair Crew</h3>
         <CrewPicker survivors={available} selectedIds={selectedIds} max={2} onChange={setSelectedIds} stats={["craft", "wis"]} />
+        <div className="repair-path-grid">
+          <article>
+            <strong>Standard Repair</strong>
+            <p>Full material cost. Core quality remains unchanged.</p>
+          </article>
+          <article>
+            <strong>Risky Ritual</strong>
+            <p>{halfWood} Wood, {halfStone} Stone. Core quality falls one tier and route risk rises.</p>
+          </article>
+          <article>
+            <strong>{beacon?.alternateRepair.name}</strong>
+            <p>{beacon?.alternateRepair.description} Costs {halfWood} Wood and no Stone.</p>
+          </article>
+        </div>
         <div className="choice-row">
           <button
             className="primary"
@@ -91,6 +118,7 @@ export function BeaconRepairScreen({ state, dispatch }: Props) {
                 type: "startRepair",
                 survivorIds: selected.map((survivor) => survivor.id),
                 useRepairKit: false,
+                method: "standard",
               })
             }
           >
@@ -110,10 +138,39 @@ export function BeaconRepairScreen({ state, dispatch }: Props) {
                 type: "startRepair",
                 survivorIds: selected.map((survivor) => survivor.id),
                 useRepairKit: true,
+                method: "standard",
               })
             }
           >
             Use Repair Kit
+          </button>
+          <button
+            disabled={!canRitual}
+            title={canRitual ? "Spend half materials, lower Core quality, and add crisis route risk." : `Unavailable: need a worker, ${halfWood} Wood, and ${halfStone} Stone.`}
+            onClick={() => dispatch({
+              type: "startRepair",
+              survivorIds: selected.map((survivor) => survivor.id),
+              useRepairKit: false,
+              method: "ritual",
+            })}
+          >
+            Risky Ritual
+          </button>
+          <button
+            disabled={!canSpecial}
+            title={
+              canSpecial
+                ? beacon?.alternateRepair.description
+                : `Unavailable: requires ${beacon?.alternateRepair.classId ?? beacon?.alternateRepair.relic} and ${halfWood} Wood.`
+            }
+            onClick={() => dispatch({
+              type: "startRepair",
+              survivorIds: selected.map((survivor) => survivor.id),
+              useRepairKit: false,
+              method: "special",
+            })}
+          >
+            {beacon?.alternateRepair.name}
           </button>
         </div>
       </div>

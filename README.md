@@ -1,6 +1,6 @@
 # Emberchibi Camp
 
-Solo Alpha 6 survival roguelite RPG with collections, survivor bonds, secret discoveries, optional challenges, guided onboarding, phased boss combat,
+Solo Alpha 7 survival roguelite RPG with event chains, survivor stories, alternate Beacon paths, collections, optional challenges, phased boss combat,
 exploration decisions, idle management, and turn-based key encounters.
 
 **Live build:** https://hamj2539.github.io/emberchibi-camp/
@@ -27,6 +27,9 @@ exploration decisions, idle management, and turn-based key encounters.
 - Local-only run summaries for pacing, failures, crises, Guardians, Cores, Gate, and chest results.
 - Persistent Collection Journal covering relics, equipment, blueprints, survivors, Beacons, Guardians, endings, and route events.
 - Lightweight survivor Bonds, four secret discoveries, four offline solo challenges, and cosmetic titles.
+- Four three-step event chains with alternate outcomes and seven Bond-gated personal stories.
+- Ten additional biome encounters and three repair approaches for every Beacon.
+- Perfect Alignment, Herald Sealed, and Collapse-but-Saved ending variants.
 - Local save migration, responsive layout, sound feedback, and PWA support.
 
 ## Development
@@ -50,14 +53,15 @@ The app is configured for GitHub Pages under `/emberchibi-camp/`.
 npm run test
 ```
 
-The suite currently covers 69 game-logic cases, including save migration,
+The suite currently covers 75 game-logic cases, including save migration,
 offline progress, expeditions, combat, upgrades, meta progression, collapse,
 route decisions, encounters, recruit branches, run modifiers, crisis triggers,
 deadlines, choices, ignored consequences, run item acquisition, loadout limits,
 biome counters, run-end reset, boss phases, telegraphs, counters, statuses,
 Core quality performance, balance thresholds, onboarding, local metrics,
 all four starter smoke paths, collection discovery, Bond progression, secrets,
-challenge completion, and a clean full-run Gate simulation.
+challenge completion, event chains, personal stories, alternate repairs,
+variant endings, and a clean full-run Gate simulation.
 
 ## Save Data
 

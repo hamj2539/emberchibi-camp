@@ -1384,6 +1384,31 @@ select {
   font-weight: 800;
 }
 
+.repair-path-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.repair-path-grid article {
+  padding: 12px;
+  border: 1px solid rgba(255, 202, 122, 0.22);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.repair-path-grid p {
+  margin-bottom: 0;
+  color: #cbbba8;
+  line-height: 1.35;
+}
+
+.story-hint {
+  border-color: rgba(255, 202, 122, 0.5);
+  color: #ffca7a;
+}
+
 @media (max-width: 760px) {
   .app {
     width: min(100% - 20px, 1180px);
@@ -1472,7 +1497,8 @@ select {
   }
 
   .journal-sections,
-  .journal-entry-grid {
+  .journal-entry-grid,
+  .repair-path-grid {
     grid-template-columns: 1fr;
   }
 }

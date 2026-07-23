@@ -1,5 +1,6 @@
 import { getCurrentObjective } from "../src/game/objectives.js";
-import { getBeacon } from "../src/data/beacons.js";
+import { beacons, getBeacon } from "../src/data/beacons.js";
+import { eventChainDefinitions, survivorStoryDefinitions } from "../src/data/alpha7Content.js";
 import { guardianCombat, heraldCombat, phaseForHp } from "../src/data/bossCombat.js";
 import { combatActions } from "../src/data/classes.js";
 import { getRoute, routes } from "../src/data/routes.js";
@@ -11,7 +12,7 @@ import { runItems } from "../src/data/runItems.js";
 import { calculateCoreQuality, createGuardianBattle, resolveBossAction } from "../src/game/combat.js";
 import { advanceCampSystems, canResolveCrisisChoice, resolveCrisisChoice } from "../src/game/crises.js";
 import { calculateIdleElapsed, gameReducer, MAX_OFFLINE_SECONDS } from "../src/game/reducer.js";
-import { calculateGateStability, openGate } from "../src/game/gate.js";
+import { calculateGateStability, finishGate, openGate } from "../src/game/gate.js";
 import { migrateV1, parseGame } from "../src/game/save.js";
 import { applyReward } from "../src/game/rewards.js";
 import { calculateScore, chestGradeForScore } from "../src/game/scoring.js";
@@ -499,10 +500,10 @@ const tests: { name: string; run: () => void }[] = [
     },
   },
   {
-    name: "Alpha content includes eight events, three encounters, and five modifiers",
+    name: "Alpha content retains its original events and modifiers",
     run: () => {
-      assertEqual(routeEvents.length, 8);
-      assertEqual(normalEncounters.length, 3);
+      assertEqual(routeEvents.length >= 8, true);
+      assertEqual(normalEncounters.length >= 3, true);
       assertEqual(runModifiers.length, 5);
       assertEqual(new Set(routeEvents.flatMap((event) => event.routes)).size >= 5, true);
     },
@@ -1265,6 +1266,101 @@ const tests: { name: string; run: () => void }[] = [
       assertEqual(migrated.legacy.collection.relics.includes("Coalglass Charm"), true);
       assertEqual(migrated.legacy.discoveredSecrets.length, 0);
       assertEqual(migrated.run.challengeState.minFire, 80);
+    },
+  },
+  {
+    name: "Alpha 7 defines four three-step chains, seven stories, and ten new encounters",
+    run: () => {
+      assertEqual(eventChainDefinitions.length, 4);
+      assertEqual(eventChainDefinitions.every((chain) => chain.steps >= 3 && chain.outcomes.length >= 2), true);
+      assertEqual(survivorStoryDefinitions.length, 7);
+      assertEqual(normalEncounters.length >= 13, true);
+      assertEqual(beacons.every((beacon) => Boolean(beacon.alternateRepair)), true);
+    },
+  },
+  {
+    name: "event chains advance one step and record alternate final outcomes",
+    run: () => {
+      const state = createInitialState();
+      const first = resolveRouteChoice({
+        ...state,
+        run: {
+          ...state.run,
+          activeRouteDecision: { kind: "event", id: "ashMap1", routeId: "burntGrove", partyIds: [] },
+        },
+      }, "study");
+      assertEqual(first.run.eventChains.ashMap.step, 1);
+      const final = resolveRouteChoice({
+        ...first,
+        run: {
+          ...first.run,
+          activeRouteDecision: { kind: "event", id: "ashMap3", routeId: "moonwellPath", partyIds: [] },
+        },
+      }, "repurpose");
+      assertEqual(final.run.eventChains.ashMap.step, 3);
+      assertEqual(final.run.eventChains.ashMap.outcome, "sealed-the-ash-road");
+    },
+  },
+  {
+    name: "personal story events record lore and add targeted Bond progress",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "scout" });
+      const story = resolveRouteChoice({
+        ...started,
+        legacy: { ...started.legacy, bonds: { "survivor-scout": 2 } },
+        run: {
+          ...started.run,
+          activeRouteDecision: { kind: "event", id: "scoutStory", routeId: "mistwoodEdge", partyIds: ["survivor-scout"] },
+        },
+      }, "listen");
+      assertEqual(story.run.storyEventsSeen.includes("scoutStory"), true);
+      assertEqual(story.legacy.bonds["survivor-scout"], 5);
+    },
+  },
+  {
+    name: "alternate Beacon ritual lowers Core quality and spends half materials",
+    run: () => {
+      const state = completedRun("pristine", 0, 0);
+      state.run.beaconRepair = null;
+      state.run.resources.wood = 20;
+      state.run.resources.stone = 20;
+      const repaired = gameReducer(state, {
+        type: "startRepair",
+        survivorIds: ["survivor-scout"],
+        useRepairKit: false,
+        method: "ritual",
+      });
+      assertEqual(repaired.run.beaconRepair?.method, "ritual");
+      assertEqual(repaired.run.beaconRepair?.coreQuality, "stable");
+      assertEqual(repaired.run.resources.wood, 16);
+      assertEqual(repaired.run.resources.stone, 17);
+      assertEqual(repaired.run.crisisRouteRisk, 2);
+    },
+  },
+  {
+    name: "perfect alignment and clean counters produce tracked variant endings",
+    run: () => {
+      const perfect = gateClearedRun("pristine", 0, 0);
+      const perfectResult = finishGate(perfect, perfect.run.gate);
+      assertEqual(perfectResult.run.endRun?.endingId, "perfectAlignment");
+      assertEqual(perfectResult.legacy.collection.endings.includes("perfectAlignment"), true);
+
+      const sealed = gateClearedRun("stable", 0, 0);
+      const sealedResult = finishGate(sealed, sealed.run.gate);
+      assertEqual(sealedResult.run.endRun?.endingId, "heraldSealed");
+      assertEqual(sealedResult.legacy.collection.endings.includes("heraldSealed"), true);
+    },
+  },
+  {
+    name: "three repaired Beacons can turn collapse into the saved ending",
+    run: () => {
+      const state = allBeaconsCompletedRun("stable");
+      state.run.beacons.root.repaired = false;
+      state.run.beacons.lunar.repaired = false;
+      state.run.campPressure.morale = 50;
+      const collapsed = gameReducer(state, { type: "abandonRun" });
+      assertEqual(collapsed.run.endRun?.endingId, "savedFromCollapse");
+      assertEqual(collapsed.legacy.collection.endings.includes("savedFromCollapse"), true);
     },
   },
 ];
