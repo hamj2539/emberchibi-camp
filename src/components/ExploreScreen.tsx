@@ -154,13 +154,14 @@ export function ExploreScreen({ state, dispatch }: Props) {
         {routes.map((route) => {
           const progress = state.run.routes[route.id];
           const locked = !progress.discovered;
-          const needsParty = route.kind === "boss" ? selectedSurvivors.length !== 2 : selectedSurvivors.length < 1;
+          const bossPartySize = state.run.vows.includes("soloGuardian") ? 1 : 2;
+          const needsParty = route.kind === "boss" ? selectedSurvivors.length !== bossPartySize : selectedSurvivors.length < 1;
           const disabled = locked || needsParty || Boolean(state.run.activeExpedition) || Boolean(activeDecision);
           const disabledReason = locked
             ? "Unavailable: clear the linked preparation route first."
             : needsParty
               ? route.kind === "boss"
-                ? "Unavailable: select exactly two conscious survivors."
+                ? `Unavailable: select exactly ${bossPartySize} conscious survivor${bossPartySize === 1 ? "" : "s"}.`
                 : "Unavailable: select at least one conscious survivor."
               : state.run.activeExpedition
                 ? "Unavailable: another expedition is active."
@@ -202,6 +203,9 @@ export function ExploreScreen({ state, dispatch }: Props) {
               </div>
               <div className="reward-list">
                 {beacon && <span>{beacon.bonus}</span>}
+                {state.legacy.projects.includes("trailArchive") && routeHints.length === 0 && (
+                  <span className="story-hint">Trail Archive: this route has no unresolved story lead.</span>
+                )}
                 {routeHints.slice(0, 2).map((hint) => <span className="story-hint" key={hint.id}>Story lead: {hint.name}</span>)}
                 {route.id === "moonwellPath" && state.legacy.equippedRelics.includes("Coalglass Charm") && (
                   <span className="story-hint">Relic resonance: Coalglass Charm</span>
@@ -216,7 +220,7 @@ export function ExploreScreen({ state, dispatch }: Props) {
                 title={disabledReason ?? `Start ${route.name}.`}
                 onClick={() => startRoute(route.id)}
               >
-                {locked ? "Find clues first" : needsParty ? (route.kind === "boss" ? "Select 2 survivors" : "Select a survivor") : "Start Expedition"}
+                {locked ? "Find clues first" : needsParty ? (route.kind === "boss" ? `Select ${bossPartySize} survivor${bossPartySize === 1 ? "" : "s"}` : "Select a survivor") : "Start Expedition"}
               </button>
             </article>
           );

@@ -1,4 +1,4 @@
-# Alpha 5 Balance Assumptions
+# Solo Alpha 9 Balance Assumptions
 
 Last updated: 2026-07-23
 
@@ -43,9 +43,19 @@ A clean five-Beacon victory reaches Ancient near the threshold. Route failures,
 poor Core quality, ignored crises, and downed survivors should visibly explain
 a lower grade.
 
+Base Legacy Shard payouts are 6/10/16/24 by chest grade. Duplicate permanent
+unlocks convert to 6 Shards, preventing a chest from becoming valueless.
+Tier I projects retain their established 8/12/18 costs; Tier II projects cost
+24-36 Shards and require a related Tier I project.
+
+Run Vows add 80-140 score only when their completion condition is met.
+Pristine Hunt applies an 80-point penalty when fewer than three Pristine Cores
+are recovered. First-time Vow clears grant 3 Shards and first-time Solo
+Challenge clears grant 4 Shards. Vows are optional and never gate the standard run.
+
 ## Playtest Metrics
 
-Review the latest local run summary after every playtest:
+Review the aggregate record of up to 30 local run summaries:
 
 - Duration and starter class.
 - Route failures and crisis count.

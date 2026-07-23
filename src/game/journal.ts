@@ -1,4 +1,5 @@
 import type { CollectionCategory, EndingId, GameState } from "./state.js";
+import { completedVows } from "./alpha9.js";
 
 export function discoverEntry(state: GameState, category: CollectionCategory, id: string): GameState {
   if (state.legacy.collection[category].includes(id)) return state;
@@ -58,6 +59,7 @@ export function evaluateEndRunDiscoveries(state: GameState, endingId?: EndingId)
     next = discoverSecret(next, "unbrokenDawn");
   }
   const completed = [...next.legacy.completedChallenges];
+  const previousChallengeCount = completed.length;
   const add = (id: string) => {
     if (!completed.includes(id)) completed.push(id);
   };
@@ -67,7 +69,41 @@ export function evaluateEndRunDiscoveries(state: GameState, endingId?: EndingId)
     if (next.run.challengeState.openingRoutes >= 2 && !next.run.challengeState.openingUsedNonScout) add("scoutOpening");
     if (!next.run.challengeState.usedRepairKit) add("noRepairKitGate");
   }
-  return { ...next, legacy: { ...next.legacy, completedChallenges: completed } };
+  const coreQualityVariants = [...next.legacy.coreQualityVariants];
+  const beaconRepairVariants = [...next.legacy.beaconRepairVariants];
+  for (const [beaconId, beacon] of Object.entries(next.run.beacons)) {
+    if (beacon.coreQuality) addUnique(coreQualityVariants, `${beaconId}:${beacon.coreQuality}`);
+    const repairFlag = next.run.eventFlags.find((flag) => flag.startsWith(`repair-${beaconId}-`));
+    const method = repairFlag ? repairFlag.split("-").pop() : undefined;
+    if (method) addUnique(beaconRepairVariants, `${beaconId}:${method}`);
+  }
+  const vows = [...next.legacy.completedVows];
+  const previousVowCount = vows.length;
+  for (const vow of completedVows(next)) addUnique(vows, vow);
+  const rememberedRunItem =
+    next.legacy.projects.includes("memoryReliquary")
+      ? Object.values(next.run.runLoadout).find((item): item is NonNullable<typeof item> => Boolean(item)) ??
+        next.legacy.rememberedRunItem
+      : next.legacy.rememberedRunItem;
+  return {
+    ...next,
+    legacy: {
+      ...next.legacy,
+      shards:
+        next.legacy.shards +
+        (completed.length - previousChallengeCount) * 4 +
+        (vows.length - previousVowCount) * 3,
+      completedChallenges: completed,
+      completedVows: vows,
+      coreQualityVariants,
+      beaconRepairVariants,
+      rememberedRunItem,
+    },
+  };
+}
+
+function addUnique<T>(values: T[], value: T): void {
+  if (!values.includes(value)) values.push(value);
 }
 
 function labelSecret(id: string): string {

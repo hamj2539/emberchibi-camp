@@ -1,6 +1,7 @@
 import { beacons } from "../data/beacons.js";
 import type { ChestGrade, CoreQuality, GameState, ScoreLine } from "./state.js";
 import { hasRunItemEquipped } from "./runItems.js";
+import { getRunVow } from "../data/alpha9Progression.js";
 
 const repairPoints: Record<CoreQuality, number> = {
   pristine: 140,
@@ -57,6 +58,18 @@ export function calculateScore(state: GameState): { score: number; lines: ScoreL
   if (downed > 0) lines.push({ label: "Survivors downed", points: downed * -30 });
   if (downed === 0 && hasRunItemEquipped(state, "moonThread")) {
     lines.push({ label: "Moon Thread: no survivor downed", points: 120 });
+  }
+  for (const vowId of state.run.vows ?? []) {
+    const vow = getRunVow(vowId);
+    if (vowId === "pristineHunt") {
+      const pristine = Object.values(state.run.beacons).filter((beacon) => beacon.coreQuality === "pristine").length;
+      lines.push({
+        label: pristine >= 3 ? `Vow fulfilled: ${vow.name}` : `Vow broken: ${vow.name}`,
+        points: pristine >= 3 ? vow.scoreBonus : -80,
+      });
+    } else if (state.run.gate.status === "cleared") {
+      lines.push({ label: `Vow fulfilled: ${vow.name}`, points: vow.scoreBonus });
+    }
   }
 
   const score = Math.max(0, lines.reduce((sum, line) => sum + line.points, 0));

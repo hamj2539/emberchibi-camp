@@ -81,8 +81,9 @@ export function EndRunScreen({ state, dispatch }: Props) {
             <span key={beacon}>{beacon}: {quality ?? "not recovered"}</span>
           ))}
         </div>
+        {metrics.vows.length > 0 && <p><strong>Run vows:</strong> {metrics.vows.join(" · ")}</p>}
         {metrics.collapseReason && <p><strong>Collapse reason:</strong> {metrics.collapseReason}</p>}
-        <small>Stored only in this browser. The latest 10 summaries stay with the local save.</small>
+        <small>Stored only in this browser. The latest 30 summaries stay with the local save.</small>
       </div>
 
       <div className="panel">

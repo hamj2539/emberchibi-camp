@@ -324,11 +324,13 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
         </button>
         <button
           className="danger"
+          disabled={state.run.vows.includes("noRetreat")}
+          title={state.run.vows.includes("noRetreat") ? "Disabled by the No Retreat vow." : "End this run early."}
           onClick={() => {
             if (window.confirm("End this run with a Broken Chest and half score?")) dispatch({ type: "abandonRun" });
           }}
         >
-          Abandon Run
+          {state.run.vows.includes("noRetreat") ? "No Retreat Active" : "Abandon Run"}
         </button>
       </div>
     </section>

@@ -3,6 +3,8 @@ import { bondNotes, challengeDefinitions, journalCollections, secretDefinitions 
 import { eventChainDefinitions } from "../data/alpha7Content";
 import { bondLevel } from "../game/journal";
 import type { CollectionCategory, GameAction, GameState } from "../game/state";
+import { aggregateRunMetrics, getLongTermGoals } from "../game/alpha9";
+import { runVows } from "../data/alpha9Progression";
 
 type Props = {
   state: GameState;
@@ -23,6 +25,8 @@ const categoryLabels: Record<CollectionCategory, string> = {
 export function JournalScreen({ state, dispatch }: Props) {
   const discoveredTotal = Object.values(state.legacy.collection).reduce((sum, entries) => sum + entries.length, 0);
   const collectionTotal = Object.values(journalCollections).reduce((sum, entries) => sum + entries.length, 0);
+  const goals = getLongTermGoals(state);
+  const metrics = aggregateRunMetrics(state.legacy.runHistory);
 
   return (
     <section className="screen journal-layout">
@@ -33,6 +37,23 @@ export function JournalScreen({ state, dispatch }: Props) {
         <strong>{discoveredTotal}/{collectionTotal} collection entries</strong>
         {state.legacy.titles.length > 0 && <p className="journal-titles">Titles: {state.legacy.titles.join(" · ")}</p>}
       </div>
+
+      <section className="panel long-term-panel">
+        <p className="eyebrow">Across Many Runs</p>
+        <h3>Long-term Goals</h3>
+        <div className="goal-grid">
+          {goals.map((goal) => {
+            const percent = Math.min(100, Math.round((goal.progress / goal.target) * 100));
+            return (
+              <article className={`long-goal ${goal.progress >= goal.target ? "complete" : ""}`} key={goal.id}>
+                <div><strong>{goal.name}</strong><span>{goal.progress}/{goal.target}</span></div>
+                <div className="meter" aria-label={`${goal.name}: ${percent}% complete`}><span style={{ width: `${percent}%` }} /></div>
+                <p>{goal.detail}</p>
+              </article>
+            );
+          })}
+        </div>
+      </section>
 
       <div className="journal-sections">
         {(Object.keys(journalCollections) as CollectionCategory[]).map((category) => (
@@ -69,6 +90,48 @@ export function JournalScreen({ state, dispatch }: Props) {
             );
           })}
         </div>
+      </section>
+
+      <section className="panel">
+        <p className="eyebrow">Difficulty Records</p>
+        <h3>Run Vows</h3>
+        <div className="challenge-list">
+          {runVows.map((vow) => {
+            const complete = state.legacy.completedVows.includes(vow.id);
+            return (
+              <article className="challenge-row" key={vow.id}>
+                <span>{complete ? "Cleared" : "Open"}</span>
+                <div><strong>{vow.name}</strong><p>{vow.description} {vow.reward}.</p></div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="panel metrics-panel">
+        <p className="eyebrow">Local Run History</p>
+        <h3>Balance Record</h3>
+        <div className="metrics-grid">
+          <Metric label="Recorded runs" value={metrics.runs} />
+          <Metric label="Average duration" value={formatDuration(metrics.averageDurationSeconds)} />
+          <Metric label="Wins" value={metrics.wins} />
+          <Metric label="Collapses" value={metrics.collapses} />
+        </div>
+        <h4>Chest distribution</h4>
+        <div className="status-strip">
+          {Object.entries(metrics.chestDistribution).map(([grade, count]) => <span key={grade}>{grade}: {count}</span>)}
+        </div>
+        <h4>Starter success</h4>
+        <div className="status-strip">
+          {Object.entries(metrics.starterDistribution).map(([starter, record]) => (
+            <span key={starter}>{starter}: {record.wins}/{record.runs}</span>
+          ))}
+        </div>
+        <h4>Common collapse causes</h4>
+        <p>{metrics.commonFailureCauses.length
+          ? metrics.commonFailureCauses.map((entry) => `${entry.cause} (${entry.count})`).join(" · ")
+          : "No collapse data recorded yet."}</p>
+        <small>Stored only in this browser. Up to 30 completed run summaries are retained.</small>
       </section>
 
       <section className="panel">
@@ -115,7 +178,7 @@ export function JournalScreen({ state, dispatch }: Props) {
             return (
               <article className="challenge-row" key={challenge.id}>
                 <span aria-label={complete ? "Completed" : "Incomplete"}>{complete ? "Complete" : "Open"}</span>
-                <div><strong>{challenge.name}</strong><p>{challenge.description}</p></div>
+                <div><strong>{challenge.name}</strong><p>{challenge.description} First clear: 4 Legacy Shards.</p></div>
               </article>
             );
           })}
@@ -125,4 +188,12 @@ export function JournalScreen({ state, dispatch }: Props) {
       <button onClick={() => dispatch({ type: "setScreen", screen: state.run.started ? "camp" : "starter" })}>Return</button>
     </section>
   );
+}
+
+function Metric({ label, value }: { label: string; value: string | number }) {
+  return <div className="metric"><span>{label}</span><strong>{value}</strong></div>;
+}
+
+function formatDuration(seconds: number): string {
+  return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
 }

@@ -42,12 +42,21 @@ export function MetaScreen({ state, dispatch }: Props) {
         <div className="upgrade-grid">
           {legacyProjects.map((project) => {
             const owned = legacy.projects.includes(project.id);
+            const prerequisiteMet = !project.requires || legacy.projects.includes(project.requires);
+            const requirement = project.requires
+              ? legacyProjects.find((entry) => entry.id === project.requires)?.name
+              : null;
             return (
-              <article className="upgrade-row" key={project.id}>
-                <div><strong>{project.name}</strong><span>{project.description}</span><small>{project.cost} Shards</small></div>
+              <article className={`upgrade-row tier-${project.tier}`} key={project.id}>
+                <div>
+                  <span className="project-tier">Tier {project.tier}</span>
+                  <strong>{project.name}</strong><span>{project.description}</span>
+                  <small>{project.cost} Shards{!prerequisiteMet ? ` · Requires ${requirement}` : ""}</small>
+                </div>
                 <button
                   className={owned ? "" : "primary"}
-                  disabled={owned || legacy.shards < project.cost}
+                  disabled={owned || legacy.shards < project.cost || !prerequisiteMet}
+                  title={!prerequisiteMet ? `Unlock ${requirement} first.` : legacy.shards < project.cost ? `Requires ${project.cost} Shards.` : project.description}
                   onClick={() => dispatch({ type: "buyLegacyProject", projectId: project.id })}
                 >
                   {owned ? "Owned" : "Unlock"}
@@ -57,6 +66,13 @@ export function MetaScreen({ state, dispatch }: Props) {
           })}
         </div>
       </div>
+      {legacy.rememberedRunItem && (
+        <div className="panel memory-panel">
+          <p className="eyebrow">Memory Reliquary</p>
+          <h3>{legacy.rememberedRunItem}</h3>
+          <p>This run item will return equipped at the start of the next run.</p>
+        </div>
+      )}
 
       <div className="panel">
         <p className="eyebrow">2 Slots</p>

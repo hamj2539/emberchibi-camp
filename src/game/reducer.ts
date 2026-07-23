@@ -12,7 +12,7 @@ import { calculateExpeditionDuration } from "./expedition.js";
 import { applyLegacyStartBonuses } from "./meta.js";
 import { appendRunHistory, buildRunMetrics } from "./metrics.js";
 import { addBond, discoverEntry, evaluateEndRunDiscoveries } from "./journal.js";
-import { applyReward, rollChestReward } from "./rewards.js";
+import { applyReward, rollBestChestReward } from "./rewards.js";
 import { calculateCollapseScore } from "./scoring.js";
 import { modifierFromRoll, resolveRouteChoice } from "./routeDecisions.js";
 import { equipRunItem, unequipRunItem } from "./runItems.js";
@@ -98,7 +98,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         (survivor) => action.survivorIds.includes(survivor.id) && !survivor.onExpedition && survivor.currentHp > 0,
       );
       if (validParty.length !== action.survivorIds.length || validParty.length < 1 || validParty.length > 2) return state;
-      if (route.kind === "boss" && validParty.length !== 2) return state;
+      const requiredBossParty = state.run.vows.includes("soloGuardian") ? 1 : 2;
+      if (route.kind === "boss" && validParty.length !== requiredBossParty) return state;
       const now = Date.now();
       const selected = new Set(action.survivorIds);
       const useRation = Boolean(action.useRation && state.run.items.ration > 0);
@@ -343,7 +344,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case "claimChest": {
       const endRun = state.run.endRun;
       if (!endRun || endRun.claimed) return state;
-      const reward = rollChestReward(endRun.chestGrade);
+      const reward = rollBestChestReward(endRun.chestGrade, state.legacy.projects.includes("chestLens"));
       const rewarded = applyReward(state, reward);
       return stamp({
         ...rewarded,
@@ -363,7 +364,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case "buyLegacyProject": {
       if (state.legacy.projects.includes(action.projectId)) return state;
       const project = legacyProjects.find((entry) => entry.id === action.projectId);
-      if (!project || state.legacy.shards < project.cost) return state;
+      if (!project || state.legacy.shards < project.cost || (project.requires && !state.legacy.projects.includes(project.requires))) return state;
       return stamp({
         ...state,
         legacy: {
@@ -373,6 +374,23 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         },
       });
     }
+    case "toggleVow": {
+      if (state.run.started) return state;
+      const selected = state.run.vows.includes(action.vowId);
+      return stamp({
+        ...state,
+        run: {
+          ...state.run,
+          vows: selected ? state.run.vows.filter((id) => id !== action.vowId) : [...state.run.vows, action.vowId],
+        },
+      });
+    }
+    case "selectRunModifier":
+      if (state.run.started || !state.legacy.projects.includes("weatherDial")) return state;
+      return stamp({ ...state, run: { ...state.run, runModifier: action.modifierId } });
+    case "selectStarterLoadout":
+      if (state.run.started || !state.legacy.projects.includes("starterSatchel")) return state;
+      return stamp({ ...state, run: { ...state.run, starterLoadout: action.loadoutId } });
     case "toggleRelic": {
       if (!state.legacy.relics.includes(action.relic)) return state;
       const equipped = state.legacy.equippedRelics.includes(action.relic);
@@ -402,6 +420,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         legacy: { ...state.legacy, onboardingComplete: true },
       });
     case "abandonRun":
+      if (state.run.vows.includes("noRetreat")) return state;
       return stamp(finalizeCollapse(state, "The campfire was abandoned before the forest could claim the last survivors."));
     case "tick": {
       const elapsedSeconds = Math.max(0, Math.floor((action.now - state.savedAt) / 1000));

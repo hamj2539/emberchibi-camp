@@ -31,12 +31,13 @@ export function buildRunMetrics(
       state.run.gate.status === "cleared" ? "cleared" : state.run.gate.status === "lost" ? "lost" : "notReached",
     chestGrade,
     collapseReason,
+    vows: state.run.vows ?? [],
   };
 }
 
 export function appendRunHistory(state: GameState, metrics: RunMetrics): GameState["legacy"] {
   return {
     ...state.legacy,
-    runHistory: [metrics, ...(state.legacy.runHistory ?? [])].slice(0, 10),
+    runHistory: [metrics, ...(state.legacy.runHistory ?? [])].slice(0, 30),
   };
 }

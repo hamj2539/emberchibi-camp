@@ -28,6 +28,10 @@ import { createInitialState, type GameState } from "../src/game/state.js";
 import { acquireRunItem } from "../src/game/runItems.js";
 import { buildRunMetrics } from "../src/game/metrics.js";
 import { addBond, bondLevel, discoverEntry, evaluateEndRunDiscoveries } from "../src/game/journal.js";
+import { aggregateRunMetrics, getLongTermGoals } from "../src/game/alpha9.js";
+import { runVows } from "../src/data/alpha9Progression.js";
+import { legacyProjects } from "../src/data/progression.js";
+import { shardAmount } from "../src/game/rewards.js";
 
 const tests: { name: string; run: () => void }[] = [
   {
@@ -1361,6 +1365,102 @@ const tests: { name: string; run: () => void }[] = [
       const collapsed = gameReducer(state, { type: "abandonRun" });
       assertEqual(collapsed.run.endRun?.endingId, "savedFromCollapse");
       assertEqual(collapsed.legacy.collection.endings.includes("savedFromCollapse"), true);
+    },
+  },
+  {
+    name: "Alpha 9 defines five optional vows and five tier-two projects",
+    run: () => {
+      assertEqual(runVows.length, 5);
+      assertEqual(legacyProjects.filter((project) => project.tier === 2).length, 5);
+      assertEqual(legacyProjects.filter((project) => project.tier === 2).every((project) => Boolean(project.requires)), true);
+    },
+  },
+  {
+    name: "vows apply setup pressure, score rewards, and No Retreat enforcement",
+    run: () => {
+      let state = createInitialState();
+      state = gameReducer(state, { type: "toggleVow", vowId: "lowFlame" });
+      state = gameReducer(state, { type: "toggleVow", vowId: "scarceFood" });
+      state = gameReducer(state, { type: "toggleVow", vowId: "noRetreat" });
+      const started = gameReducer(state, { type: "chooseStarter", classId: "scout" });
+      assertEqual(started.run.campPressure.fire, 45);
+      assertEqual(started.run.resources.food, 5);
+      assertEqual(gameReducer(started, { type: "abandonRun" }).run.endRun, null);
+      const won = {
+        ...gateClearedRun("stable", 0, 0),
+        run: { ...gateClearedRun("stable", 0, 0).run, vows: ["lowFlame", "scarceFood", "noRetreat"] as const },
+      } as GameState;
+      assertEqual(calculateScore(won).score, 1610);
+    },
+  },
+  {
+    name: "tier-two projects enforce prerequisites and unlock strategic selections",
+    run: () => {
+      const initial = createInitialState();
+      const funded = { ...initial, legacy: { ...initial.legacy, shards: 100 } };
+      const blocked = gameReducer(funded, { type: "buyLegacyProject", projectId: "weatherDial" });
+      assertEqual(blocked.legacy.projects.includes("weatherDial"), false);
+      const prerequisite = gameReducer(funded, { type: "buyLegacyProject", projectId: "deepPockets" });
+      const unlocked = gameReducer(prerequisite, { type: "buyLegacyProject", projectId: "weatherDial" });
+      const selected = gameReducer(unlocked, { type: "selectRunModifier", modifierId: "heavyFog" });
+      assertEqual(selected.run.runModifier, "heavyFog");
+      assertEqual(selected.legacy.shards, 60);
+    },
+  },
+  {
+    name: "chest shard payouts scale by grade and duplicate unlocks grant fallback value",
+    run: () => {
+      assertEqual(shardAmount("broken"), 6);
+      assertEqual(shardAmount("ancient"), 24);
+      const initial = createInitialState();
+      const duplicate = applyReward({
+        ...initial,
+        legacy: { ...initial.legacy, blueprints: ["Torch Blueprint"] },
+      }, { type: "blueprint", label: "Torch Blueprint" });
+      assertEqual(duplicate.legacy.shards, 6);
+    },
+  },
+  {
+    name: "long-term tracking records Core, repair, vow, and aggregate run progress",
+    run: () => {
+      const state = {
+        ...gateClearedRun("pristine", 0, 0),
+        run: {
+          ...gateClearedRun("pristine", 0, 0).run,
+          vows: ["pristineHunt"] as const,
+          eventFlags: ["repair-ember-special"],
+        },
+      } as GameState;
+      const evaluated = evaluateEndRunDiscoveries(state, "perfectAlignment");
+      assertEqual(evaluated.legacy.coreQualityVariants.includes("ember:pristine"), true);
+      assertEqual(evaluated.legacy.beaconRepairVariants.includes("ember:special"), true);
+      assertEqual(evaluated.legacy.completedVows.includes("pristineHunt"), true);
+      assertEqual(evaluated.legacy.shards, 11);
+      const reevaluated = evaluateEndRunDiscoveries(evaluated, "perfectAlignment");
+      assertEqual(reevaluated.legacy.shards, 11);
+      const goals = getLongTermGoals(evaluated);
+      assertEqual(goals.length, 6);
+      const metrics = buildRunMetrics(evaluated, "ancient", null);
+      const aggregate = aggregateRunMetrics([metrics]);
+      assertEqual(aggregate.wins, 1);
+      assertEqual(aggregate.chestDistribution.ancient, 1);
+    },
+  },
+  {
+    name: "save migration safely fills all Alpha 9 progression fields",
+    run: () => {
+      const old = createInitialState();
+      delete (old.run as Partial<GameState["run"]>).vows;
+      delete (old.run as Partial<GameState["run"]>).starterLoadout;
+      delete (old.legacy as Partial<GameState["legacy"]>).completedVows;
+      delete (old.legacy as Partial<GameState["legacy"]>).coreQualityVariants;
+      delete (old.legacy as Partial<GameState["legacy"]>).beaconRepairVariants;
+      delete (old.legacy as Partial<GameState["legacy"]>).rememberedRunItem;
+      const migrated = migrateV1(old);
+      assertEqual(migrated.run.vows.length, 0);
+      assertEqual(migrated.run.starterLoadout, "balanced");
+      assertEqual(migrated.legacy.completedVows.length, 0);
+      assertEqual(migrated.legacy.rememberedRunItem, null);
     },
   },
 ];

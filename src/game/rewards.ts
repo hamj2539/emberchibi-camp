@@ -40,6 +40,13 @@ export function rollChestReward(grade: ChestGrade): ChestReward {
   return { type, label: pick(["Ember Adept Class", "Warden Class"]) };
 }
 
+export function rollBestChestReward(grade: ChestGrade, useChestLens: boolean): ChestReward {
+  const first = rollChestReward(grade);
+  if (!useChestLens) return first;
+  const second = rollChestReward(grade);
+  return rewardRank(second) > rewardRank(first) ? second : first;
+}
+
 export function describeChestGrade(grade: ChestGrade): string {
   const descriptions: Record<ChestGrade, string> = {
     broken: "Small shard payout with a low chance of collection unlocks.",
@@ -64,6 +71,11 @@ export function applyReward(state: GameState, reward: ChestReward): GameState {
   };
 
   if (reward.type === "legacyShards") legacy.shards += reward.amount ?? 0;
+  const duplicate =
+    (reward.type === "blueprint" && legacy.blueprints.includes(reward.label)) ||
+    (reward.type === "relic" && legacy.relics.includes(reward.label)) ||
+    ((reward.type === "survivorUnlock" || reward.type === "classUnlock") && legacy.unlocks.includes(reward.label));
+  if (duplicate) legacy.shards += 6;
   if (reward.type === "blueprint" && !legacy.blueprints.includes(reward.label)) legacy.blueprints.push(reward.label);
   if (reward.type === "blueprint" && !legacy.collection.blueprints.includes(reward.label)) legacy.collection.blueprints.push(reward.label);
   if (reward.type === "relic" && !legacy.relics.includes(reward.label)) legacy.relics.push(reward.label);
@@ -75,6 +87,20 @@ export function applyReward(state: GameState, reward: ChestReward): GameState {
   return { ...state, legacy };
 }
 
+export function shardAmount(grade: ChestGrade): number {
+  const amounts: Record<ChestGrade, number> = {
+    broken: 6,
+    faded: 10,
+    iron: 16,
+    ancient: 24,
+  };
+  return amounts[grade];
+}
+
+function rewardRank(reward: ChestReward): number {
+  return { legacyShards: 0, blueprint: 1, relic: 2, survivorUnlock: 3, classUnlock: 4 }[reward.type];
+}
+
 function weightedRoll(options: { type: RewardType; weight: number }[]): RewardType {
   const total = options.reduce((sum, option) => sum + option.weight, 0);
   let roll = Math.random() * total;
@@ -83,16 +109,6 @@ function weightedRoll(options: { type: RewardType; weight: number }[]): RewardTy
     if (roll <= 0) return option.type;
   }
   return "legacyShards";
-}
-
-function shardAmount(grade: ChestGrade): number {
-  const amounts: Record<ChestGrade, number> = {
-    broken: 5,
-    faded: 9,
-    iron: 14,
-    ancient: 22,
-  };
-  return amounts[grade];
 }
 
 function pick(values: string[]): string {

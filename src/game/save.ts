@@ -6,6 +6,7 @@ import { crises } from "../data/crises.js";
 import { runItems } from "../data/runItems.js";
 import { guardianCombat, heraldCombat } from "../data/bossCombat.js";
 import { buildRunMetrics } from "./metrics.js";
+import { runVows, starterLoadouts } from "../data/alpha9Progression.js";
 
 const SAVE_KEY = "emberchibiCamp.v1";
 const BACKUP_KEY = "emberchibiCamp.v1.backup";
@@ -80,6 +81,13 @@ export function migrateV1(state: GameState): GameState {
       bonds: state.legacy.bonds ?? {},
       discoveredSecrets: state.legacy.discoveredSecrets ?? [],
       completedChallenges: state.legacy.completedChallenges ?? [],
+      completedVows: state.legacy.completedVows ?? [],
+      coreQualityVariants: state.legacy.coreQualityVariants ?? [],
+      beaconRepairVariants: state.legacy.beaconRepairVariants ?? [],
+      rememberedRunItem:
+        state.legacy.rememberedRunItem && runItems.some((item) => item.id === state.legacy.rememberedRunItem)
+          ? state.legacy.rememberedRunItem
+          : null,
       titles: state.legacy.titles ?? [],
     },
     run: {
@@ -98,6 +106,10 @@ export function migrateV1(state: GameState): GameState {
       runModifier: runModifiers.some((modifier) => modifier.id === state.run.runModifier)
         ? state.run.runModifier
         : defaults.run.runModifier,
+      vows: (state.run.vows ?? []).filter((id) => runVows.some((vow) => vow.id === id)),
+      starterLoadout: starterLoadouts.some((loadout) => loadout.id === state.run.starterLoadout)
+        ? state.run.starterLoadout
+        : defaults.run.starterLoadout,
       runItems: (state.run.runItems ?? []).filter((pickup) => runItems.some((item) => item.id === pickup.id)),
       runLoadout: migrateRunLoadout(state, defaults),
       triggeredRunEffects: state.run.triggeredRunEffects ?? [],
@@ -136,7 +148,9 @@ export function migrateV1(state: GameState): GameState {
               state.run.endRun.endingId ??
               (state.run.endRun.outcome === "collapse" ? "collapse" : "victory"),
             metrics:
-              state.run.endRun.metrics ??
+              state.run.endRun.metrics
+                ? { ...state.run.endRun.metrics, vows: state.run.endRun.metrics.vows ?? state.run.vows ?? [] }
+                :
               buildRunMetrics(
                 state,
                 state.run.endRun.chestGrade,

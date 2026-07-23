@@ -33,11 +33,17 @@ export type LegacyProject = {
   name: string;
   description: string;
   cost: number;
+  tier: 1 | 2;
+  requires?: LegacyProjectId;
 };
 
 export const legacyProjects: LegacyProject[] = [
-  { id: "fieldManual", name: "Field Manual", description: "+3 safety on every route.", cost: 8 },
-  { id: "deepPockets", name: "Deep Pockets", description: "Start each run with +1 Ration and +1 Torch.", cost: 12 },
-  { id: "hearthstone", name: "Hearthstone", description: "The first survivor starts with +5 max HP.", cost: 18 },
+  { id: "fieldManual", name: "Field Manual", description: "+3 safety on every route.", cost: 8, tier: 1 },
+  { id: "deepPockets", name: "Deep Pockets", description: "Start each run with +1 Ration and +1 Torch.", cost: 12, tier: 1 },
+  { id: "hearthstone", name: "Hearthstone", description: "The first survivor starts with +5 max HP.", cost: 18, tier: 1 },
+  { id: "trailArchive", name: "Trail Archive", description: "Reveal one likely story lead in every route forecast.", cost: 24, tier: 2, requires: "fieldManual" },
+  { id: "weatherDial", name: "Weather Dial", description: "Choose the run modifier before selecting a starter.", cost: 28, tier: 2, requires: "deepPockets" },
+  { id: "chestLens", name: "Chest Lens", description: "Legacy Chests roll twice and keep the rarer reward.", cost: 32, tier: 2, requires: "fieldManual" },
+  { id: "memoryReliquary", name: "Memory Reliquary", description: "Carry one equipped run item into the next run.", cost: 36, tier: 2, requires: "hearthstone" },
+  { id: "starterSatchel", name: "Starter Satchel", description: "Choose a Trail or Workshop starting loadout.", cost: 30, tier: 2, requires: "deepPockets" },
 ];
-

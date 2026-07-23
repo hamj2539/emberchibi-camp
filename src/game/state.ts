@@ -37,7 +37,17 @@ export type CoreQuality = "pristine" | "stable" | "cracked" | "faded";
 export type ChestGrade = "broken" | "faded" | "iron" | "ancient";
 export type RewardType = "legacyShards" | "blueprint" | "relic" | "survivorUnlock" | "classUnlock";
 export type CampUpgradeId = "infirmary" | "workshop" | "watchtower";
-export type LegacyProjectId = "fieldManual" | "deepPockets" | "hearthstone";
+export type LegacyProjectId =
+  | "fieldManual"
+  | "deepPockets"
+  | "hearthstone"
+  | "trailArchive"
+  | "weatherDial"
+  | "chestLens"
+  | "memoryReliquary"
+  | "starterSatchel";
+export type RunVowId = "lowFlame" | "scarceFood" | "noRetreat" | "pristineHunt" | "soloGuardian";
+export type StarterLoadoutId = "balanced" | "trail" | "workshop";
 export type RunOutcome = "victory" | "collapse";
 export type EndingId = "victory" | "collapse" | "perfectAlignment" | "savedFromCollapse" | "heraldSealed";
 export type EventChainId = "ashMap" | "lostCaravan" | "singingRoots" | "brokenBell";
@@ -242,6 +252,7 @@ export type RunMetrics = {
   nightHeraldOutcome: "cleared" | "lost" | "notReached";
   chestGrade: ChestGrade;
   collapseReason: string | null;
+  vows: RunVowId[];
 };
 
 export type GateProgress = {
@@ -282,6 +293,8 @@ export type RunState = {
   beaconRepair: BeaconRepair | null;
   campUpgrades: CampUpgradeId[];
   runModifier: RunModifierId;
+  vows: RunVowId[];
+  starterLoadout: StarterLoadoutId;
   runItems: RunItemPickup[];
   runLoadout: RunLoadout;
   triggeredRunEffects: string[];
@@ -331,6 +344,10 @@ export type LegacyState = {
   bonds: Record<string, number>;
   discoveredSecrets: string[];
   completedChallenges: string[];
+  completedVows: RunVowId[];
+  coreQualityVariants: string[];
+  beaconRepairVariants: string[];
+  rememberedRunItem: RunItemId | null;
   titles: string[];
 };
 
@@ -361,6 +378,9 @@ export type GameAction =
   | { type: "leaveGateResult" }
   | { type: "claimChest" }
   | { type: "buyLegacyProject"; projectId: LegacyProjectId }
+  | { type: "toggleVow"; vowId: RunVowId }
+  | { type: "selectRunModifier"; modifierId: RunModifierId }
+  | { type: "selectStarterLoadout"; loadoutId: StarterLoadoutId }
   | { type: "toggleRelic"; relic: string }
   | { type: "advanceOnboarding" }
   | { type: "skipOnboarding" }
@@ -428,6 +448,8 @@ export function createInitialState(now = Date.now()): GameState {
       beaconRepair: null,
       campUpgrades: [],
       runModifier: "hungryNight",
+      vows: [],
+      starterLoadout: "balanced",
       runItems: [],
       runLoadout: { tool: null, charm: null, provision: null },
       triggeredRunEffects: [],
@@ -508,6 +530,10 @@ export function createInitialState(now = Date.now()): GameState {
       bonds: {},
       discoveredSecrets: [],
       completedChallenges: [],
+      completedVows: [],
+      coreQualityVariants: [],
+      beaconRepairVariants: [],
+      rememberedRunItem: null,
       titles: [],
     },
   };

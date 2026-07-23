@@ -165,6 +165,22 @@ Vite reports expected build-time warnings for absolute asset paths under
     repair, Gate, milestone overlay, and End Run.
 13. Enable reduced motion and verify pulsing, particles, floating chest, and scene motion stop.
 
+## Solo Alpha 9 Progression QA
+
+1. Select each Vow before a run and verify its setup restriction and score line.
+2. Verify No Retreat disables both the Camp button and reducer action.
+3. Verify Solo Guardian requires one survivor at every Guardian site.
+4. Fulfill and fail Pristine Hunt; compare the +120 and -80 score lines.
+5. Buy Tier II projects only after their Tier I prerequisites.
+6. Use Weather Dial and Starter Satchel before choosing a starter.
+7. Finish with an equipped run item and verify Memory Reliquary carries it forward.
+8. Open a Chest with Chest Lens and verify only one permanent reward is applied.
+9. Claim duplicate relics/blueprints/unlocks and verify the 6-Shard fallback.
+10. Complete Core qualities and repair methods; verify long-term goal progress.
+11. Verify Journal aggregates duration, wins/collapses, chests, starters, and causes.
+12. Load a pre-Alpha 9 save and verify Vows, variants, and memory defaults migrate safely.
+13. At 390px width, verify Vow cards, goal cards, metrics, and Tier II controls stack.
+
 ## Alpha 1 Exploration Regression Checklist
 
 1. Start a fresh run and open Explore; confirm the active Run Modifier is visible.

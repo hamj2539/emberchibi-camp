@@ -4,10 +4,10 @@ Last updated: 2026-07-23
 
 ## Current Release
 
-**Solo Alpha 8: Feel and Presentation**
+**Solo Alpha 9: Long-term Progression**
 
-The existing solo systems now have stronger visual hierarchy, milestone
-presentation, consistent UI assets, combat feedback, and reward polish.
+The solo loop now has optional difficulty, multi-run collection targets,
+Tier II strategic projects, tuned chest value, and local aggregate metrics.
 
 | Area | Status | Current implementation |
 | --- | --- | --- |
@@ -24,8 +24,8 @@ presentation, consistent UI assets, combat feedback, and reward polish.
 | Final encounter | Alpha 4 | Gate Stability and three-phase Night Herald |
 | Run ending | Alpha 2 | victory or pressure-driven collapse, partial score, graded chest |
 | Onboarding | Alpha 5 | seven-step first-run guide, skippable and locally persisted |
-| Instrumentation | Alpha 5 | latest ten local run summaries, no analytics/backend |
-| Meta progression | Complete | shards, projects, blueprints, unlocks, relic loadout |
+| Instrumentation | Alpha 9 | latest 30 summaries plus local aggregate balance metrics |
+| Meta progression | Alpha 9 | tuned shards, two project tiers, strategic unlock options |
 | Collection Journal | Alpha 6 | eight discovery categories with hidden entries and flavor text |
 | Survivor Bonds | Alpha 6 | route, recruit, and boss progress with four story-note levels |
 | Secrets and challenges | Alpha 6 | four conditional secrets, four offline goals, cosmetic titles |
@@ -36,6 +36,8 @@ presentation, consistent UI assets, combat feedback, and reward polish.
 | Presentation | Alpha 8 | milestone overlays, particles, scene glow, contextual audio |
 | UI assets | Alpha 8 | generated items, chests, statuses, Cores, and Beacon states |
 | Combat feel | Alpha 8 | phase emphasis, telegraph pulse, counter flashes, downed styling |
+| Long-term goals | Alpha 9 | six tracked goals covering variants, Bonds, endings, and collections |
+| Run vows | Alpha 9 | five optional difficulty modifiers with score and Journal records |
 | Assets and UI | Complete for prototype | route art, Guardian art, responsive layouts |
 | Production | Complete for prototype | GitHub Pages workflow and installable PWA shell |
 
@@ -159,6 +161,15 @@ presentation, consistent UI assets, combat feedback, and reward polish.
 - Polished Journal cards and end-run discovery, Bond, secret, and challenge rewards.
 - Preserved keyboard controls, mute state, mobile layouts, and reduced motion.
 
+### Solo Alpha 9 - Long-term Progression
+
+- Added six persistent long-term goals to the Collection Journal.
+- Added Low Flame, Scarce Food, No Retreat, Pristine Hunt, and Solo Guardian vows.
+- Added five Tier II projects with prerequisites and strategic run options.
+- Tuned shard payouts and added duplicate reward conversion.
+- Expanded local run history to 30 summaries with aggregate balance reporting.
+- Added safe migration and expanded the automated suite from 75 to 81 tests.
+
 ## Next Phase
 
 ### P1 - External Alpha Playtest
@@ -197,4 +208,4 @@ The current prototype is complete when:
 - Automated tests and production build pass.
 - GitHub Pages serves the app, manifest, and service worker successfully.
 
-All prototype criteria remain met in Solo Alpha 8.
+All prototype criteria remain met in Solo Alpha 9.
