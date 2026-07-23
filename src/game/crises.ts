@@ -8,6 +8,7 @@ import type {
   ResourceKey,
 } from "./state.js";
 import { acquireRunItem, hasRunItemEquipped, triggerRunEffect } from "./runItems.js";
+import { appendRunHistory, buildRunMetrics } from "./metrics.js";
 
 const RESOLVED_COOLDOWN_SECONDS = 90;
 const IGNORED_COOLDOWN_SECONDS = 45;
@@ -206,7 +207,7 @@ function driftPressure(state: GameState, elapsedSeconds: number): CampPressure {
     state.run.survivors.reduce((sum, survivor) => sum + survivor.fatigue, 0) / activeSurvivors;
   const averageInjury =
     state.run.survivors.reduce((sum, survivor) => sum + survivor.injury, 0) / activeSurvivors;
-  const fireDecay = state.run.runModifier === "emberWinds" ? 0.22 : 0.18;
+  const fireDecay = state.run.runModifier === "emberWinds" ? 0.16 : 0.12;
 
   pressure.fire = clamp(pressure.fire - elapsedSeconds * fireDecay);
   const hungryCounter =
@@ -214,7 +215,7 @@ function driftPressure(state: GameState, elapsedSeconds: number): CampPressure {
     (state.run.survivors.some((survivor) => survivor.classId === "hunter") || hasRunItemEquipped(state, "saltedRations"));
   pressure.supplies = clamp(
     pressure.supplies +
-      elapsedSeconds * (state.run.resources.food <= 5 && !hungryCounter ? -0.12 : state.run.resources.food >= 12 ? 0.03 : -0.02),
+      elapsedSeconds * (state.run.resources.food <= 5 && !hungryCounter ? -0.09 : state.run.resources.food >= 12 ? 0.025 : -0.015),
   );
   pressure.morale = clamp(
     pressure.morale + elapsedSeconds * (averageFatigue >= 55 || averageInjury >= 30 ? -0.07 : 0.02),
@@ -255,8 +256,10 @@ function triggerReason(state: GameState, triggers: CrisisTrigger[]): string {
 
 function collapseFromCrises(state: GameState, message: string): GameState {
   const result = calculateCollapseScore(state);
+  const metrics = buildRunMetrics(state, result.chestGrade, message);
   return {
     ...state,
+    legacy: appendRunHistory(state, metrics),
     run: {
       ...state.run,
       screen: "end",
@@ -266,7 +269,7 @@ function collapseFromCrises(state: GameState, message: string): GameState {
       runItems: [],
       runLoadout: { tool: null, charm: null, provision: null },
       survivors: state.run.survivors.map((survivor) => ({ ...survivor, onExpedition: false })),
-      endRun: { outcome: "collapse", ...result, reward: null, claimed: false },
+      endRun: { outcome: "collapse", ...result, reward: null, claimed: false, metrics },
       log: [message, ...state.run.log].slice(0, 12),
     },
   };

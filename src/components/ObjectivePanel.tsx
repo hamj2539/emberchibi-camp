@@ -1,11 +1,13 @@
 import { getCurrentObjective } from "../game/objectives";
-import type { GameState } from "../game/state";
+import type { Dispatch } from "react";
+import type { GameAction, GameState } from "../game/state";
 
 type Props = {
   state: GameState;
+  dispatch: Dispatch<GameAction>;
 };
 
-export function ObjectivePanel({ state }: Props) {
+export function ObjectivePanel({ state, dispatch }: Props) {
   const objective = getCurrentObjective(state);
 
   if (!state.run.started) return null;
@@ -23,6 +25,12 @@ export function ObjectivePanel({ state }: Props) {
           <span style={{ width: `${objective.progress}%` }} />
         </div>
       </div>
+      <button
+        className="primary objective-action"
+        onClick={() => dispatch({ type: "setScreen", screen: objective.screen })}
+      >
+        {objective.actionLabel}
+      </button>
     </section>
   );
 }

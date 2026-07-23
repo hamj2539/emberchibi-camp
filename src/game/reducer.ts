@@ -10,6 +10,7 @@ import { advanceCampSystems, resolveCrisisChoice } from "./crises.js";
 import { openGate, resolveGateAction } from "./gate.js";
 import { calculateExpeditionDuration } from "./expedition.js";
 import { applyLegacyStartBonuses } from "./meta.js";
+import { appendRunHistory, buildRunMetrics } from "./metrics.js";
 import { applyReward, rollChestReward } from "./rewards.js";
 import { calculateCollapseScore } from "./scoring.js";
 import { modifierFromRoll, resolveRouteChoice } from "./routeDecisions.js";
@@ -52,6 +53,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         run: {
           ...state.run,
           started: true,
+          starterClass: action.classId,
           screen: "camp",
           survivors: [survivor],
           log: [`${starter.name} raises the first ember at camp.`, ...state.run.log],
@@ -358,6 +360,20 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         },
       });
     }
+    case "advanceOnboarding":
+      return stamp({
+        ...state,
+        legacy: {
+          ...state.legacy,
+          onboardingStep: Math.min(6, state.legacy.onboardingStep + 1),
+          onboardingComplete: state.legacy.onboardingStep >= 6,
+        },
+      });
+    case "skipOnboarding":
+      return stamp({
+        ...state,
+        legacy: { ...state.legacy, onboardingComplete: true },
+      });
     case "abandonRun":
       return stamp(finalizeCollapse(state, "The campfire was abandoned before the forest could claim the last survivors."));
     case "tick": {
@@ -422,8 +438,10 @@ function collapseIfStranded(state: GameState): GameState {
 function finalizeCollapse(state: GameState, message: string): GameState {
   if (state.run.endRun) return state;
   const result = calculateCollapseScore(state);
+  const metrics = buildRunMetrics(state, result.chestGrade, message);
   return {
     ...state,
+    legacy: appendRunHistory(state, metrics),
     run: {
       ...state.run,
       screen: "end",
@@ -431,7 +449,7 @@ function finalizeCollapse(state: GameState, message: string): GameState {
       runItems: [],
       runLoadout: { tool: null, charm: null, provision: null },
       survivors: state.run.survivors.map((survivor) => ({ ...survivor, onExpedition: false })),
-      endRun: { outcome: "collapse", ...result, reward: null, claimed: false },
+      endRun: { outcome: "collapse", ...result, reward: null, claimed: false, metrics },
       log: [message, ...state.run.log].slice(0, 12),
     },
   };

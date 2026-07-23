@@ -228,6 +228,40 @@ select {
     rgba(27, 24, 20, 0.84);
 }
 
+.objective-action {
+  align-self: center;
+  white-space: nowrap;
+}
+
+.onboarding-guide {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 14px;
+  padding: 16px;
+  border: 1px solid rgba(255, 189, 115, 0.42);
+  border-radius: 8px;
+  background: rgba(36, 31, 24, 0.95);
+}
+
+.onboarding-guide h2,
+.onboarding-guide p {
+  margin: 0;
+}
+
+.onboarding-guide small {
+  display: block;
+  margin-top: 6px;
+  color: #ffbd73;
+}
+
+.onboarding-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
 .objective-panel h2,
 .objective-panel p {
   margin: 0;
@@ -692,6 +726,47 @@ select {
 
 .score-row span {
   color: #d7c8b7;
+}
+
+.metrics-panel {
+  grid-column: 1 / -1;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.metric {
+  display: grid;
+  gap: 3px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.metric span {
+  color: #cdbba4;
+  font-size: 0.78rem;
+}
+
+.core-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.core-summary span {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  color: #f4dec4;
+  font-size: 0.76rem;
+  text-transform: capitalize;
 }
 
 .chest-panel {
@@ -1239,6 +1314,20 @@ select {
   .topbar {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .onboarding-guide,
+  .onboarding-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .objective-action {
+    width: 100%;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr 1fr;
   }
 
   .nav {

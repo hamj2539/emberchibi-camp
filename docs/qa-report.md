@@ -1,4 +1,4 @@
-# Emberchibi Camp Alpha 4 QA
+# Emberchibi Camp Alpha 5 QA
 
 Last updated: 2026-07-23
 
@@ -6,7 +6,7 @@ Build target: GitHub Pages static build
 
 ## Automated Checks
 
-- `npm run test`: 58 passing game-logic tests.
+- `npm run test`: 63 passing game-logic tests.
 - `npm run build`: production build passes.
 - Full clean-run simulation reaches the Cinder Gate, defeats Night Herald, and awards an Ancient Chest.
 - Route events, choice requirements/effects, normal encounters, all four modifiers,
@@ -17,6 +17,8 @@ Build target: GitHub Pages static build
   rewards, effect triggers, end-run reset, and migration have focused tests.
 - Guardian/Herald phases, intent counters, missed consequences, status damage,
   class cleanse interaction, Core quality, and battle migration have focused tests.
+- Balance thresholds, pacing totals, onboarding persistence, local run metrics,
+  and simplified Gate clears for all four starters have focused tests.
 - GitHub Pages deployment completed successfully.
 - Production page, manifest, and service worker return HTTP 200.
 
@@ -33,6 +35,7 @@ Vite reports expected build-time warnings for absolute asset paths under
 - Route cards show whether the active biome modifier is active or countered.
 - Combat screens show phase, incoming intent, counter hint, missed consequence,
   active statuses, class actions, and counter feedback.
+- First-run guide, recommended CTA, disabled reasons, and end-run metrics render.
 - Meta screen shows shard projects, relic slots, and permanent collections.
 - Explore shows the run modifier and pending route decisions lock new expeditions.
 - Route Event and Normal Encounter choices resolve back into the existing route flow.
@@ -95,6 +98,24 @@ Vite reports expected build-time warnings for absolute asset paths under
 15. Reload during a fight and verify phase, intent, statuses, and counters persist.
 16. Load a pre-Alpha 4 battle save and verify combat state migrates safely.
 
+## Alpha 5 Playtest Checklist
+
+1. Start with an empty save and complete or skip all seven guide steps.
+2. Verify Current Goal prioritizes crisis, pending decision, active battle, and repair.
+3. Complete one run with each starter and note distinct strengths/weaknesses.
+4. Record active run duration; target 10-15 minutes for a deliberate clear.
+5. Verify counter supplies are craftable before the first required boss counter.
+6. Hover/focus disabled actions and confirm the missing requirement is explicit.
+7. Verify modifier, run item, crisis, and combat trigger feedback appears in logs.
+8. Complete and collapse runs around 750, 1150, and 1450 score thresholds.
+9. Verify End Run explains the next chest threshold and all score penalties.
+10. Verify local metrics include every field listed in the Alpha 5 brief.
+11. Start a new run and confirm the latest run summary remains in local history.
+12. At 390px width, verify guide, objective CTA, metrics, loadout, combat,
+    crisis choices, and navigation remain usable without horizontal overflow.
+13. Tab through major actions and confirm visible focus and logical order.
+14. Load a pre-Alpha 5 save and confirm onboarding/metrics defaults migrate safely.
+
 ## Alpha 1 Exploration Regression Checklist
 
 1. Start a fresh run and open Explore; confirm the active Run Modifier is visible.
@@ -141,6 +162,8 @@ Vite reports expected build-time warnings for absolute asset paths under
 - Item drops are deterministic from matching content; weighted loot tables are deferred.
 - Boss target selection is deterministic and positioning/grid movement is intentionally absent.
 - Class identity actions remain once per survivor per encounter.
+- Run summaries are local save data only; there is no telemetry or remote analytics.
+- Balance targets are assumptions until validated by external fresh-save playtests.
 - Sound is lightweight synthesized UI feedback; there is no music system.
 - PWA caching provides an offline shell, not cloud save or account sync.
 - Browser checks are manual; there is no automated end-to-end browser suite yet.

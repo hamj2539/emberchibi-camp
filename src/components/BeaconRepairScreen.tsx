@@ -85,6 +85,7 @@ export function BeaconRepairScreen({ state, dispatch }: Props) {
           <button
             className="primary"
             disabled={!canStart}
+            title={canStart ? "Begin Beacon repair without consuming a Repair Kit." : repairDisabledReason(state, selected.length, beacon)}
             onClick={() =>
               dispatch({
                 type: "startRepair",
@@ -97,6 +98,13 @@ export function BeaconRepairScreen({ state, dispatch }: Props) {
           </button>
           <button
             disabled={!canStart || state.run.items.repairKit < 1}
+            title={
+              !canStart
+                ? repairDisabledReason(state, selected.length, beacon)
+                : state.run.items.repairKit < 1
+                  ? "Unavailable: craft or find a Repair Kit."
+                  : "Consume one Repair Kit to begin with bonus progress."
+            }
             onClick={() =>
               dispatch({
                 type: "startRepair",
@@ -111,4 +119,12 @@ export function BeaconRepairScreen({ state, dispatch }: Props) {
       </div>
     </section>
   );
+}
+
+function repairDisabledReason(state: GameState, workers: number, beacon: ReturnType<typeof getBeacon> | null): string {
+  if (!beacon) return "Unavailable: defeat a Guardian first.";
+  if (workers < 1) return "Unavailable: select at least one available survivor.";
+  if (state.run.resources.wood < beacon.repairCost.wood) return `Unavailable: need ${beacon.repairCost.wood} Wood.`;
+  if (state.run.resources.stone < beacon.repairCost.stone) return `Unavailable: need ${beacon.repairCost.stone} Stone.`;
+  return "Unavailable while another repair is active.";
 }

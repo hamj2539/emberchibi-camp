@@ -104,6 +104,7 @@ export function BossBattleScreen({ state, dispatch }: Props) {
               <button
                 className={item.action === "attack" ? "primary" : ""}
                 disabled={isDisabled(item.action, state)}
+                title={disabledReason(item.action, state) ?? item.detail}
                 key={item.action}
                 onClick={() => dispatch({ type: "bossAction", action: item.action })}
               >
@@ -160,6 +161,13 @@ function actionDetail(action: BossAction, detail: string, state: GameState): str
     return user ? `${user.name}: ${combatActions[user.classId].identity.name} — ${combatActions[user.classId].identity.detail}` : detail;
   }
   return detail;
+}
+
+function disabledReason(action: BossAction, state: GameState): string | null {
+  if (action === "useTorch" && state.run.items.torch <= 0) return "Unavailable: craft or find a Torch.";
+  if (action === "useSalve" && state.run.items.herbSalve <= 0) return "Unavailable: craft or find Herb Salve.";
+  if (action === "skill" && isDisabled(action, state)) return "Unavailable: every conscious survivor has used their identity action.";
+  return null;
 }
 
 const statusMeta: Record<CombatStatusId, { icon: string; detail: string }> = {

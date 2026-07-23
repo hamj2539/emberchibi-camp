@@ -99,6 +99,13 @@ export function GateScreen({ state, dispatch }: Props) {
           <button
             className="primary"
             disabled={selected.length < 2 || selected.length > 3}
+            title={
+              selected.length < 2
+                ? "Unavailable: select at least two conscious survivors."
+                : selected.length > 3
+                  ? "Unavailable: select no more than three survivors."
+                  : "Enter the Cinder Gate."
+            }
             onClick={() => dispatch({ type: "startGate", survivorIds: selected.map((survivor) => survivor.id) })}
           >
             {gate.status === "lost" ? "Re-enter Gate" : "Enter Gate"}
@@ -114,6 +121,7 @@ export function GateScreen({ state, dispatch }: Props) {
               <button
                 className={item.action === "attack" ? "primary" : ""}
                 disabled={isDisabled(item.action, state)}
+                title={disabledReason(item.action, state) ?? item.detail}
                 key={item.action}
                 onClick={() => dispatch({ type: "gateAction", action: item.action })}
               >
@@ -164,6 +172,13 @@ function actionDetail(action: GateAction, detail: string, state: GameState): str
     return user ? `${user.name}: ${combatActions[user.classId].identity.name} — ${combatActions[user.classId].identity.detail}` : detail;
   }
   return detail;
+}
+
+function disabledReason(action: GateAction, state: GameState): string | null {
+  if (action === "useTorch" && state.run.items.torch <= 0) return "Unavailable: craft or find a Torch.";
+  if (action === "useSalve" && state.run.items.herbSalve <= 0) return "Unavailable: craft or find Herb Salve.";
+  if (action === "skill" && isDisabled(action, state)) return "Unavailable: every conscious survivor has used their identity action.";
+  return null;
 }
 
 const statusMeta: Record<CombatStatusId, { icon: string; detail: string }> = {

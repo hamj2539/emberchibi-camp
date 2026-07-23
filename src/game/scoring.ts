@@ -66,7 +66,7 @@ export function calculateCollapseScore(state: GameState): { score: number; lines
   return {
     score: Math.max(0, result.score + penalty),
     lines: [...result.lines, { label: "Run Collapse (score x0.5)", points: penalty }],
-    chestGrade: Math.max(0, result.score + penalty) >= 550 ? "faded" : "broken",
+    chestGrade: Math.max(0, result.score + penalty) >= 750 ? "faded" : "broken",
   };
 }
 
@@ -80,9 +80,9 @@ export function labelChestGrade(grade: ChestGrade): string {
   return labels[grade];
 }
 
-function chestGradeForScore(score: number): ChestGrade {
-  if (score >= 1300) return "ancient";
-  if (score >= 1000) return "iron";
-  if (score >= 550) return "faded";
+export function chestGradeForScore(score: number): ChestGrade {
+  if (score >= 1450) return "ancient";
+  if (score >= 1150) return "iron";
+  if (score >= 750) return "faded";
   return "broken";
 }

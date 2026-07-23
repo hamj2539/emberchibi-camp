@@ -2,7 +2,8 @@ import { getCurrentObjective } from "../src/game/objectives.js";
 import { getBeacon } from "../src/data/beacons.js";
 import { guardianCombat, heraldCombat, phaseForHp } from "../src/data/bossCombat.js";
 import { combatActions } from "../src/data/classes.js";
-import { getRoute } from "../src/data/routes.js";
+import { getRoute, routes } from "../src/data/routes.js";
+import { recipes } from "../src/data/recipes.js";
 import { getRecruitDefinition } from "../src/data/events.js";
 import { normalEncounters, routeEvents, runModifiers } from "../src/data/routeContent.js";
 import { crises, getCrisis } from "../src/data/crises.js";
@@ -13,7 +14,7 @@ import { calculateIdleElapsed, gameReducer, MAX_OFFLINE_SECONDS } from "../src/g
 import { calculateGateStability, openGate } from "../src/game/gate.js";
 import { migrateV1, parseGame } from "../src/game/save.js";
 import { applyReward } from "../src/game/rewards.js";
-import { calculateScore } from "../src/game/scoring.js";
+import { calculateScore, chestGradeForScore } from "../src/game/scoring.js";
 import { resolveExpedition, resolveIdleProgress } from "../src/game/tick.js";
 import { calculateExpeditionDuration, calculateExpeditionSafety, expeditionSuccessChance } from "../src/game/expedition.js";
 import {
@@ -24,6 +25,7 @@ import {
 } from "../src/game/routeDecisions.js";
 import { createInitialState, type GameState } from "../src/game/state.js";
 import { acquireRunItem } from "../src/game/runItems.js";
+import { buildRunMetrics } from "../src/game/metrics.js";
 
 const tests: { name: string; run: () => void }[] = [
   {
@@ -62,7 +64,7 @@ const tests: { name: string; run: () => void }[] = [
       const state = allBeaconsCompletedRun("pristine");
       assertEqual(calculateGateStability(state), 15);
       const opened = openGate(state, ["survivor-scout", "survivor-rook"]);
-      assertEqual(opened.run.gate.heraldMaxHp, 115);
+      assertEqual(opened.run.gate.heraldMaxHp, 120);
       assertEqual(opened.run.gate.nightPressure, 2);
     },
   },
@@ -91,7 +93,7 @@ const tests: { name: string; run: () => void }[] = [
     name: "Scout shortens routes and forecast reports exact success chance",
     run: () => {
       const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "scout" });
-      assertEqual(calculateExpeditionDuration(getRoute("rootBeaconSite"), started.run.survivors), 16);
+      assertEqual(calculateExpeditionDuration(getRoute("rootBeaconSite"), started.run.survivors), 19);
       assertEqual(expeditionSuccessChance(20, 30), 63);
     },
   },
@@ -332,12 +334,13 @@ const tests: { name: string; run: () => void }[] = [
     name: "claiming a chest records run history and keeps the best result",
     run: () => {
       const state = gateClearedRun("stable", 0, 0);
+      const metrics = buildRunMetrics(state, "iron", null);
       const next = gameReducer({
         ...state,
         legacy: { ...state.legacy, runsCompleted: 2, bestScore: 1500, bestChestGrade: "ancient" },
         run: {
           ...state.run,
-          endRun: { outcome: "victory", score: 1200, lines: [], chestGrade: "iron", reward: null, claimed: false },
+          endRun: { outcome: "victory", score: 1200, lines: [], chestGrade: "iron", reward: null, claimed: false, metrics },
         },
       }, { type: "claimChest" });
       assertEqual(next.legacy.runsCompleted, 3);
@@ -942,7 +945,7 @@ const tests: { name: string; run: () => void }[] = [
         run: { ...started.run, campPressure: { ...started.run.campPressure, fire: 29 } },
       };
       const triggered = advanceCampSystems(strained, 1);
-      assertEqual(triggered.run.activeCrisis?.deadlineAt, triggered.run.daySeconds + 75);
+      assertEqual(triggered.run.activeCrisis?.deadlineAt, triggered.run.daySeconds + 90);
       assertEqual(triggered.run.triggeredRunEffects.includes("moss-crown-deadline"), true);
     },
   },
@@ -1082,6 +1085,106 @@ const tests: { name: string; run: () => void }[] = [
       assertEqual(migrated.run.bossBattle?.phaseId, "kindling");
       assertEqual(migrated.run.bossBattle?.pendingIntentId, "emberCharge");
       assertEqual(migrated.run.bossBattle?.counterSuccesses, 0);
+    },
+  },
+  {
+    name: "Alpha 5 balance thresholds reserve Ancient for a near-clean full run",
+    run: () => {
+      assertEqual(chestGradeForScore(749), "broken");
+      assertEqual(chestGradeForScore(750), "faded");
+      assertEqual(chestGradeForScore(1150), "iron");
+      assertEqual(chestGradeForScore(1450), "ancient");
+      assertEqual(routes.reduce((sum, route) => sum + route.durationSeconds, 0), 222);
+      assertEqual(recipes.find((recipe) => recipe.id === "herbSalve")?.cost.herb, 2);
+      assertEqual(recipes.find((recipe) => recipe.id === "repairKit")?.cost.stone, 3);
+    },
+  },
+  {
+    name: "first-run onboarding advances, completes, and remains skippable",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "scout" });
+      const advanced = gameReducer(started, { type: "advanceOnboarding" });
+      assertEqual(advanced.legacy.onboardingStep, 1);
+      const skipped = gameReducer(advanced, { type: "skipOnboarding" });
+      assertEqual(skipped.legacy.onboardingComplete, true);
+    },
+  },
+  {
+    name: "Run Collapse stores a complete local-only playtest summary",
+    run: () => {
+      const state = {
+        ...completedRun("stable", 2, 1),
+        run: {
+          ...completedRun("stable", 2, 1).run,
+          starterClass: "hunter" as const,
+          daySeconds: 642,
+          crisesResolved: 2,
+          crisesIgnored: 1,
+        },
+      };
+      const ended = gameReducer(state, { type: "abandonRun" });
+      assertEqual(ended.run.endRun?.metrics.durationSeconds, 642);
+      assertEqual(ended.run.endRun?.metrics.starterClass, "hunter");
+      assertEqual(ended.run.endRun?.metrics.routeFailures, 2);
+      assertEqual(ended.run.endRun?.metrics.crisisCount, 3);
+      assertEqual(ended.legacy.runHistory.length, 1);
+      assertEqual(Boolean(ended.run.endRun?.metrics.collapseReason), true);
+    },
+  },
+  {
+    name: "all four starters can clear a prepared simplified full-run Gate",
+    run: () => {
+      for (const classId of ["scout", "hunter", "herbalist", "tinker"] as const) {
+        const starterState = gameReducer(createInitialState(), { type: "chooseStarter", classId });
+        const base = allBeaconsCompletedRun("pristine");
+        const support = [
+          { ...getRecruitDefinition("rook").survivor, id: `support-rook-${classId}` },
+          { ...getRecruitDefinition("mira").survivor, id: `support-mira-${classId}` },
+        ];
+        const ready = {
+          ...base,
+          run: {
+            ...base.run,
+            starterClass: classId,
+            items: { ...base.run.items, torch: 20, herbSalve: 20 },
+            survivors: [{ ...starterState.run.survivors[0] }, ...support],
+          },
+        };
+        const partyIds = ready.run.survivors.map((survivor) => survivor.id);
+        let state = openGate(ready, partyIds);
+        for (let turn = 0; turn < 40 && state.run.gate.status === "active"; turn += 1) {
+          const intent = state.run.gate.pendingIntentId;
+          const hunter = state.run.survivors.find(
+            (survivor) => state.run.gate.partyIds.includes(survivor.id) && survivor.classId === "hunter",
+          );
+          const hunterSkillReady = Boolean(hunter && !state.run.gate.usedSkills.includes(hunter.id));
+          const action =
+            intent === "nightMark"
+              ? "guard"
+              : intent === "shadowCast"
+                ? "useTorch"
+                : hunterSkillReady
+                  ? "skill"
+                  : "attack";
+          state = gameReducer(state, { type: "gateAction", action });
+        }
+        assertEqual(state.run.gate.status, "cleared");
+      }
+    },
+  },
+  {
+    name: "save migration adds Alpha 5 onboarding, starter, and local metric defaults",
+    run: () => {
+      const old = gameReducer(createInitialState(), { type: "chooseStarter", classId: "tinker" });
+      delete (old.run as Partial<GameState["run"]>).starterClass;
+      delete (old.legacy as Partial<GameState["legacy"]>).onboardingStep;
+      delete (old.legacy as Partial<GameState["legacy"]>).onboardingComplete;
+      delete (old.legacy as Partial<GameState["legacy"]>).runHistory;
+      const migrated = migrateV1(old);
+      assertEqual(migrated.run.starterClass, "tinker");
+      assertEqual(migrated.legacy.onboardingStep, 0);
+      assertEqual(migrated.legacy.onboardingComplete, false);
+      assertEqual(migrated.legacy.runHistory.length, 0);
     },
   },
 ];

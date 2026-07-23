@@ -23,6 +23,8 @@ export function EndRunScreen({ state, dispatch }: Props) {
       </section>
     );
   }
+  const nextGrade = nextChestTarget(endRun.score);
+  const metrics = endRun.metrics;
 
   return (
     <section className="screen end-layout">
@@ -32,9 +34,34 @@ export function EndRunScreen({ state, dispatch }: Props) {
         <p>
           {endRun.outcome === "victory"
             ? "The Night Herald is defeated. The five Beacons hold the forest gate open until the next run."
-            : "The survivors carried what they could back through the dark. Collapse halves the score and yields a Broken Chest."}
+            : `The survivors carried what they could back through the dark. Collapse halves the score; this run earned a ${endRun.chestGrade} chest.`}
         </p>
         <strong>{labelChestGrade(endRun.chestGrade)}</strong>
+        <span className="helper-text">
+          {nextGrade ? `${nextGrade.points - endRun.score} more points needed for ${nextGrade.label}.` : "Highest chest threshold reached."}
+        </span>
+      </div>
+
+      <div className="panel metrics-panel">
+        <p className="eyebrow">Local Playtest Metrics</p>
+        <h3>Why this run ended here</h3>
+        <div className="metrics-grid">
+          <Metric label="Run time" value={formatDuration(metrics.durationSeconds)} />
+          <Metric label="Starter" value={metrics.starterClass} />
+          <Metric label="Route failures" value={metrics.routeFailures} />
+          <Metric label="Crises" value={metrics.crisisCount} />
+          <Metric label="Guardian attempts" value={Object.values(metrics.guardianAttempts).reduce((sum, value) => sum + value, 0)} />
+          <Metric label="Gate Stability" value={`${metrics.gateStability}/15`} />
+          <Metric label="Night Herald" value={metrics.nightHeraldOutcome} />
+          <Metric label="Chest" value={metrics.chestGrade} />
+        </div>
+        <div className="core-summary">
+          {Object.entries(metrics.coreQualities).map(([beacon, quality]) => (
+            <span key={beacon}>{beacon}: {quality ?? "not recovered"}</span>
+          ))}
+        </div>
+        {metrics.collapseReason && <p><strong>Collapse reason:</strong> {metrics.collapseReason}</p>}
+        <small>Stored only in this browser. The latest 10 summaries stay with the local save.</small>
       </div>
 
       <div className="panel">
@@ -92,4 +119,25 @@ export function EndRunScreen({ state, dispatch }: Props) {
       </div>
     </section>
   );
+}
+
+function Metric({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="metric">
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
+function nextChestTarget(score: number): { label: string; points: number } | null {
+  if (score < 750) return { label: "Faded", points: 750 };
+  if (score < 1150) return { label: "Iron", points: 1150 };
+  if (score < 1450) return { label: "Ancient", points: 1450 };
+  return null;
+}
+
+function formatDuration(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  return `${minutes}m ${seconds % 60}s`;
 }

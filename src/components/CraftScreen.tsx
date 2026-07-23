@@ -61,6 +61,7 @@ export function CraftScreen({ state, dispatch }: Props) {
               <button
                 className={affordable && !queueFull ? "primary" : ""}
                 disabled={!affordable || queueFull}
+                title={queueFull ? "Unavailable: craft queue has three items." : affordable ? recipe.effect : `Unavailable: requires ${formatCost(recipe.cost)}.`}
                 onClick={() => dispatch({ type: "startCraft", recipeId: recipe.id })}
               >
                 {queueFull ? "Queue Full" : affordable ? "Craft" : "Need Resources"}

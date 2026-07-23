@@ -4,11 +4,11 @@ Last updated: 2026-07-23
 
 ## Current Release
 
-**Alpha 4: Guardian Combat Depth**
+**Alpha 5: Balance, Onboarding, and Playtest Readiness**
 
-Guardians and the Night Herald now use readable phases, one-turn telegraphs,
-class/tool counters, and standardized statuses. Combat remains a compact
-turn-based decision loop rather than a tactical grid.
+The system-complete build now has intentional pacing targets, a skippable
+first-run guide, recommended-action navigation, clearer disabled reasons,
+local-only run metrics, and starter viability smoke coverage.
 
 | Area | Status | Current implementation |
 | --- | --- | --- |
@@ -24,6 +24,8 @@ turn-based decision loop rather than a tactical grid.
 | Beacon repair | Complete | assigned crew, costs, quality and tool modifiers |
 | Final encounter | Alpha 4 | Gate Stability and three-phase Night Herald |
 | Run ending | Alpha 2 | victory or pressure-driven collapse, partial score, graded chest |
+| Onboarding | Alpha 5 | seven-step first-run guide, skippable and locally persisted |
+| Instrumentation | Alpha 5 | latest ten local run summaries, no analytics/backend |
 | Meta progression | Complete | shards, projects, blueprints, unlocks, relic loadout |
 | Assets and UI | Complete for prototype | route art, Guardian art, responsive layouts |
 | Production | Complete for prototype | GitHub Pages workflow and installable PWA shell |
@@ -103,21 +105,35 @@ turn-based decision loop rather than a tactical grid.
 - Added phase, intent, status, and counter UI plus safe battle-save migration.
 - Expanded the automated suite from 50 to 58 game-logic tests.
 
+### Alpha 5 - Balance and Playtest Readiness
+
+- Set an active full-run pacing target of 10-15 minutes.
+- Tuned route duration, route Stone income, counter-supply craft costs,
+  crisis decay/deadlines, Gate HP floor, score thresholds, and chest rates.
+- Added a lightweight seven-step guide covering every major run system.
+- Added priority-aware recommended actions for crises, decisions, combat,
+  repair, Gate, chest, and progression.
+- Added explicit disabled reasons to route, craft, repair, supply, and skill actions.
+- Added local-only run summaries and a clearer chest threshold explanation.
+- Added mobile stacking, timer labels, status/relic tooltips, and keyboard-native controls.
+- Added balance formula, onboarding, metrics, and four-starter smoke tests.
+- Expanded the automated suite from 58 to 63 game-logic tests.
+
 ## Next Phase
 
-### P1 - Alpha 4 Playtest and Balance
+### P1 - External Alpha Playtest
 
-- Measure counter success rate and turns-to-kill for each Guardian.
-- Verify every party composition has a viable preparation counter.
-- Tune status duration, intent damage, and pressure growth.
-- Review Core quality recovery/penalty frequency.
-- Verify the two-survivor Gate remains possible but three survivors are safer.
+- Run 10+ fresh-save playtests and record local run summaries.
+- Compare actual completion time against the 10-15 minute target.
+- Measure first crisis timing, route failure rate, and Guardian attempts.
+- Review where players ignore or skip onboarding steps.
+- Tune chest distribution only after observing complete and collapsed runs.
 - Record average run duration and resource bottlenecks.
 - Measure route, Guardian, and Gate failure rates by starter class.
 - Tune camp upgrade and Legacy Project costs.
 - Review chest reward duplication and long-term shard pacing.
 
-### P2 - Alpha 5 Candidates
+### P2 - Post-Alpha Candidates
 
 - Add event chains that react to flags from earlier choices.
 - Add more biome-specific normal encounter variants.
@@ -141,4 +157,4 @@ The current prototype is complete when:
 - Automated tests and production build pass.
 - GitHub Pages serves the app, manifest, and service worker successfully.
 
-All prototype criteria remain met in Alpha 4.
+All prototype criteria remain met in Alpha 5.

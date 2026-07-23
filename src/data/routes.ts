@@ -18,7 +18,7 @@ export const routes: RouteDefinition[] = [
     kind: "resource",
     name: "Mistwood Edge",
     purpose: "Early resource route with a chance to find Rook.",
-    durationSeconds: 10,
+    durationSeconds: 12,
     danger: 20,
     rewards: {
       wood: [4, 8],
@@ -33,7 +33,7 @@ export const routes: RouteDefinition[] = [
     kind: "prep",
     name: "Burnt Grove",
     purpose: "Ember prep route that reveals the Beacon site.",
-    durationSeconds: 14,
+    durationSeconds: 18,
     danger: 28,
     rewards: {
       wood: [3, 7],
@@ -48,7 +48,7 @@ export const routes: RouteDefinition[] = [
     kind: "boss",
     name: "Ember Beacon Site",
     purpose: "Boss route leading to the Cinder Stag.",
-    durationSeconds: 18,
+    durationSeconds: 22,
     danger: 40,
     rewards: {
       stone: [3, 6],
@@ -62,12 +62,12 @@ export const routes: RouteDefinition[] = [
     kind: "prep",
     name: "Saltmarsh Run",
     purpose: "Cross the drowned causeway to reveal the Tidal Beacon.",
-    durationSeconds: 12,
+    durationSeconds: 16,
     danger: 24,
     rewards: {
       food: [4, 8],
       herb: [1, 3],
-      stone: [1, 3],
+      stone: [2, 4],
     },
     requirement: "1 survivor",
   },
@@ -77,7 +77,7 @@ export const routes: RouteDefinition[] = [
     kind: "boss",
     name: "Tidal Beacon Site",
     purpose: "Challenge the Brine Warden above the flooded ruins.",
-    durationSeconds: 18,
+    durationSeconds: 22,
     danger: 38,
     rewards: {
       stone: [2, 5],
@@ -91,7 +91,7 @@ export const routes: RouteDefinition[] = [
     kind: "prep",
     name: "Windscar Cliffs",
     purpose: "Climb the broken sky path to reveal the Gale Beacon.",
-    durationSeconds: 13,
+    durationSeconds: 18,
     danger: 30,
     rewards: {
       wood: [2, 5],
@@ -106,7 +106,7 @@ export const routes: RouteDefinition[] = [
     kind: "boss",
     name: "Gale Beacon Site",
     purpose: "Challenge the Hollow Roc at the storm altar.",
-    durationSeconds: 19,
+    durationSeconds: 23,
     danger: 42,
     rewards: {
       ore: [1, 3],
@@ -120,7 +120,7 @@ export const routes: RouteDefinition[] = [
     kind: "prep",
     name: "Rootwarren Trail",
     purpose: "Follow the living roots to reveal the Root Beacon.",
-    durationSeconds: 15,
+    durationSeconds: 20,
     danger: 32,
     rewards: {
       wood: [6, 10],
@@ -135,7 +135,7 @@ export const routes: RouteDefinition[] = [
     kind: "boss",
     name: "Root Beacon Site",
     purpose: "Challenge the Briar Colossus in the ancient grove.",
-    durationSeconds: 20,
+    durationSeconds: 24,
     danger: 44,
     rewards: {
       wood: [4, 8],
@@ -149,10 +149,10 @@ export const routes: RouteDefinition[] = [
     kind: "prep",
     name: "Moonwell Path",
     purpose: "Trace the moonstones to reveal the Lunar Beacon.",
-    durationSeconds: 16,
+    durationSeconds: 21,
     danger: 34,
     rewards: {
-      stone: [3, 6],
+      stone: [4, 7],
       ore: [1, 2],
       herb: [1, 3],
     },
@@ -164,7 +164,7 @@ export const routes: RouteDefinition[] = [
     kind: "boss",
     name: "Lunar Beacon Site",
     purpose: "Challenge the Lunar Sentinel beneath the full moon.",
-    durationSeconds: 22,
+    durationSeconds: 26,
     danger: 48,
     rewards: {
       ore: [2, 4],

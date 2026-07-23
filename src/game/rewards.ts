@@ -2,9 +2,9 @@ import type { ChestGrade, ChestReward, GameState, RewardType } from "./state.js"
 
 const rates: Record<ChestGrade, { type: RewardType; weight: number }[]> = {
   broken: [
-    { type: "legacyShards", weight: 55 },
-    { type: "blueprint", weight: 25 },
-    { type: "relic", weight: 15 },
+    { type: "legacyShards", weight: 65 },
+    { type: "blueprint", weight: 20 },
+    { type: "relic", weight: 10 },
     { type: "survivorUnlock", weight: 5 },
     { type: "classUnlock", weight: 0 },
   ],
@@ -23,11 +23,11 @@ const rates: Record<ChestGrade, { type: RewardType; weight: number }[]> = {
     { type: "classUnlock", weight: 5 },
   ],
   ancient: [
-    { type: "legacyShards", weight: 15 },
-    { type: "blueprint", weight: 30 },
-    { type: "relic", weight: 30 },
-    { type: "survivorUnlock", weight: 17 },
-    { type: "classUnlock", weight: 8 },
+    { type: "legacyShards", weight: 10 },
+    { type: "blueprint", weight: 28 },
+    { type: "relic", weight: 32 },
+    { type: "survivorUnlock", weight: 20 },
+    { type: "classUnlock", weight: 10 },
   ],
 };
 

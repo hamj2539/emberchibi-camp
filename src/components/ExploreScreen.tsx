@@ -59,6 +59,8 @@ export function ExploreScreen({ state, dispatch }: Props) {
               <button
                 className="decision-choice"
                 disabled={!canResolveRouteChoice(state, choice)}
+                title={canResolveRouteChoice(state, choice) ? choice.result : `Unavailable: ${choice.detail}`}
+                aria-label={`${choice.label}. ${choice.detail}`}
                 key={choice.id}
                 onClick={() => dispatch({ type: "resolveRouteDecision", choiceId: choice.id })}
               >
@@ -146,6 +148,17 @@ export function ExploreScreen({ state, dispatch }: Props) {
           const locked = !progress.discovered;
           const needsParty = route.kind === "boss" ? selectedSurvivors.length !== 2 : selectedSurvivors.length < 1;
           const disabled = locked || needsParty || Boolean(state.run.activeExpedition) || Boolean(activeDecision);
+          const disabledReason = locked
+            ? "Unavailable: clear the linked preparation route first."
+            : needsParty
+              ? route.kind === "boss"
+                ? "Unavailable: select exactly two conscious survivors."
+                : "Unavailable: select at least one conscious survivor."
+              : state.run.activeExpedition
+                ? "Unavailable: another expedition is active."
+                : activeDecision
+                  ? "Unavailable: resolve the pending route decision first."
+                  : null;
           const beacon = getBeaconByBossRoute(route.id) ?? getBeaconByPrepRoute(route.id);
           const safety = calculateExpeditionSafety(state, selectedSurvivors.map((survivor) => survivor.id), route, { useRation, useTorch });
           const successChance = expeditionSuccessChance(safety, route.danger);
@@ -172,7 +185,12 @@ export function ExploreScreen({ state, dispatch }: Props) {
                   <span key={reward}>{reward}</span>
                 ))}
               </div>
-              <button className="primary" disabled={disabled} onClick={() => startRoute(route.id)}>
+              <button
+                className="primary"
+                disabled={disabled}
+                title={disabledReason ?? `Start ${route.name}.`}
+                onClick={() => startRoute(route.id)}
+              >
                 {locked ? "Find clues first" : needsParty ? (route.kind === "boss" ? "Select 2 survivors" : "Select a survivor") : "Start Expedition"}
               </button>
             </article>

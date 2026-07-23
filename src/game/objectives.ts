@@ -1,10 +1,12 @@
 import { beacons } from "../data/beacons.js";
-import type { GameState } from "./state.js";
+import type { GameState, Screen } from "./state.js";
 
 export type Objective = {
   title: string;
   detail: string;
   progress: number;
+  screen: Screen;
+  actionLabel: string;
 };
 
 export function getCurrentObjective(state: GameState): Objective {
@@ -13,6 +15,38 @@ export function getCurrentObjective(state: GameState): Objective {
       title: "Choose a starter",
       detail: "Pick the survivor who will carry the first ember.",
       progress: 0,
+      screen: "starter",
+      actionLabel: "Choose Starter",
+    };
+  }
+
+  if (state.run.activeCrisis) {
+    return {
+      title: "Resolve the camp crisis",
+      detail: `${state.run.activeCrisis.reason} Respond before the deadline or accept its consequence.`,
+      progress: 35,
+      screen: "camp",
+      actionLabel: "Open Crisis",
+    };
+  }
+
+  if (state.run.activeRouteDecision) {
+    return {
+      title: "Make the route decision",
+      detail: "Choose an outcome before starting another expedition.",
+      progress: 50,
+      screen: "explore",
+      actionLabel: "View Decision",
+    };
+  }
+
+  if (state.run.bossBattle?.status === "active") {
+    return {
+      title: `Counter ${state.run.bossBattle.bossName}`,
+      detail: state.run.bossBattle.lastCounterFeedback,
+      progress: 70,
+      screen: "boss",
+      actionLabel: "Return to Battle",
     };
   }
 
@@ -29,6 +63,8 @@ export function getCurrentObjective(state: GameState): Objective {
           : state.run.recruitEvent?.status === "available"
             ? 70
             : 30,
+      screen: "explore",
+      actionLabel: "Find a Recruit",
     };
   }
 
@@ -37,6 +73,8 @@ export function getCurrentObjective(state: GameState): Objective {
       title: "Find the Ember Beacon Site",
       detail: "Clear Burnt Grove to reveal the Guardian route.",
       progress: state.run.routes.burntGrove.completed > 0 ? 90 : 45,
+      screen: "explore",
+      actionLabel: "Explore Burnt Grove",
     };
   }
 
@@ -48,6 +86,8 @@ export function getCurrentObjective(state: GameState): Objective {
       title: `Defeat ${nextBeacon.bossName}`,
       detail: `Clear ${nextBeacon.name}'s prep route, then challenge its Guardian site.`,
       progress: 55 + litCount * 8,
+      screen: "explore",
+      actionLabel: "View Beacon Route",
     };
   }
 
@@ -59,6 +99,8 @@ export function getCurrentObjective(state: GameState): Objective {
         state.run.beaconRepair?.status === "active"
           ? Math.round((state.run.beaconRepair.progress / state.run.beaconRepair.requiredProgress) * 100)
           : 70 + litCount * 5,
+      screen: "repair",
+      actionLabel: "Repair Beacon",
     };
   }
 
@@ -67,6 +109,8 @@ export function getCurrentObjective(state: GameState): Objective {
       title: "Defeat Night Herald",
       detail: "Enter the Cinder Gate with 2-3 survivors to finish the run.",
       progress: state.run.gate.status === "active" ? 90 : 82,
+      screen: "gate",
+      actionLabel: "Open Cinder Gate",
     };
   }
 
@@ -75,6 +119,8 @@ export function getCurrentObjective(state: GameState): Objective {
       title: "Open the Legacy Chest",
       detail: "Claim the run reward and save it to legacy progress.",
       progress: 95,
+      screen: "end",
+      actionLabel: "Open Chest",
     };
   }
 
@@ -82,5 +128,7 @@ export function getCurrentObjective(state: GameState): Objective {
     title: "Run complete",
     detail: "Start a fresh run while keeping legacy rewards.",
     progress: 100,
+    screen: "end",
+    actionLabel: "Review Run",
   };
 }

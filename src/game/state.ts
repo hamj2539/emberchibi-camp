@@ -203,6 +203,20 @@ export type EndRunResult = {
   chestGrade: ChestGrade;
   reward: ChestReward | null;
   claimed: boolean;
+  metrics: RunMetrics;
+};
+
+export type RunMetrics = {
+  durationSeconds: number;
+  starterClass: StarterClassId;
+  routeFailures: number;
+  crisisCount: number;
+  guardianAttempts: Record<BeaconId, number>;
+  coreQualities: Record<BeaconId, CoreQuality | null>;
+  gateStability: number;
+  nightHeraldOutcome: "cleared" | "lost" | "notReached";
+  chestGrade: ChestGrade;
+  collapseReason: string | null;
 };
 
 export type GateProgress = {
@@ -227,6 +241,7 @@ export type GateProgress = {
 
 export type RunState = {
   started: boolean;
+  starterClass: StarterClassId | null;
   screen: Screen;
   daySeconds: number;
   resources: Resources;
@@ -275,6 +290,9 @@ export type LegacyState = {
   runsCompleted: number;
   bestScore: number;
   bestChestGrade: ChestGrade | null;
+  onboardingStep: number;
+  onboardingComplete: boolean;
+  runHistory: RunMetrics[];
 };
 
 export type GameState = {
@@ -305,6 +323,8 @@ export type GameAction =
   | { type: "claimChest" }
   | { type: "buyLegacyProject"; projectId: LegacyProjectId }
   | { type: "toggleRelic"; relic: string }
+  | { type: "advanceOnboarding" }
+  | { type: "skipOnboarding" }
   | { type: "abandonRun" }
   | { type: "tick"; now: number }
   | { type: "resetRun"; keepLegacy: boolean };
@@ -341,6 +361,7 @@ export function createInitialState(now = Date.now()): GameState {
     savedAt: now,
     run: {
       started: false,
+      starterClass: null,
       screen: "starter",
       daySeconds: 0,
       resources: { wood: 12, food: 10, herb: 4, stone: 0, ore: 0, relicShard: 0 },
@@ -418,6 +439,9 @@ export function createInitialState(now = Date.now()): GameState {
       runsCompleted: 0,
       bestScore: 0,
       bestChestGrade: null,
+      onboardingStep: 0,
+      onboardingComplete: false,
+      runHistory: [],
     },
   };
 }

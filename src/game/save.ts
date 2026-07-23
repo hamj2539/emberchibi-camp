@@ -5,6 +5,7 @@ import { getRouteDecision } from "../data/routeContent.js";
 import { crises } from "../data/crises.js";
 import { runItems } from "../data/runItems.js";
 import { guardianCombat, heraldCombat } from "../data/bossCombat.js";
+import { buildRunMetrics } from "./metrics.js";
 
 const SAVE_KEY = "emberchibiCamp.v1";
 const BACKUP_KEY = "emberchibiCamp.v1.backup";
@@ -67,10 +68,14 @@ export function migrateV1(state: GameState): GameState {
       runsCompleted: state.legacy.runsCompleted ?? 0,
       bestScore: state.legacy.bestScore ?? 0,
       bestChestGrade: state.legacy.bestChestGrade ?? null,
+      onboardingStep: state.legacy.onboardingStep ?? 0,
+      onboardingComplete: state.legacy.onboardingComplete ?? false,
+      runHistory: state.legacy.runHistory ?? [],
     },
     run: {
       ...state.run,
       screen: unsafeEncounterScreen ? "camp" : state.run.screen,
+      starterClass: state.run.starterClass ?? state.run.survivors?.[0]?.classId ?? null,
       items: { ...emptyInventory, ...(state.run.items ?? {}) },
       routes: { ...defaults.run.routes, ...(state.run.routes ?? {}) },
       beacons: migrateBeacons(state, defaults),
@@ -104,7 +109,17 @@ export function migrateV1(state: GameState): GameState {
       repairSpeedModifier: state.run.repairSpeedModifier ?? 1,
       gate: state.run.gate ? migrateGate(state.run.gate) : defaults.run.gate,
       endRun: state.run.endRun
-        ? { ...state.run.endRun, outcome: state.run.endRun.outcome ?? "victory" }
+        ? {
+            ...state.run.endRun,
+            outcome: state.run.endRun.outcome ?? "victory",
+            metrics:
+              state.run.endRun.metrics ??
+              buildRunMetrics(
+                state,
+                state.run.endRun.chestGrade,
+                state.run.endRun.outcome === "collapse" ? "Migrated collapse result." : null,
+              ),
+          }
         : null,
     },
   };

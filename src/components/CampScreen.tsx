@@ -110,7 +110,13 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
               <p className="eyebrow">{crisis.severity} crisis</p>
               <h3>{crisis.name}</h3>
             </div>
-            <strong className="crisis-deadline">{crisisSecondsLeft}s remaining</strong>
+            <strong
+              className="crisis-deadline"
+              role="timer"
+              aria-label={`${crisis.name} deadline, ${crisisSecondsLeft} seconds remaining`}
+            >
+              {crisisSecondsLeft}s remaining
+            </strong>
           </div>
           <p>{crisis.warning}</p>
           <div className="crisis-facts">
@@ -124,6 +130,8 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
                 <button
                   className={available ? "primary" : ""}
                   disabled={!available}
+                  aria-label={`${choice.label}. ${choice.detail}`}
+                  title={available ? choice.result : `Unavailable: ${choice.detail}`}
                   key={choice.id}
                   onClick={() => dispatch({ type: "resolveCrisis", choiceId: choice.id })}
                 >
@@ -293,6 +301,7 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
                 <button
                   className={built ? "" : "primary"}
                   disabled={built || !affordable}
+                  title={built ? `${upgrade.name} is already built.` : affordable ? upgrade.description : `Unavailable: requires ${formatCost(upgrade.cost)}.`}
                   onClick={() => dispatch({ type: "buyCampUpgrade", upgradeId: upgrade.id })}
                 >
                   {built ? "Built" : "Build"}

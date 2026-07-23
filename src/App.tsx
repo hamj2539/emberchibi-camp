@@ -8,6 +8,7 @@ import { ExploreScreen } from "./components/ExploreScreen";
 import { GateScreen } from "./components/GateScreen";
 import { MetaScreen } from "./components/MetaScreen";
 import { ObjectivePanel } from "./components/ObjectivePanel";
+import { OnboardingGuide } from "./components/OnboardingGuide";
 import { StarterSelect } from "./components/StarterSelect";
 import { SurvivorsScreen } from "./components/SurvivorsScreen";
 import { beacons } from "./data/beacons";
@@ -110,7 +111,8 @@ export default function App() {
       </header>
 
       <main>
-        <ObjectivePanel state={state} />
+        <OnboardingGuide dispatch={dispatch} state={state} />
+        <ObjectivePanel dispatch={dispatch} state={state} />
         {screen === "starter" && <StarterSelect dispatch={dispatch} state={state} />}
         {screen === "camp" && <CampScreen dispatch={dispatch} state={state} onReset={resetRun} />}
         {screen === "explore" && <ExploreScreen dispatch={dispatch} state={state} />}

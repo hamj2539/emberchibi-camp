@@ -1,6 +1,6 @@
 # Emberchibi Camp
 
-Alpha 4 survival roguelite RPG with phased boss combat, temporary run builds, camp crises,
+Alpha 5 survival roguelite RPG with guided onboarding, tuned pacing, phased boss combat, temporary run builds, camp crises,
 exploration decisions, idle management, and turn-based key encounters.
 
 **Live build:** https://hamj2539.github.io/emberchibi-camp/
@@ -23,6 +23,8 @@ exploration decisions, idle management, and turn-based key encounters.
 - Run victory, Run Collapse, score breakdown, and graded Legacy Chests.
 - Permanent shard projects, unlock collections, and two relic loadout slots.
 - Temporary run items track their source, trigger effects in the Camp Log, and reset at run end.
+- Skippable seven-step first-run guide and recommended-action navigation.
+- Local-only run summaries for pacing, failures, crises, Guardians, Cores, Gate, and chest results.
 - Local save migration, responsive layout, sound feedback, and PWA support.
 
 ## Development
@@ -46,12 +48,13 @@ The app is configured for GitHub Pages under `/emberchibi-camp/`.
 npm run test
 ```
 
-The suite currently covers 58 game-logic cases, including save migration,
+The suite currently covers 63 game-logic cases, including save migration,
 offline progress, expeditions, combat, upgrades, meta progression, collapse,
 route decisions, encounters, recruit branches, run modifiers, crisis triggers,
 deadlines, choices, ignored consequences, run item acquisition, loadout limits,
 biome counters, run-end reset, boss phases, telegraphs, counters, statuses,
-Core quality performance, and a clean full-run Gate simulation.
+Core quality performance, balance thresholds, onboarding, local metrics,
+all four starter smoke paths, and a clean full-run Gate simulation.
 
 ## Save Data
 
@@ -73,4 +76,5 @@ referenced from CSS using the GitHub Pages base path.
 
 - [Current roadmap](docs/roadmap.md)
 - [QA report](docs/qa-report.md)
+- [Balance assumptions](docs/balance-assumptions.md)
 - [Asset batch specification](docs/asset-batch-spec-v1.md)

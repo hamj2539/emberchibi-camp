@@ -1,5 +1,6 @@
 import { getIntent, heraldCombat, nextIntent, phaseForHp } from "../data/bossCombat.js";
 import { calculateScore } from "./scoring.js";
+import { appendRunHistory, buildRunMetrics } from "./metrics.js";
 import type {
   CombatStatuses,
   CoreQuality,
@@ -14,7 +15,7 @@ export function openGate(state: GameState, partyIds: string[]): GameState {
   const party = state.run.survivors.filter((survivor) => partyIds.includes(survivor.id));
   if (party.length < 2 || party.length > 3 || !allBeaconsLit(state) || state.run.gate.status === "cleared") return state;
   const stability = calculateGateStability(state);
-  const heraldMaxHp = Math.max(115, 160 - stability * 3);
+  const heraldMaxHp = Math.max(120, 160 - stability * 3);
   const startingPressure = Math.max(2, 5 - Math.floor(stability / 4));
   const phase = heraldCombat.phases[0];
   const intent = getIntent(heraldCombat, phase.intentIds[0]);
@@ -266,13 +267,15 @@ export function finishGate(state: GameState, gate: GateProgress): GameState {
   };
   if (gate.status !== "cleared") return nextState;
   const result = calculateScore(nextState);
+  const metrics = buildRunMetrics(nextState, result.chestGrade, null);
   return {
     ...nextState,
+    legacy: appendRunHistory(nextState, metrics),
     run: {
       ...nextState.run,
       runItems: [],
       runLoadout: { tool: null, charm: null, provision: null },
-      endRun: { outcome: "victory", ...result, reward: null, claimed: false },
+      endRun: { outcome: "victory", ...result, reward: null, claimed: false, metrics },
     },
   };
 }
