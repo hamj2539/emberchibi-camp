@@ -862,7 +862,18 @@ select {
 .token-guard .portrait-mini { --activity-row: 60%; }
 .token-cook .portrait-mini { --activity-row: 80%; }
 .token-research .portrait-mini { --activity-row: 100%; }
-@keyframes survivor-work-cycle { to { background-position: 100% var(--activity-row); } }
+.map-survivor.token-rest,
+.map-survivor.token-forage,
+.map-survivor.token-craft,
+.map-survivor.token-guard,
+.map-survivor.token-cook,
+.map-survivor.token-research { animation: none; }
+@keyframes survivor-work-cycle {
+  0%, 24.99% { background-position: 0 var(--activity-row); }
+  25%, 49.99% { background-position: 33.333333% var(--activity-row); }
+  50%, 74.99% { background-position: 66.666667% var(--activity-row); }
+  75%, 100% { background-position: 100% var(--activity-row); }
+}
 
 /* Keep the scene-first geometry authoritative over legacy expedition rules. */
 .scene-first.live-expedition { min-height: min(760px, calc(100vh - 118px)); display: grid; grid-template-rows: auto minmax(440px, 1fr) auto; }
