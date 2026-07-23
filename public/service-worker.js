@@ -5,6 +5,7 @@ const CORE = [
   `${ROOT}manifest.webmanifest`,
   `${ROOT}assets/backgrounds/camp.png`,
   `${ROOT}assets/map/living-camp-sprites.png`,
+  `${ROOT}assets/map/survivor-activity-sprites.png`,
   `${ROOT}assets/guardians/cinder-stag.png`,
 ];
 

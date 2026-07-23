@@ -88,7 +88,7 @@ the result to GitHub Pages.
 
 ## Assets
 
-Prototype backgrounds, Guardian art, and the Living Camp diorama sheet (`public/assets/map/living-camp-sprites.png`) live under `public/assets/`. They are
+Prototype backgrounds, Guardian art, the Living Camp diorama sheet (`public/assets/map/living-camp-sprites.png`), and survivor activity sheet (`public/assets/map/survivor-activity-sprites.png`) live under `public/assets/`. They are
 referenced from CSS using the GitHub Pages base path.
 
 ## Documentation

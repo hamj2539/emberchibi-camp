@@ -843,6 +843,27 @@ select {
 @keyframes token-steam { to { transform: translate(5px,-16px) scale(.65); opacity: 0; } }
 @keyframes token-spark { 50% { transform: scale(1.5) rotate(45deg); opacity: .55; } }
 
+/* Actual four-frame survivor work cycles generated for the six camp jobs. */
+.map-survivor .portrait-mini {
+  width: 58px;
+  height: 58px;
+  border: 0;
+  border-radius: 0;
+  background-image: url("/emberchibi-camp/assets/map/survivor-activity-sprites.png");
+  background-repeat: no-repeat;
+  background-size: 400% 600%;
+  background-position: 0 var(--activity-row, 0%);
+  animation: survivor-work-cycle 1.15s steps(4, end) infinite;
+}
+.map-survivor .token-tool { display: none; }
+.token-rest .portrait-mini { --activity-row: 0%; }
+.token-forage .portrait-mini { --activity-row: 20%; }
+.token-craft .portrait-mini { --activity-row: 40%; }
+.token-guard .portrait-mini { --activity-row: 60%; }
+.token-cook .portrait-mini { --activity-row: 80%; }
+.token-research .portrait-mini { --activity-row: 100%; }
+@keyframes survivor-work-cycle { to { background-position: 100% var(--activity-row); } }
+
 /* Keep the scene-first geometry authoritative over legacy expedition rules. */
 .scene-first.live-expedition { min-height: min(760px, calc(100vh - 118px)); display: grid; grid-template-rows: auto minmax(440px, 1fr) auto; }
 .scene-first .diorama-party { bottom: 12%; left: clamp(10%, var(--journey-progress), 88%); }
