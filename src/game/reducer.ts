@@ -4,6 +4,7 @@ import { getRecruitDefinition } from "../data/events.js";
 import { campUpgrades, legacyProjects } from "../data/progression.js";
 import { getRecipe } from "../data/recipes.js";
 import { getRoute } from "../data/routes.js";
+import { getRunModifier } from "../data/routeContent.js";
 import { resolveBossAction } from "./combat.js";
 import { advanceCampSystems, resolveCrisisChoice } from "./crises.js";
 import { openGate, resolveGateAction } from "./gate.js";
@@ -12,6 +13,7 @@ import { applyLegacyStartBonuses } from "./meta.js";
 import { applyReward, rollChestReward } from "./rewards.js";
 import { calculateCollapseScore } from "./scoring.js";
 import { modifierFromRoll, resolveRouteChoice } from "./routeDecisions.js";
+import { equipRunItem, unequipRunItem } from "./runItems.js";
 import { resolveExpedition, resolveIdleProgress } from "./tick.js";
 import type { ChestGrade, GameAction, GameState, IdleJob, ResourceKey, Survivor } from "./state.js";
 import { createInitialState } from "./state.js";
@@ -98,7 +100,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const selected = new Set(action.survivorIds);
       const useRation = Boolean(action.useRation && state.run.items.ration > 0);
       const useTorch = Boolean(action.useTorch && state.run.items.torch > 0);
-      const durationSeconds = calculateExpeditionDuration(route, validParty);
+      const durationSeconds = calculateExpeditionDuration(route, validParty, state);
+      const modifier = getRunModifier(state.run.runModifier);
+      const modifierApplies = !modifier.routes || modifier.routes.includes(route.id);
+      const modifierCountered = Boolean(
+        modifier.counterClass && validParty.some((survivor) => survivor.classId === modifier.counterClass),
+      );
       const items = {
         ...state.run.items,
         ration: state.run.items.ration - (useRation ? 1 : 0),
@@ -124,6 +131,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           ),
           log: [
             `Expedition started: ${route.name}${useRation || useTorch ? ` with ${[useRation ? "Ration" : "", useTorch ? "Torch" : ""].filter(Boolean).join(" and ")}` : ""}.`,
+            ...(modifierApplies ? [`${modifier.name} is ${modifierCountered ? `countered by the ${modifier.counterClass}` : "active"} on this route.`] : []),
             ...state.run.log,
           ].slice(0, 12),
         },
@@ -133,6 +141,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return stamp(resolveRouteChoice(state, action.choiceId));
     case "resolveCrisis":
       return stamp(resolveCrisisChoice(state, action.choiceId));
+    case "equipRunItem":
+      return stamp(equipRunItem(state, action.itemId));
+    case "unequipRunItem":
+      return stamp(unequipRunItem(state, action.slot));
     case "resolveRecruit": {
       if (!state.run.recruitEvent || state.run.recruitEvent.status !== "available") return state;
       const definition = getRecruitDefinition(state.run.recruitEvent.id);
@@ -416,6 +428,8 @@ function finalizeCollapse(state: GameState, message: string): GameState {
       ...state.run,
       screen: "end",
       activeExpedition: null,
+      runItems: [],
+      runLoadout: { tool: null, charm: null, provision: null },
       survivors: state.run.survivors.map((survivor) => ({ ...survivor, onExpedition: false })),
       endRun: { outcome: "collapse", ...result, reward: null, claimed: false },
       log: [message, ...state.run.log].slice(0, 12),

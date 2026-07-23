@@ -5,7 +5,8 @@ import { campUpgrades } from "../data/progression";
 import { getRecruitDefinition } from "../data/events";
 import { getCrisis } from "../data/crises";
 import { canResolveCrisisChoice } from "../game/crises";
-import type { CampPressureKey, GameAction, GameState, ResourceKey } from "../game/state";
+import { getRunItem } from "../data/runItems";
+import type { CampPressureKey, GameAction, GameState, ResourceKey, RunEquipmentSlot } from "../game/state";
 
 type Props = {
   state: GameState;
@@ -45,6 +46,12 @@ const pressureLabels: Record<CampPressureKey, string> = {
   morale: "Morale",
   shelter: "Shelter",
   supplies: "Supplies",
+};
+
+const slotLabels: Record<RunEquipmentSlot, string> = {
+  tool: "Tool",
+  charm: "Charm",
+  provision: "Provision",
 };
 
 export function CampScreen({ state, dispatch, onReset }: Props) {
@@ -128,6 +135,56 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
           </div>
         </div>
       )}
+
+      <div className="panel run-loadout-panel">
+        <div className="panel-heading">
+          <div>
+            <p className="eyebrow">Run Loadout</p>
+            <h3>Temporary equipment</h3>
+          </div>
+          <strong>{state.run.runItems.length} found this run</strong>
+        </div>
+        <div className="loadout-slots">
+          {(Object.entries(state.run.runLoadout) as [RunEquipmentSlot, GameState["run"]["runLoadout"][RunEquipmentSlot]][]).map(([slot, itemId]) => {
+            const item = itemId ? getRunItem(itemId) : null;
+            return (
+              <article className="loadout-slot" key={slot}>
+                <span>{slotLabels[slot]}</span>
+                <strong>{item?.name ?? "Empty"}</strong>
+                <small>{item?.effect ?? `Equip one ${slotLabels[slot].toLowerCase()} found during this run.`}</small>
+                {item && <button onClick={() => dispatch({ type: "unequipRunItem", slot })}>Unequip</button>}
+              </article>
+            );
+          })}
+        </div>
+        {state.run.runItems.length > 0 ? (
+          <div className="run-item-list">
+            {state.run.runItems.map((pickup) => {
+              const item = getRunItem(pickup.id);
+              const equipped = state.run.runLoadout[item.slot] === item.id;
+              return (
+                <article className="run-item-row" key={item.id}>
+                  <div>
+                    <strong>{item.name}</strong>
+                    <span>{slotLabels[item.slot]} · From {pickup.source}</span>
+                    <small>{item.effect}</small>
+                    <small>Triggers: {item.trigger}</small>
+                  </div>
+                  <button
+                    className={equipped ? "" : "primary"}
+                    disabled={equipped}
+                    onClick={() => dispatch({ type: "equipRunItem", itemId: item.id })}
+                  >
+                    {equipped ? "Equipped" : `Equip ${slotLabels[item.slot]}`}
+                  </button>
+                </article>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="helper-text">Route events, encounters, Guardians, and crisis responses can reveal temporary equipment.</p>
+        )}
+      </div>
 
       {state.run.recruitEvent?.status === "available" && (
         <div className="panel recruit-panel">

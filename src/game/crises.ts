@@ -7,6 +7,7 @@ import type {
   ItemId,
   ResourceKey,
 } from "./state.js";
+import { acquireRunItem, hasRunItemEquipped, triggerRunEffect } from "./runItems.js";
 
 const RESOLVED_COOLDOWN_SECONDS = 90;
 const IGNORED_COOLDOWN_SECONDS = 45;
@@ -64,12 +65,18 @@ export function advanceCampSystems(state: GameState, elapsedSeconds: number): Ga
           activeCrisis: {
             id: definition.id,
             triggeredAt: next.run.daySeconds,
-            deadlineAt: next.run.daySeconds + definition.deadlineSeconds,
+            deadlineAt:
+              next.run.daySeconds +
+              definition.deadlineSeconds +
+              (hasRunItemEquipped(next, "mossCrown") && !next.run.triggeredRunEffects.includes("moss-crown-deadline") ? 25 : 0),
             reason: triggerReason(next, definition.triggers),
           },
           log: [`Camp crisis: ${definition.name}. ${definition.warning}`, ...next.run.log].slice(0, 12),
         },
       };
+      if (hasRunItemEquipped(next, "mossCrown") && !next.run.triggeredRunEffects.includes("moss-crown-deadline")) {
+        next = triggerRunEffect(next, "moss-crown-deadline", "Moss Crown extended the first crisis deadline by 25s.");
+      }
     }
   }
 
@@ -105,7 +112,23 @@ export function resolveCrisisChoice(state: GameState, choiceId: string): GameSta
   const choice = definition.choices.find((candidate) => candidate.id === choiceId);
   if (!choice || !canResolveCrisisChoice(state, choice)) return state;
 
-  const resolved = applyCrisisEffect(state, choice.effect);
+  let resolved = applyCrisisEffect(state, choice.effect);
+  if (hasRunItemEquipped(resolved, "boneNeedle")) {
+    resolved = {
+      ...resolved,
+      run: {
+        ...resolved.run,
+        survivors: resolved.run.survivors.map((survivor) =>
+          survivor.onExpedition ? survivor : { ...survivor, injury: Math.max(0, survivor.injury - 4) },
+        ),
+      },
+    };
+    resolved = triggerRunEffect(resolved, `bone-needle-${active.id}-${state.run.crisesResolved}`, "Bone Needle removed 4 Injury after a crisis response.");
+  }
+  if (hasRunItemEquipped(resolved, "hollowCoin")) {
+    resolved = { ...resolved, run: { ...resolved.run, crisisScore: resolved.run.crisisScore + 6 } };
+  }
+  if (choice.effect.runItem) resolved = acquireRunItem(resolved, choice.effect.runItem, `Crisis: ${definition.name}`);
   const flag = `crisis-${definition.id}-${choice.id}`;
   const flags = resolved.run.crisisFlags.includes(flag)
     ? resolved.run.crisisFlags
@@ -163,7 +186,11 @@ export function applyCrisisEffect(state: GameState, effect: CrisisEffect): GameS
       items,
       survivors,
       campPressure: pressure,
-      collapseMeter: clamp(state.run.collapseMeter + (effect.collapse ?? 0)),
+      collapseMeter: clamp(
+        state.run.collapseMeter +
+        (effect.collapse ?? 0) +
+        ((effect.collapse ?? 0) > 20 && hasRunItemEquipped(state, "hollowCoin") ? 4 : 0),
+      ),
       crisisRouteRisk: Math.max(0, Math.min(12, state.run.crisisRouteRisk + (effect.routeRisk ?? 0))),
       repairSpeedModifier: Math.max(0.5, Math.min(1.25, state.run.repairSpeedModifier + (effect.repairSpeed ?? 0))),
       crisisScore: state.run.crisisScore + (effect.score ?? 0),
@@ -182,9 +209,12 @@ function driftPressure(state: GameState, elapsedSeconds: number): CampPressure {
   const fireDecay = state.run.runModifier === "emberWinds" ? 0.22 : 0.18;
 
   pressure.fire = clamp(pressure.fire - elapsedSeconds * fireDecay);
+  const hungryCounter =
+    state.run.runModifier === "hungryNight" &&
+    (state.run.survivors.some((survivor) => survivor.classId === "hunter") || hasRunItemEquipped(state, "saltedRations"));
   pressure.supplies = clamp(
     pressure.supplies +
-      elapsedSeconds * (state.run.resources.food <= 5 ? -0.12 : state.run.resources.food >= 12 ? 0.03 : -0.02),
+      elapsedSeconds * (state.run.resources.food <= 5 && !hungryCounter ? -0.12 : state.run.resources.food >= 12 ? 0.03 : -0.02),
   );
   pressure.morale = clamp(
     pressure.morale + elapsedSeconds * (averageFatigue >= 55 || averageInjury >= 30 ? -0.07 : 0.02),
@@ -233,6 +263,8 @@ function collapseFromCrises(state: GameState, message: string): GameState {
       activeExpedition: null,
       activeRouteDecision: null,
       activeCrisis: null,
+      runItems: [],
+      runLoadout: { tool: null, charm: null, provision: null },
       survivors: state.run.survivors.map((survivor) => ({ ...survivor, onExpedition: false })),
       endRun: { outcome: "collapse", ...result, reward: null, claimed: false },
       log: [message, ...state.run.log].slice(0, 12),

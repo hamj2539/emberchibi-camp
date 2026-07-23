@@ -5,6 +5,7 @@ import { getRoute } from "../data/routes.js";
 import { createGuardianBattle } from "./combat.js";
 import { calculateExpeditionSafety } from "./expedition.js";
 import { rollRouteDecision } from "./routeDecisions.js";
+import { hasRunItemEquipped, triggerRunEffect } from "./runItems.js";
 import type { GameState, ItemId, RecruitEvent, ResourceKey, Resources, Survivor } from "./state.js";
 
 export function resolveIdleProgress(state: GameState, elapsedSeconds: number): GameState {
@@ -98,9 +99,13 @@ function resolveRepairProgress(state: GameState, elapsedSeconds: number): GameSt
   );
   const qualityBonus = coreRepairBonus(repair.coreQuality);
   const workshopBonus = state.run.campUpgrades.includes("workshop") ? 1.35 : 1;
+  const gaugeBonus =
+    hasRunItemEquipped(state, "cinderGauge") && !state.run.triggeredRunEffects.includes("cinder-gauge-repair")
+      ? 2
+      : 1;
   const nextProgress = Math.min(
     repair.requiredProgress,
-    repair.progress + elapsedSeconds * repairPower * qualityBonus * workshopBonus * state.run.repairSpeedModifier,
+    repair.progress + elapsedSeconds * repairPower * qualityBonus * workshopBonus * state.run.repairSpeedModifier * gaugeBonus,
   );
 
   if (nextProgress < repair.requiredProgress) {
@@ -145,7 +150,9 @@ function resolveRepairProgress(state: GameState, elapsedSeconds: number): GameSt
     },
   };
 
-  return nextState;
+  return gaugeBonus > 1
+    ? triggerRunEffect(nextState, "cinder-gauge-repair", `Cinder Gauge doubled the repair speed of ${repair.beaconName}.`)
+    : nextState;
 }
 
 export function resolveExpedition(state: GameState, now: number): GameState {
@@ -158,7 +165,13 @@ export function resolveExpedition(state: GameState, now: number): GameState {
     useRation: Boolean(expedition.usedRation),
     useTorch: Boolean(expedition.usedTorch),
   });
-  const failed = safety + roll(1, 24) < route.danger;
+  let failed = safety + roll(1, 24) < route.danger;
+  const compassRecovery =
+    failed &&
+    route.kind !== "boss" &&
+    hasRunItemEquipped(state, "oldCompass") &&
+    !state.run.triggeredRunEffects.includes("old-compass-reroll");
+  if (compassRecovery) failed = false;
   const resources: Resources = { ...state.run.resources };
   const items = { ...state.run.items };
   const routes = { ...state.run.routes };
@@ -168,12 +181,32 @@ export function resolveExpedition(state: GameState, now: number): GameState {
   let survivors = state.run.survivors.map((survivor) => {
     if (!expedition.survivorIds.includes(survivor.id)) return survivor;
     const hasHerbalist = party.some((member) => member.classId === "herbalist");
+    const restlessInjury =
+      failed &&
+      state.run.runModifier === "restlessRoots" &&
+      getRunModifier(state.run.runModifier).routes?.includes(route.id) &&
+      !party.some((member) => member.classId === "herbalist")
+        ? getRunModifier(state.run.runModifier).injuryRisk ?? 0
+        : 0;
+    const tonicPreventsInjury =
+      failed &&
+      hasRunItemEquipped(state, "bitterTonic") &&
+      !state.run.triggeredRunEffects.includes("bitter-tonic-injury");
     return {
       ...survivor,
       onExpedition: false,
       fatigue: Math.min(100, survivor.fatigue + (failed ? 18 : 10) - (expedition.usedRation ? 4 : 0) - (hasHerbalist ? 3 : 0)),
-      injury: Math.min(100, survivor.injury + (failed ? (expedition.usedTorch ? 6 : 12) - (hasHerbalist ? 4 : 0) : 0)),
+      injury: Math.min(
+        100,
+        survivor.injury +
+          (tonicPreventsInjury
+            ? 0
+            : failed
+              ? (expedition.usedTorch ? 6 : 12) - (hasHerbalist ? 4 : 0) + restlessInjury
+              : 0),
+      ),
       currentHp: Math.max(1, survivor.currentHp - (failed ? 5 : 1)),
+      ...(tonicPreventsInjury ? { fatigue: Math.min(100, survivor.fatigue + 23) } : {}),
     };
   });
 
@@ -222,7 +255,17 @@ export function resolveExpedition(state: GameState, now: number): GameState {
     for (const [key, range] of Object.entries(route.rewards) as [ResourceKey, [number, number]][]) {
       const reward = roll(range[0], range[1]);
       const hunterBonus = key === "food" && party.some((survivor) => survivor.classId === "hunter") ? Math.ceil(reward * 0.25) : 0;
-      resources[key] += Math.max(0, Math.round((reward + hunterBonus) * getRunModifier(state.run.runModifier).rewardMultiplier));
+      const emberPickMultiplier =
+        hasRunItemEquipped(state, "emberPick") &&
+        route.beaconId === "ember" &&
+        (key === "stone" || key === "ore")
+          ? 2
+          : 1;
+      const ashBellMultiplier = hasRunItemEquipped(state, "ashBell") ? 0.85 : 1;
+      resources[key] += Math.max(
+        0,
+        Math.round((reward + hunterBonus) * getRunModifier(state.run.runModifier).rewardMultiplier * emberPickMultiplier * ashBellMultiplier),
+      );
     }
     routes[route.id] = { ...progress, completed: progress.completed + 1 };
     const prepBeacon = getBeaconByPrepRoute(route.id);
@@ -266,7 +309,7 @@ export function resolveExpedition(state: GameState, now: number): GameState {
     log.unshift(`Route decision: ${activeRouteDecision.kind === "event" ? "an event" : "an encounter"} blocks the path.`);
   }
 
-  return {
+  let result: GameState = {
     ...state,
     run: {
       ...state.run,
@@ -293,6 +336,29 @@ export function resolveExpedition(state: GameState, now: number): GameState {
       log: log.slice(0, 12),
     },
   };
+  if (compassRecovery) result = triggerRunEffect(result, "old-compass-reroll", `Old Compass recovered the failed ${route.name} expedition.`);
+  if (
+    hasRunItemEquipped(state, "bitterTonic") &&
+    failed &&
+    !state.run.triggeredRunEffects.includes("bitter-tonic-injury")
+  ) {
+    result = triggerRunEffect(result, "bitter-tonic-injury", "Bitter Tonic prevented route injuries and added Fatigue.");
+  }
+  if (hasRunItemEquipped(state, "emberPick") && route.beaconId === "ember") {
+    result = triggerRunEffect(result, `ember-pick-${route.id}-${progress.completed}`, "Ember Pick doubled Stone and Ore, adding 3 Fatigue.");
+    result = {
+      ...result,
+      run: {
+        ...result.run,
+        survivors: result.run.survivors.map((survivor) =>
+          expedition.survivorIds.includes(survivor.id)
+            ? { ...survivor, fatigue: Math.min(100, survivor.fatigue + 3) }
+            : survivor,
+        ),
+      },
+    };
+  }
+  return result;
 }
 
 function availableRecruit(

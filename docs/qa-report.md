@@ -1,4 +1,4 @@
-# Emberchibi Camp Alpha 2 QA
+# Emberchibi Camp Alpha 3 QA
 
 Last updated: 2026-07-23
 
@@ -6,13 +6,15 @@ Build target: GitHub Pages static build
 
 ## Automated Checks
 
-- `npm run test`: 42 passing game-logic tests.
+- `npm run test`: 50 passing game-logic tests.
 - `npm run build`: production build passes.
 - Full clean-run simulation reaches the Cinder Gate, defeats Night Herald, and awards an Ancient Chest.
 - Route events, choice requirements/effects, normal encounters, all four modifiers,
   recruit branches, malformed pending decisions, and pre-Alpha saves have focused tests.
 - Crisis definitions, triggers, requirements, resolution, expiry, collapse,
   and pre-Alpha 2 migration have focused tests.
+- Run item definitions, acquisition, slot replacement, biome counters, Guardian
+  rewards, effect triggers, end-run reset, and migration have focused tests.
 - GitHub Pages deployment completed successfully.
 - Production page, manifest, and service worker return HTTP 200.
 
@@ -25,6 +27,8 @@ Vite reports expected build-time warnings for absolute asset paths under
 - Camp resources, idle jobs, upgrades, Camp Log, and navigation render correctly.
 - Camp shows Fire, Morale, Shelter, Supplies, and Collapse pressure without overflow.
 - Crisis panel shows severity, deadline, trigger reason, consequence, and 2-3 responses.
+- Run Loadout shows three slots plus each item's source, effect, and trigger.
+- Route cards show whether the active biome modifier is active or countered.
 - Meta screen shows shard projects, relic slots, and permanent collections.
 - Explore shows the run modifier and pending route decisions lock new expeditions.
 - Route Event and Normal Encounter choices resolve back into the existing route flow.
@@ -47,6 +51,26 @@ Vite reports expected build-time warnings for absolute asset paths under
     and awards a Broken or Faded Chest.
 11. Reload during an active crisis and confirm its deadline and reason persist.
 12. Load a pre-Alpha 2 save and confirm pressure defaults appear without reset.
+
+## Alpha 3 Run Build Checklist
+
+1. Acquire temporary equipment from a route event and verify its source is shown.
+2. Acquire equipment from a normal encounter, Guardian, and crisis response.
+3. Equip one Tool, Charm, and Provision; verify the fourth item replaces only its slot.
+4. Verify legacy relic loadout remains unchanged and visually separate.
+5. Trigger Old Compass, Moss Crown, Bone Needle, and Cinder Gauge once each.
+6. Verify Ash Bell lowers Guardian pressure while reducing route rewards.
+7. Verify Ember Pick doubles Ember Stone/Ore but adds Fatigue.
+8. Verify Resin Torch Bundle improves the first Guardian Torch.
+9. Verify Bitter Tonic prevents one route injury and then adds Fatigue.
+10. Verify Moon Thread adds score only when no survivor is downed.
+11. Verify Wayfinder Knot changes event and encounter odds.
+12. Verify Heavy Fog duration is countered by Scout.
+13. Verify Hungry Night pressure is countered by Hunter or Salted Rations.
+14. Verify Ember Winds is countered by Tinker, Warm Cloak, or Ash Bell.
+15. Verify Restless Roots injury risk is countered by Herbalist.
+16. End the run and verify all temporary items clear while legacy relics remain.
+17. Load a pre-Alpha 3 save and verify empty valid slots are migrated safely.
 
 ## Alpha 1 Exploration Regression Checklist
 
@@ -90,7 +114,8 @@ Vite reports expected build-time warnings for absolute asset paths under
 - Normal encounters use one tactical decision and do not have a separate combat screen.
 - Route events are single-step decisions; multi-event chains are deferred.
 - Crisis tuning is intentionally simple; only one crisis is active at a time.
-- Run-only relics are not implemented.
+- Temporary equipment applies to the whole run, not individual survivors.
+- Item drops are deterministic from matching content; weighted loot tables are deferred.
 - Sound is lightweight synthesized UI feedback; there is no music system.
 - PWA caching provides an offline shell, not cloud save or account sync.
 - Browser checks are manual; there is no automated end-to-end browser suite yet.

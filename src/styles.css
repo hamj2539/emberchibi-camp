@@ -623,7 +623,8 @@ select {
 }
 
 .pressure-panel,
-.crisis-panel {
+.crisis-panel,
+.run-loadout-panel {
   grid-column: 1 / -1;
 }
 
@@ -721,6 +722,77 @@ select {
   color: inherit;
   font-size: 0.78rem;
   opacity: 0.78;
+}
+
+.loadout-slots {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.loadout-slot {
+  display: flex;
+  min-height: 150px;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.loadout-slot > span,
+.run-item-row span,
+.run-item-row small,
+.loadout-slot small,
+.modifier-forecast {
+  color: #cdbba4;
+}
+
+.loadout-slot > span {
+  font-size: 0.76rem;
+  text-transform: uppercase;
+}
+
+.loadout-slot small,
+.run-item-row small {
+  line-height: 1.35;
+}
+
+.loadout-slot button {
+  align-self: start;
+  margin-top: auto;
+}
+
+.run-item-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.run-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.run-item-row > div {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.run-item-row button {
+  flex: 0 0 auto;
+}
+
+.modifier-forecast {
+  display: block;
+  margin-top: 4px;
 }
 
 .choice-row {
@@ -1099,8 +1171,21 @@ select {
     grid-template-columns: 1fr 1fr;
   }
 
+  .loadout-slots {
+    grid-template-columns: 1fr;
+  }
+
   .crisis-facts {
     flex-direction: column;
+  }
+
+  .run-item-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .run-item-row button {
+    align-self: start;
   }
 
   .log-panel {

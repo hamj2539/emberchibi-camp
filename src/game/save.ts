@@ -3,6 +3,7 @@ import { getRecruitDefinition } from "../data/events.js";
 import { runModifiers } from "../data/routeContent.js";
 import { getRouteDecision } from "../data/routeContent.js";
 import { crises } from "../data/crises.js";
+import { runItems } from "../data/runItems.js";
 
 const SAVE_KEY = "emberchibiCamp.v1";
 const BACKUP_KEY = "emberchibiCamp.v1.backup";
@@ -81,6 +82,9 @@ export function migrateV1(state: GameState): GameState {
       runModifier: runModifiers.some((modifier) => modifier.id === state.run.runModifier)
         ? state.run.runModifier
         : defaults.run.runModifier,
+      runItems: (state.run.runItems ?? []).filter((pickup) => runItems.some((item) => item.id === pickup.id)),
+      runLoadout: migrateRunLoadout(state, defaults),
+      triggeredRunEffects: state.run.triggeredRunEffects ?? [],
       eventFlags: state.run.eventFlags ?? [],
       eventScore: state.run.eventScore ?? 0,
       decisionsResolved: state.run.decisionsResolved ?? 0,
@@ -103,6 +107,16 @@ export function migrateV1(state: GameState): GameState {
         : null,
     },
   };
+}
+
+function migrateRunLoadout(state: GameState, defaults: GameState): GameState["run"]["runLoadout"] {
+  const owned = new Set((state.run.runItems ?? []).map((pickup) => pickup.id));
+  const loadout = { ...defaults.run.runLoadout, ...(state.run.runLoadout ?? {}) };
+  for (const slot of ["tool", "charm", "provision"] as const) {
+    const id = loadout[slot];
+    if (!id || !owned.has(id) || !runItems.some((item) => item.id === id && item.slot === slot)) loadout[slot] = null;
+  }
+  return loadout;
 }
 
 function migrateRouteDecision(

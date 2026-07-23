@@ -4,6 +4,7 @@ import { getRoute } from "../src/data/routes.js";
 import { getRecruitDefinition } from "../src/data/events.js";
 import { normalEncounters, routeEvents, runModifiers } from "../src/data/routeContent.js";
 import { crises, getCrisis } from "../src/data/crises.js";
+import { runItems } from "../src/data/runItems.js";
 import { createGuardianBattle, resolveBossAction } from "../src/game/combat.js";
 import { advanceCampSystems, canResolveCrisisChoice, resolveCrisisChoice } from "../src/game/crises.js";
 import { calculateIdleElapsed, gameReducer, MAX_OFFLINE_SECONDS } from "../src/game/reducer.js";
@@ -20,6 +21,7 @@ import {
   rollRouteDecision,
 } from "../src/game/routeDecisions.js";
 import { createInitialState, type GameState } from "../src/game/state.js";
+import { acquireRunItem } from "../src/game/runItems.js";
 
 const tests: { name: string; run: () => void }[] = [
   {
@@ -473,11 +475,11 @@ const tests: { name: string; run: () => void }[] = [
     },
   },
   {
-    name: "Alpha 1 content includes eight events, three encounters, and four modifiers",
+    name: "Alpha content includes eight events, three encounters, and five modifiers",
     run: () => {
       assertEqual(routeEvents.length, 8);
       assertEqual(normalEncounters.length, 3);
-      assertEqual(runModifiers.length, 4);
+      assertEqual(runModifiers.length, 5);
       assertEqual(new Set(routeEvents.flatMap((event) => event.routes)).size >= 5, true);
     },
   },
@@ -553,15 +555,16 @@ const tests: { name: string; run: () => void }[] = [
     name: "run modifier rolls cover all variants and Heavy Fog changes route safety",
     run: () => {
       assertEqual(modifierFromRoll(0), "heavyFog");
-      assertEqual(modifierFromRoll(0.26), "emberWinds");
-      assertEqual(modifierFromRoll(0.51), "hungryNight");
-      assertEqual(modifierFromRoll(0.99), "oldTrailSigns");
-      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "scout" });
+      assertEqual(modifierFromRoll(0.21), "emberWinds");
+      assertEqual(modifierFromRoll(0.41), "hungryNight");
+      assertEqual(modifierFromRoll(0.61), "oldTrailSigns");
+      assertEqual(modifierFromRoll(0.99), "restlessRoots");
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "hunter" });
       const heavy = { ...started, run: { ...started.run, runModifier: "heavyFog" as const } };
       const signs = { ...started, run: { ...started.run, runModifier: "oldTrailSigns" as const } };
-      const route = getRoute("burntGrove");
-      const heavySafety = calculateExpeditionSafety(heavy, ["survivor-scout"], route, { useRation: false, useTorch: false });
-      const signsSafety = calculateExpeditionSafety(signs, ["survivor-scout"], route, { useRation: false, useTorch: false });
+      const route = getRoute("mistwoodEdge");
+      const heavySafety = calculateExpeditionSafety(heavy, ["survivor-hunter"], route, { useRation: false, useTorch: false });
+      const signsSafety = calculateExpeditionSafety(signs, ["survivor-hunter"], route, { useRation: false, useTorch: false });
       assertEqual(signsSafety - heavySafety, 7);
     },
   },
@@ -846,6 +849,123 @@ const tests: { name: string; run: () => void }[] = [
       assertEqual(migrated.run.collapseMeter, 0);
       assertEqual(migrated.run.activeCrisis, null);
       assertEqual(migrated.run.repairSpeedModifier, 1);
+    },
+  },
+  {
+    name: "Alpha 3 defines twelve temporary items across three slots and five modifiers",
+    run: () => {
+      assertEqual(runItems.length, 12);
+      assertEqual(new Set(runItems.map((item) => item.slot)).size, 3);
+      assertEqual(runModifiers.length, 5);
+      assertEqual(runItems.every((item) => item.effect.length > 20 && item.trigger.length > 0), true);
+    },
+  },
+  {
+    name: "route decisions acquire run-only equipment with its source",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "scout" });
+      const deciding = {
+        ...started,
+        run: {
+          ...started.run,
+          activeRouteDecision: {
+            kind: "event" as const,
+            id: "oldTrailMarkers" as const,
+            routeId: "mistwoodEdge" as const,
+            partyIds: ["survivor-scout"],
+          },
+        },
+      };
+      const resolved = resolveRouteChoice(deciding, "follow");
+      assertEqual(resolved.run.runItems[0].id, "oldCompass");
+      assertEqual(resolved.run.runItems[0].source.includes("Old Trail Markers"), true);
+      assertEqual(resolved.legacy.relics.length, 0);
+    },
+  },
+  {
+    name: "temporary loadout permits one item in each of three slots",
+    run: () => {
+      let state = createInitialState();
+      state = acquireRunItem(state, "oldCompass", "test");
+      state = acquireRunItem(state, "emberPick", "test");
+      state = acquireRunItem(state, "mossCrown", "test");
+      state = acquireRunItem(state, "saltedRations", "test");
+      state = gameReducer(state, { type: "equipRunItem", itemId: "oldCompass" });
+      state = gameReducer(state, { type: "equipRunItem", itemId: "mossCrown" });
+      state = gameReducer(state, { type: "equipRunItem", itemId: "saltedRations" });
+      assertEqual(Object.values(state.run.runLoadout).filter(Boolean).length, 3);
+      state = gameReducer(state, { type: "equipRunItem", itemId: "emberPick" });
+      assertEqual(state.run.runLoadout.tool, "emberPick");
+      assertEqual(Object.values(state.run.runLoadout).filter(Boolean).length, 3);
+    },
+  },
+  {
+    name: "Heavy Fog slows affected routes while Scout counters the biome modifier",
+    run: () => {
+      const hunter = gameReducer(createInitialState(), { type: "chooseStarter", classId: "hunter" });
+      const scout = gameReducer(createInitialState(), { type: "chooseStarter", classId: "scout" });
+      const fogHunter = { ...hunter, run: { ...hunter.run, runModifier: "heavyFog" as const } };
+      const fogScout = { ...scout, run: { ...scout.run, runModifier: "heavyFog" as const } };
+      const route = getRoute("mistwoodEdge");
+      assertEqual(calculateExpeditionDuration(route, fogHunter.run.survivors, fogHunter) > route.durationSeconds, true);
+      assertEqual(calculateExpeditionDuration(route, fogScout.run.survivors, fogScout) < route.durationSeconds, true);
+    },
+  },
+  {
+    name: "Moss Crown extends only the first crisis deadline",
+    run: () => {
+      let started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "hunter" });
+      started = acquireRunItem(started, "mossCrown", "test");
+      started = gameReducer(started, { type: "equipRunItem", itemId: "mossCrown" });
+      const strained = {
+        ...started,
+        run: { ...started.run, campPressure: { ...started.run.campPressure, fire: 29 } },
+      };
+      const triggered = advanceCampSystems(strained, 1);
+      assertEqual(triggered.run.activeCrisis?.deadlineAt, triggered.run.daySeconds + 75);
+      assertEqual(triggered.run.triggeredRunEffects.includes("moss-crown-deadline"), true);
+    },
+  },
+  {
+    name: "Guardian victory grants a temporary item reward",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "hunter" });
+      const battle = { ...createGuardianBattle(started, ["survivor-hunter"], getBeacon("ember")), bossHp: 1 };
+      const originalRandom = Math.random;
+      Math.random = () => 1;
+      try {
+        const won = resolveBossAction({ ...started, run: { ...started.run, bossBattle: battle } }, "attack");
+        assertEqual(won.run.runItems.some((pickup) => pickup.id === "emberPick"), true);
+      } finally {
+        Math.random = originalRandom;
+      }
+    },
+  },
+  {
+    name: "run-only items clear at Run Collapse while legacy relics remain",
+    run: () => {
+      let state = completedRun("pristine", 0, 0);
+      state = acquireRunItem(state, "moonThread", "test");
+      state = gameReducer(state, { type: "equipRunItem", itemId: "moonThread" });
+      state = { ...state, legacy: { ...state.legacy, relics: ["Coalglass Charm"] } };
+      const ended = gameReducer(state, { type: "abandonRun" });
+      assertEqual(ended.run.runItems.length, 0);
+      assertEqual(ended.run.runLoadout.charm, null);
+      assertEqual(ended.legacy.relics[0], "Coalglass Charm");
+    },
+  },
+  {
+    name: "save migration adds and validates Alpha 3 loadout state",
+    run: () => {
+      const old = createInitialState();
+      delete (old.run as Partial<GameState["run"]>).runItems;
+      delete (old.run as Partial<GameState["run"]>).runLoadout;
+      delete (old.run as Partial<GameState["run"]>).triggeredRunEffects;
+      const migrated = migrateV1(old);
+      assertEqual(migrated.run.runItems.length, 0);
+      assertEqual(migrated.run.runLoadout.tool, null);
+      assertEqual(migrated.run.runLoadout.charm, null);
+      assertEqual(migrated.run.runLoadout.provision, null);
     },
   },
 ];

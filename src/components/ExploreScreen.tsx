@@ -44,7 +44,10 @@ export function ExploreScreen({ state, dispatch }: Props) {
           <p className="eyebrow">Run Modifier</p>
           <h3>{modifier.name}</h3>
         </div>
-        <p>{modifier.description}</p>
+        <div>
+          <p>{modifier.description}</p>
+          <small className="modifier-forecast">{modifier.forecast}</small>
+        </div>
       </div>
       {decision && (
         <div className="panel route-decision">
@@ -146,7 +149,7 @@ export function ExploreScreen({ state, dispatch }: Props) {
           const beacon = getBeaconByBossRoute(route.id) ?? getBeaconByPrepRoute(route.id);
           const safety = calculateExpeditionSafety(state, selectedSurvivors.map((survivor) => survivor.id), route, { useRation, useTorch });
           const successChance = expeditionSuccessChance(safety, route.danger);
-          const duration = calculateExpeditionDuration(route, selectedSurvivors);
+          const duration = calculateExpeditionDuration(route, selectedSurvivors, state);
 
           return (
             <article className={`route-card route-${route.id}`} key={route.id}>
@@ -161,6 +164,7 @@ export function ExploreScreen({ state, dispatch }: Props) {
                 <span>Clears {progress.completed}</span>
                 <span>Fails {progress.failed}</span>
                 <span>{selectedSurvivors.length} selected</span>
+                {modifier.routes?.includes(route.id) && <span>{modifier.name}: {modifier.counterClass && selectedSurvivors.some((survivor) => survivor.classId === modifier.counterClass) ? "Countered" : "Active"}</span>}
               </div>
               <div className="reward-list">
                 {beacon && <span>{beacon.bonus}</span>}

@@ -1,7 +1,7 @@
 # Emberchibi Camp
 
-Alpha 2 survival roguelite RPG with camp crises, exploration decisions,
-idle management, and turn-based key encounters.
+Alpha 3 survival roguelite RPG with temporary run builds, camp crises,
+exploration decisions, idle management, and turn-based key encounters.
 
 **Live build:** https://hamj2539.github.io/emberchibi-camp/
 
@@ -10,6 +10,8 @@ idle management, and turn-based key encounters.
 - Four starter classes and three recruitable survivors.
 - Idle camp jobs, offline progress, crafting, supplies, and three camp upgrades.
 - Four camp pressure values and five deadline-based crises with choice-driven consequences.
+- Twelve run-only equipment items across Tool, Charm, and Provision slots.
+- Five biome/run modifiers with route forecasts and class or equipment counters.
 - Eight data-driven route events with resource, stat, class, supply, and relic choices.
 - Three lightweight normal encounters with one-choice tactical resolution.
 - Four run modifiers that alter route risk, event odds, encounter odds, or Guardian pressure.
@@ -18,6 +20,7 @@ idle management, and turn-based key encounters.
 - Cinder Gate and Night Herald final encounter.
 - Run victory, Run Collapse, score breakdown, and graded Legacy Chests.
 - Permanent shard projects, unlock collections, and two relic loadout slots.
+- Temporary run items track their source, trigger effects in the Camp Log, and reset at run end.
 - Local save migration, responsive layout, sound feedback, and PWA support.
 
 ## Development
@@ -41,10 +44,11 @@ The app is configured for GitHub Pages under `/emberchibi-camp/`.
 npm run test
 ```
 
-The suite currently covers 42 game-logic cases, including save migration,
+The suite currently covers 50 game-logic cases, including save migration,
 offline progress, expeditions, combat, upgrades, meta progression, collapse,
 route decisions, encounters, recruit branches, run modifiers, crisis triggers,
-deadlines, choices, ignored consequences, and a clean full-run Gate simulation.
+deadlines, choices, ignored consequences, run item acquisition, loadout limits,
+biome counters, run-end reset, and a clean full-run Gate simulation.
 
 ## Save Data
 

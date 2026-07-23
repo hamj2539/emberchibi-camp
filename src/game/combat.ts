@@ -1,6 +1,8 @@
 import { getBeacon, type BeaconDefinition } from "../data/beacons.js";
 import { getRunModifier } from "../data/routeContent.js";
 import type { BossAction, BossBattle, CoreQuality, GameState, Survivor } from "./state.js";
+import { guardianRunItemRewards } from "../data/runItems.js";
+import { acquireRunItem, hasRunItemEquipped, triggerRunEffect } from "./runItems.js";
 
 export function createGuardianBattle(state: GameState, partyIds: string[], beacon: BeaconDefinition): BossBattle {
   const party = state.run.survivors.filter((survivor) => partyIds.includes(survivor.id));
@@ -10,6 +12,12 @@ export function createGuardianBattle(state: GameState, partyIds: string[], beaco
     (survivor) => !partyIds.includes(survivor.id) && !survivor.onExpedition && survivor.job === "research",
   ) ? -1 : 0;
 
+  const modifier = getRunModifier(state.run.runModifier);
+  const modifierApplies = !modifier.routes || modifier.routes.includes(beacon.bossRouteId);
+  const modifierCountered =
+    party.some((survivor) => survivor.classId === modifier.counterClass) ||
+    state.run.items.warmCloak > 0 ||
+    hasRunItemEquipped(state, "ashBell");
   return {
     beaconId: beacon.id,
     bossId: beacon.bossId,
@@ -18,7 +26,10 @@ export function createGuardianBattle(state: GameState, partyIds: string[], beaco
     bossHp: beacon.bossHp,
     bossMaxHp: beacon.bossHp,
     guardStacks: 0,
-    burnPressure: Math.max(1, beacon.pressure + cloakBonus + researchBonus + getRunModifier(state.run.runModifier).bossPressure),
+    burnPressure: Math.max(
+      1,
+      beacon.pressure + cloakBonus + researchBonus + (modifierApplies && !modifierCountered ? modifier.bossPressure : 0) - (hasRunItemEquipped(state, "ashBell") ? 1 : 0),
+    ),
     partyIds: party.map((survivor) => survivor.id),
     turn: 1,
     status: "active",
@@ -85,9 +96,14 @@ export function resolveBossAction(state: GameState, action: BossAction): GameSta
   if (action === "useTorch") {
     if (items.torch <= 0) return state;
     items.torch -= 1;
-    burnPressure = Math.max(1, burnPressure - beacon.torchRelief);
-    bossHp = Math.max(0, bossHp - beacon.torchDamage);
-    log.unshift(`A Torch flares for ${beacon.torchDamage} damage and cuts pressure by ${beacon.torchRelief}.`);
+    const resinBonus =
+      hasRunItemEquipped(state, "resinTorchBundle") &&
+      !state.run.triggeredRunEffects.includes("resin-torch-guardian")
+        ? 1
+        : 0;
+    burnPressure = Math.max(1, burnPressure - beacon.torchRelief - resinBonus);
+    bossHp = Math.max(0, bossHp - beacon.torchDamage - resinBonus * 6);
+    log.unshift(`A Torch flares for ${beacon.torchDamage + resinBonus * 6} damage and cuts pressure by ${beacon.torchRelief + resinBonus}.`);
   }
 
   if (action === "useSalve") {
@@ -99,7 +115,7 @@ export function resolveBossAction(state: GameState, action: BossAction): GameSta
 
   if (bossHp <= 0) {
     const quality = coreQualityForFailures(state.run.beacons[battle.beaconId].failedAttempts ?? 0);
-    return {
+    let won: GameState = {
       ...state,
       run: {
         ...state.run,
@@ -122,6 +138,15 @@ export function resolveBossAction(state: GameState, action: BossAction): GameSta
         ),
       },
     };
+    won = acquireRunItem(won, guardianRunItemRewards[battle.beaconId], `Guardian: ${battle.bossName}`);
+    if (
+      action === "useTorch" &&
+      hasRunItemEquipped(state, "resinTorchBundle") &&
+      !state.run.triggeredRunEffects.includes("resin-torch-guardian")
+    ) {
+      won = triggerRunEffect(won, "resin-torch-guardian", "Resin Torch Bundle empowered the first Guardian Torch.");
+    }
+    return won;
   }
 
   const bossResult = resolveBossTurn(survivors, battle.partyIds, guardStacks, burnPressure, beacon.incomingBase);
@@ -160,7 +185,7 @@ export function resolveBossAction(state: GameState, action: BossAction): GameSta
     };
   }
 
-  return {
+  let next: GameState = {
     ...state,
     run: {
       ...state.run,
@@ -177,6 +202,14 @@ export function resolveBossAction(state: GameState, action: BossAction): GameSta
       },
     },
   };
+  if (
+    action === "useTorch" &&
+    hasRunItemEquipped(state, "resinTorchBundle") &&
+    !state.run.triggeredRunEffects.includes("resin-torch-guardian")
+  ) {
+    next = triggerRunEffect(next, "resin-torch-guardian", "Resin Torch Bundle empowered the first Guardian Torch.");
+  }
+  return next;
 }
 
 export function labelCoreQuality(quality: CoreQuality, coreName = "Cinder Heart"): string {

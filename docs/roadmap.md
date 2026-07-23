@@ -4,19 +4,20 @@ Last updated: 2026-07-23
 
 ## Current Release
 
-**Alpha 2: Camp Survival Pressure**
+**Alpha 3: Run Builds and Biome Variation**
 
-The camp now has explicit Fire, Morale, Shelter, and Supplies pressure. Gameplay
-states trigger deadline-based crises whose choices or ignored consequences alter
-the current run and can build toward Run Collapse.
+Each run can now create a temporary build from Tool, Charm, and Provision
+equipment. Biome-aware modifiers change route duration, risk, camp pressure, or
+Guardian behavior and expose their counters in route forecasts.
 
 | Area | Status | Current implementation |
 | --- | --- | --- |
 | Project shell | Complete | Vite, React, TypeScript, reducer architecture |
 | Save and offline | Complete | localStorage, backup recovery, migration, 8h offline cap |
 | Camp | Alpha 2 | six idle jobs, three upgrades, four pressure values, five crises |
-| Exploration | Alpha 1 | eleven routes, eight events, three normal encounters |
-| Run variation | Alpha 1 | four modifiers affecting risk, event odds, encounters, or boss prep |
+| Exploration | Alpha 3 | eleven routes, eight events, three encounters, temporary item drops |
+| Run variation | Alpha 3 | five biome/run modifiers and twelve build-defining run items |
+| Run loadout | Alpha 3 | Tool, Charm, and Provision slots with source and trigger history |
 | Survivors | Alpha 1 | four starters plus branched/delayed Rook, Mira, and Bram recruitment |
 | Crafting | Complete | six recipes and sequential craft queue |
 | Guardians | Complete | five bosses, distinct tuning, Core quality |
@@ -75,22 +76,35 @@ the current run and can build toward Run Collapse.
 - Tuned crisis-chain collapse to retain partial score and award Broken or Faded Chests.
 - Added safe migration defaults and expanded the automated suite from 36 to 42 tests.
 
+### Alpha 3 - Run Builds and Biome Variation
+
+- Added twelve data-driven run items across Tool, Charm, and Provision slots.
+- Added acquisition from route events, encounters, Guardians, and crisis choices.
+- Added build effects for failure recovery, crisis deadlines, injury prevention,
+  route reward tradeoffs, Guardian pressure, Torch power, repair speed, and score.
+- Added a fifth modifier, Restless Roots, and made modifiers biome-aware.
+- Added Scout, Hunter, Herbalist, Tinker, supply, and loadout counters.
+- Added route forecast status and Camp Log messages when effects trigger.
+- Added a Run Loadout panel showing equipped slots, item source, effect, and trigger.
+- Kept permanent Legacy relics separate and clear all run equipment at run end.
+- Expanded the automated suite from 42 to 50 game-logic tests.
+
 ## Next Phase
 
-### P1 - Alpha 2 Playtest and Balance
+### P1 - Alpha 3 Playtest and Balance
 
-- Measure crisis trigger frequency and time-to-response.
-- Tune Fire and Supplies decay against the short prototype route timers.
-- Verify every crisis always has at least one no-cost or achievable response.
-- Review collapse-meter pacing after two and three ignored crises.
+- Measure item acquisition frequency and slot replacement decisions.
+- Verify each starter can counter at least one meaningful modifier path.
+- Tune Ash Bell, Ember Pick, Moon Thread, and Old Compass tradeoffs.
+- Review modifier and item messages for excessive Camp Log noise.
+- Measure crisis trigger frequency and time-to-response by loadout.
 - Record average run duration and resource bottlenecks.
 - Measure route, Guardian, and Gate failure rates by starter class.
 - Tune camp upgrade and Legacy Project costs.
 - Review chest reward duplication and long-term shard pacing.
 
-### P2 - Alpha 3 Candidates
+### P2 - Alpha 4 Candidates
 
-- Add run-only relic drops and three temporary equipment slots.
 - Add event chains that react to flags from earlier choices.
 - Add more biome-specific normal encounter variants.
 - Expand boss behavior beyond pressure scaling and single-target attacks.
@@ -113,4 +127,4 @@ The current prototype is complete when:
 - Automated tests and production build pass.
 - GitHub Pages serves the app, manifest, and service worker successfully.
 
-All prototype criteria remain met in Alpha 2.
+All prototype criteria remain met in Alpha 3.

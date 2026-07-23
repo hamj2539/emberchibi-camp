@@ -36,7 +36,21 @@ export type RewardType = "legacyShards" | "blueprint" | "relic" | "survivorUnloc
 export type CampUpgradeId = "infirmary" | "workshop" | "watchtower";
 export type LegacyProjectId = "fieldManual" | "deepPockets" | "hearthstone";
 export type RunOutcome = "victory" | "collapse";
-export type RunModifierId = "heavyFog" | "emberWinds" | "hungryNight" | "oldTrailSigns";
+export type RunModifierId = "heavyFog" | "emberWinds" | "hungryNight" | "oldTrailSigns" | "restlessRoots";
+export type RunEquipmentSlot = "tool" | "charm" | "provision";
+export type RunItemId =
+  | "oldCompass"
+  | "emberPick"
+  | "boneNeedle"
+  | "cinderGauge"
+  | "mossCrown"
+  | "ashBell"
+  | "moonThread"
+  | "hollowCoin"
+  | "saltedRations"
+  | "resinTorchBundle"
+  | "bitterTonic"
+  | "wayfinderKnot";
 export type RouteEventId =
   | "oldTrailMarkers"
   | "ashOrchard"
@@ -116,6 +130,13 @@ export type ActiveCrisis = {
   deadlineAt: number;
   reason: string;
 };
+
+export type RunItemPickup = {
+  id: RunItemId;
+  source: string;
+};
+
+export type RunLoadout = Record<RunEquipmentSlot, RunItemId | null>;
 
 export type BossBattle = {
   beaconId: BeaconId;
@@ -203,6 +224,9 @@ export type RunState = {
   beaconRepair: BeaconRepair | null;
   campUpgrades: CampUpgradeId[];
   runModifier: RunModifierId;
+  runItems: RunItemPickup[];
+  runLoadout: RunLoadout;
+  triggeredRunEffects: string[];
   eventFlags: string[];
   eventScore: number;
   decisionsResolved: number;
@@ -251,6 +275,8 @@ export type GameAction =
   | { type: "resolveRouteDecision"; choiceId: string }
   | { type: "resolveRecruit"; choice: "herb" | "food" | "ignore" }
   | { type: "resolveCrisis"; choiceId: string }
+  | { type: "equipRunItem"; itemId: RunItemId }
+  | { type: "unequipRunItem"; slot: RunEquipmentSlot }
   | { type: "startCraft"; recipeId: ItemId }
   | { type: "bossAction"; action: BossAction }
   | { type: "leaveBossResult" }
@@ -324,6 +350,9 @@ export function createInitialState(now = Date.now()): GameState {
       beaconRepair: null,
       campUpgrades: [],
       runModifier: "hungryNight",
+      runItems: [],
+      runLoadout: { tool: null, charm: null, provision: null },
+      triggeredRunEffects: [],
       eventFlags: [],
       eventScore: 0,
       decisionsResolved: 0,

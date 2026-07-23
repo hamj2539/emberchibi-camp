@@ -4,6 +4,7 @@ import type {
   IdleJob,
   ItemId,
   ResourceKey,
+  RunItemId,
   StarterClassId,
   StatKey,
 } from "../game/state.js";
@@ -37,6 +38,7 @@ export type CrisisEffect = {
   repairSpeed?: number;
   score?: number;
   flag?: string;
+  runItem?: RunItemId;
 };
 
 export type CrisisChoice = {
@@ -83,8 +85,8 @@ export const crises: CrisisDefinition[] = [
         label: "Rebuild the firebox",
         detail: "Tinker only.",
         requirement: { classId: "tinker" },
-        effect: { pressure: { fire: 32, shelter: 6 }, score: 10, flag: "reinforced-firebox" },
-        result: "A vented firebox holds the heat.",
+        effect: { pressure: { fire: 32, shelter: 6 }, score: 10, flag: "reinforced-firebox", runItem: "resinTorchBundle" },
+        result: "A vented firebox holds the heat and cures a Resin Torch Bundle.",
       },
       {
         id: "endure",

@@ -1,5 +1,6 @@
 import { beacons } from "../data/beacons.js";
 import type { ChestGrade, CoreQuality, GameState, ScoreLine } from "./state.js";
+import { hasRunItemEquipped } from "./runItems.js";
 
 const repairPoints: Record<CoreQuality, number> = {
   pristine: 140,
@@ -51,6 +52,9 @@ export function calculateScore(state: GameState): { score: number; lines: ScoreL
 
   const downed = state.run.survivors.filter((survivor) => survivor.currentHp <= 0).length;
   if (downed > 0) lines.push({ label: "Survivors downed", points: downed * -30 });
+  if (downed === 0 && hasRunItemEquipped(state, "moonThread")) {
+    lines.push({ label: "Moon Thread: no survivor downed", points: 120 });
+  }
 
   const score = Math.max(0, lines.reduce((sum, line) => sum + line.points, 0));
   return { score, lines, chestGrade: chestGradeForScore(score) };

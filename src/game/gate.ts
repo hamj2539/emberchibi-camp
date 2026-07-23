@@ -154,7 +154,15 @@ export function finishGate(state: GameState, gate: GateProgress): GameState {
 
   if (gate.status !== "cleared") return nextState;
   const result = calculateScore(nextState);
-  return { ...nextState, run: { ...nextState.run, endRun: { outcome: "victory", ...result, reward: null, claimed: false } } };
+  return {
+    ...nextState,
+    run: {
+      ...nextState.run,
+      runItems: [],
+      runLoadout: { tool: null, charm: null, provision: null },
+      endRun: { outcome: "victory", ...result, reward: null, claimed: false },
+    },
+  };
 }
 
 function allBeaconsLit(state: GameState): boolean {
