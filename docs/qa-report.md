@@ -1,4 +1,4 @@
-# Emberchibi Camp Solo Alpha 7 QA
+# Emberchibi Camp Solo Alpha 8 QA
 
 Last updated: 2026-07-23
 
@@ -23,6 +23,7 @@ Build target: GitHub Pages static build
   and Alpha 6 save migration have focused tests.
 - Event-chain steps/outcomes, personal stories, alternate repairs, content counts,
   and three ending variants have focused tests.
+- Alpha 8 changes are presentation-only; all 75 deterministic logic tests remain active.
 - GitHub Pages deployment completed successfully.
 - Production page, manifest, and service worker return HTTP 200.
 
@@ -146,6 +147,23 @@ Vite reports expected build-time warnings for absolute asset paths under
 8. Verify route cards hint at available chain, story, and Coalglass content.
 9. Complete Perfect Alignment and Quiet Seal endings; verify Collection entries.
 10. Collapse with three repaired Beacons and sufficient Morale; verify Saved ending.
+
+## Solo Alpha 8 Visual QA
+
+1. Verify all twelve item sprites use the correct sheet cell at small and large sizes.
+2. Verify Broken, Faded, Iron, and Ancient Chests escalate visually in End Run.
+3. Verify all four Core qualities and ten Beacon state icons use the correct cells.
+4. Verify eight combat statuses show recognizable icons with accessible labels/tooltips.
+5. Verify all Guardian, Herald, route background, and survivor portrait assets render.
+6. Trigger every milestone overlay and confirm it does not block interaction after dismissal.
+7. Verify route complete, crisis, telegraph, counter, chest, and click cues respect mute.
+8. Verify Guardian phases and intents remain obvious without reading the battle log.
+9. Verify counter success/miss, critical HP, downed state, and newest log entry are distinct.
+10. Verify End Run highlights story outcomes, secrets, Bonds, and completed challenges.
+11. Verify Journal discovered/hidden cards remain scannable and collectible.
+12. At 390x844, verify no horizontal overflow in Camp, Explore, Journal, combat,
+    repair, Gate, milestone overlay, and End Run.
+13. Enable reduced motion and verify pulsing, particles, floating chest, and scene motion stop.
 
 ## Alpha 1 Exploration Regression Checklist
 

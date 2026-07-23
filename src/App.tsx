@@ -8,6 +8,7 @@ import { ExploreScreen } from "./components/ExploreScreen";
 import { GateScreen } from "./components/GateScreen";
 import { JournalScreen } from "./components/JournalScreen";
 import { MetaScreen } from "./components/MetaScreen";
+import { MilestoneOverlay } from "./components/MilestoneOverlay";
 import { ObjectivePanel } from "./components/ObjectivePanel";
 import { OnboardingGuide } from "./components/OnboardingGuide";
 import { StarterSelect } from "./components/StarterSelect";
@@ -76,6 +77,7 @@ export default function App() {
 
   return (
     <div className="app">
+      <MilestoneOverlay muted={muted} state={state} />
       <header className="topbar">
         <div>
           <p className="eyebrow">Prototype Run</p>

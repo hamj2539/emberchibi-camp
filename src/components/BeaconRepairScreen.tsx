@@ -3,6 +3,7 @@ import { useState, type Dispatch } from "react";
 import { labelCoreQuality } from "../game/combat";
 import type { GameAction, GameState } from "../game/state";
 import { CrewPicker } from "./CrewPicker";
+import { GameIcon, type GameIconName } from "./GameIcon";
 
 type Props = {
   state: GameState;
@@ -57,6 +58,7 @@ export function BeaconRepairScreen({ state, dispatch }: Props) {
       <div className="panel camp-hero">
         <p className="eyebrow">Beacon Repair</p>
         <h2>{beacon?.name ?? repair?.beaconName ?? "Beacon"}</h2>
+        <GameIcon name={`${quality}Core` as GameIconName} label={labelCoreQuality(quality, battle?.coreName)} size="lg" />
         <p>{labelCoreQuality(quality, battle?.coreName)} is ready for the repair ritual.</p>
         {repair?.status === "active" && (
           <>

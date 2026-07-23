@@ -8,6 +8,7 @@ import { canResolveRouteChoice } from "../game/routeDecisions";
 import { alpha7Events } from "../data/alpha7Content";
 import { bondLevel } from "../game/journal";
 import { CrewPicker } from "./CrewPicker";
+import { GameIcon, type GameIconName } from "./GameIcon";
 
 type Props = {
   state: GameState;
@@ -137,6 +138,11 @@ export function ExploreScreen({ state, dispatch }: Props) {
             const status = progress.repaired ? "Lit" : progress.bossDefeated ? "Core Ready" : siteFound ? "Guardian" : "Prep";
             return (
               <div className="beacon-chip" key={beacon.id}>
+                <GameIcon
+                  name={`${beacon.id}Beacon${progress.repaired ? "Lit" : "Unlit"}` as GameIconName}
+                  label={`${beacon.name} ${progress.repaired ? "lit" : "unlit"}`}
+                  size="sm"
+                />
                 <strong>{beacon.name}</strong>
                 <span>{status}</span>
               </div>

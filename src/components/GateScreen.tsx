@@ -34,7 +34,7 @@ export function GateScreen({ state, dispatch }: Props) {
 
   return (
     <section className="screen boss-layout">
-      <div className="panel boss-scene gate-scene">
+      <div className={`panel boss-scene gate-scene ${gate.lastCounterFeedback.startsWith("Counter worked") ? "combat-flash-success" : gate.lastCounterFeedback.startsWith("Counter missed") ? "combat-flash-danger" : ""}`}>
         <p className="eyebrow">Cinder Gate</p>
         <h2>{gate.status === "active" ? "Night Herald" : "The Gate Is Open"}</h2>
         <div className="boss-art boss-nightHerald" aria-label="Night Herald">NH</div>
@@ -80,7 +80,8 @@ export function GateScreen({ state, dispatch }: Props) {
         {gate.status === "active" ? (
           <div className="survivor-list">
             {party.map((survivor) => (
-              <article className="survivor-row" key={survivor.id}>
+              <article className={`survivor-row ${survivor.currentHp <= 0 ? "survivor-downed" : survivor.currentHp < survivor.stats.hp / 3 ? "survivor-critical" : ""}`} key={survivor.id}>
+                <span className={`portrait portrait-mini portrait-${survivor.classId}`} aria-hidden="true" />
                 <div>
                   <strong>{survivor.name}</strong>
                   <span>
@@ -200,7 +201,7 @@ function StatusRow({ label, statuses }: { label: string; statuses: CombatStatuse
       <span>{label}</span>
       {active.map(([id, stacks]) => (
         <span className={`combat-status status-${id}`} key={id} title={statusMeta[id].detail}>
-          <b aria-hidden="true">{statusMeta[id].icon}</b> {id} {stacks}
+          <b className={`status-icon status-icon-${id}`} aria-hidden="true" /> {id} {stacks}
         </span>
       ))}
     </div>

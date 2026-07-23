@@ -289,8 +289,9 @@ select {
 }
 
 .intro h2 {
-  font-size: clamp(2rem, 5vw, 4.8rem);
-  line-height: 1.02;
+  max-width: 720px;
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  line-height: 1.08;
 }
 
 .class-grid,
@@ -1270,35 +1271,291 @@ select {
   font-size: 0.95rem;
 }
 
+.icon-wood,
 .icon-food,
-.icon-herb {
-  background:
-    radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.48), transparent 28%),
-    linear-gradient(135deg, #b7e4c7, #40916c);
-}
-
+.icon-herb,
 .icon-stone,
 .icon-ore,
-.icon-ironChest {
-  background:
-    radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.48), transparent 28%),
-    linear-gradient(135deg, #d6d3c9, #5f6f73);
+.icon-relicShard,
+.icon-torch,
+.icon-ration,
+.icon-stoneSpear,
+.icon-herbSalve,
+.icon-warmCloak,
+.icon-repairKit {
+  background-image: url("/emberchibi-camp/assets/ui/item-sheet.png");
+  background-size: 400% 300%;
+  background-repeat: no-repeat;
 }
 
-.icon-relicShard,
-.icon-ancientChest,
-.icon-cinderHeart,
-.icon-beacon {
-  background:
-    radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.5), transparent 28%),
-    linear-gradient(135deg, #ffd166, #7b2cbf);
-}
+.icon-wood { background-position: 0% 0%; }
+.icon-food { background-position: 33.333% 0%; }
+.icon-herb { background-position: 66.667% 0%; }
+.icon-stone { background-position: 100% 0%; }
+.icon-ore { background-position: 0% 50%; }
+.icon-relicShard { background-position: 33.333% 50%; }
+.icon-torch { background-position: 66.667% 50%; }
+.icon-ration { background-position: 100% 50%; }
+.icon-stoneSpear { background-position: 0% 100%; }
+.icon-herbSalve { background-position: 33.333% 100%; }
+.icon-warmCloak { background-position: 66.667% 100%; }
+.icon-repairKit { background-position: 100% 100%; }
 
 .icon-brokenChest,
-.icon-fadedChest {
+.icon-fadedChest,
+.icon-ironChest,
+.icon-ancientChest {
+  background-image: url("/emberchibi-camp/assets/ui/chest-status-sheet.png");
+  background-size: 400% 300%;
+  background-repeat: no-repeat;
+}
+
+.icon-brokenChest { background-position: 0% 0%; }
+.icon-fadedChest { background-position: 33.333% 0%; }
+.icon-ironChest { background-position: 66.667% 0%; }
+.icon-ancientChest { background-position: 100% 0%; }
+
+.icon-pristineCore,
+.icon-stableCore,
+.icon-crackedCore,
+.icon-fadedCore,
+.icon-emberBeaconUnlit,
+.icon-emberBeaconLit,
+.icon-tidalBeaconUnlit,
+.icon-tidalBeaconLit,
+.icon-galeBeaconUnlit,
+.icon-galeBeaconLit,
+.icon-rootBeaconUnlit,
+.icon-rootBeaconLit,
+.icon-lunarBeaconUnlit,
+.icon-lunarBeaconLit {
+  background-image: url("/emberchibi-camp/assets/ui/core-beacon-sheet.png");
+  background-size: 400% 400%;
+  background-repeat: no-repeat;
+}
+
+.icon-pristineCore { background-position: 0% 0%; }
+.icon-stableCore { background-position: 33.333% 0%; }
+.icon-crackedCore { background-position: 66.667% 0%; }
+.icon-fadedCore { background-position: 100% 0%; }
+.icon-emberBeaconUnlit { background-position: 0% 33.333%; }
+.icon-emberBeaconLit { background-position: 33.333% 33.333%; }
+.icon-tidalBeaconUnlit { background-position: 66.667% 33.333%; }
+.icon-tidalBeaconLit { background-position: 100% 33.333%; }
+.icon-galeBeaconUnlit { background-position: 0% 66.667%; }
+.icon-galeBeaconLit { background-position: 33.333% 66.667%; }
+.icon-rootBeaconUnlit { background-position: 66.667% 66.667%; }
+.icon-rootBeaconLit { background-position: 100% 66.667%; }
+.icon-lunarBeaconUnlit { background-position: 0% 100%; }
+.icon-lunarBeaconLit { background-position: 33.333% 100%; }
+
+.status-icon {
+  background-image: url("/emberchibi-camp/assets/ui/chest-status-sheet.png") !important;
+  background-size: 400% 300% !important;
+  background-repeat: no-repeat !important;
+}
+
+.status-icon-burn { background-position: 0% 50% !important; }
+.status-icon-poison { background-position: 33.333% 50% !important; }
+.status-icon-guarded { background-position: 66.667% 50% !important; }
+.status-icon-exposed { background-position: 100% 50% !important; }
+.status-icon-bound { background-position: 0% 100% !important; }
+.status-icon-inspired { background-position: 33.333% 100% !important; }
+.status-icon-cursed { background-position: 66.667% 100% !important; }
+.status-icon-focused { background-position: 100% 100% !important; }
+
+.portrait-mini {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border-width: 1px;
+}
+
+.beacon-chip {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 8px;
+  align-items: center;
+}
+
+.beacon-chip .game-icon {
+  grid-row: span 2;
+}
+
+.repair-layout .camp-hero {
   background:
-    radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.35), transparent 28%),
-    linear-gradient(135deg, #c8b6a6, #7f5539);
+    linear-gradient(90deg, rgba(22, 15, 11, 0.93), rgba(22, 15, 11, 0.45)),
+    url("/emberchibi-camp/assets/backgrounds/ember-beacon-site.png") center / cover;
+}
+
+.journal-hero {
+  background:
+    linear-gradient(90deg, rgba(19, 24, 22, 0.95), rgba(19, 24, 22, 0.55)),
+    url("/emberchibi-camp/assets/backgrounds/mistwood-edge.png") center / cover;
+}
+
+.end-layout > .camp-hero {
+  min-height: 340px;
+  border-color: rgba(255, 205, 115, 0.42);
+  box-shadow: 0 0 70px rgba(255, 137, 67, 0.16);
+}
+
+.chest-panel .game-icon {
+  width: 112px;
+  height: 112px;
+  animation: chest-float 2.4s ease-in-out infinite;
+}
+
+.route-card > p:not(.eyebrow) {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.phase-intent > div:first-child strong {
+  color: #ffd38f;
+  font-size: 1.25rem;
+}
+
+.intent-card {
+  position: relative;
+  overflow: hidden;
+  animation: telegraph-pulse 1.6s ease-in-out infinite;
+}
+
+.intent-card::before {
+  position: absolute;
+  width: 4px;
+  background: #d75d45;
+  content: "";
+  inset: 0 auto 0 0;
+}
+
+.combat-flash-success {
+  animation: counter-flash-success 420ms ease-out;
+}
+
+.combat-flash-danger {
+  animation: counter-flash-danger 420ms ease-out;
+}
+
+.survivor-critical {
+  border-color: rgba(255, 119, 91, 0.52);
+}
+
+.survivor-downed {
+  filter: grayscale(0.85);
+  opacity: 0.55;
+}
+
+.boss-layout .log li {
+  border-left: 2px solid rgba(255, 189, 115, 0.22);
+  padding: 7px 8px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.boss-layout .log li:first-child {
+  border-left-color: #ffbd73;
+  color: #fff3dd;
+  background: rgba(255, 189, 115, 0.08);
+}
+
+.milestone-overlay {
+  --milestone: #ffbd73;
+  position: fixed;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  background: radial-gradient(circle, color-mix(in srgb, var(--milestone) 20%, transparent), rgba(10, 9, 8, 0.72) 55%, rgba(10, 9, 8, 0.92));
+  animation: milestone-fade 2.8s ease both;
+  inset: 0;
+}
+
+.milestone-collapse { --milestone: #d75d45; }
+.milestone-herald,
+.milestone-gate { --milestone: #a98de3; }
+.milestone-secret { --milestone: #72c9bc; }
+.milestone-bond { --milestone: #7eb68c; }
+.milestone-chest { --milestone: #ffd166; }
+
+.milestone-card {
+  width: min(520px, calc(100% - 32px));
+  border: 1px solid color-mix(in srgb, var(--milestone) 60%, transparent);
+  border-radius: 8px;
+  padding: 30px;
+  text-align: center;
+  background: rgba(24, 21, 18, 0.94);
+  box-shadow: 0 0 80px color-mix(in srgb, var(--milestone) 28%, transparent);
+  animation: milestone-card-in 520ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.milestone-card h2 {
+  margin: 4px 0 8px;
+  color: #fff5e5;
+  font-size: clamp(1.8rem, 6vw, 3.4rem);
+}
+
+.milestone-card > p:last-child {
+  margin: 0;
+  color: #d7c8b7;
+}
+
+.milestone-mark {
+  display: block;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 12px;
+  border: 2px solid var(--milestone);
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--milestone) 0 22%, transparent 24% 100%);
+  box-shadow: 0 0 24px var(--milestone);
+}
+
+.milestone-particles i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--milestone);
+  animation: milestone-particle 1.8s ease-out infinite;
+}
+
+.milestone-particles i:nth-child(2n) { animation-delay: 180ms; transform: rotate(30deg); }
+.milestone-particles i:nth-child(3n) { animation-delay: 360ms; transform: rotate(90deg); }
+.milestone-particles i:nth-child(4n) { animation-delay: 540ms; transform: rotate(150deg); }
+
+@keyframes chest-float {
+  50% { transform: translateY(-5px); filter: brightness(1.12); }
+}
+
+@keyframes telegraph-pulse {
+  50% { border-color: rgba(255, 119, 91, 0.9); box-shadow: inset 0 0 22px rgba(215, 93, 69, 0.16); }
+}
+
+@keyframes counter-flash-success {
+  30% { box-shadow: inset 0 0 80px rgba(126, 182, 140, 0.32); }
+}
+
+@keyframes counter-flash-danger {
+  30% { box-shadow: inset 0 0 80px rgba(215, 93, 69, 0.38); transform: translateX(2px); }
+}
+
+@keyframes milestone-fade {
+  0%, 100% { opacity: 0; }
+  12%, 82% { opacity: 1; }
+}
+
+@keyframes milestone-card-in {
+  from { opacity: 0; transform: scale(0.88) translateY(12px); }
+}
+
+@keyframes milestone-particle {
+  from { opacity: 0.9; translate: 0 0; }
+  to { opacity: 0; translate: 0 -180px; }
 }
 
 .compact {
@@ -1363,6 +1620,46 @@ select {
   border-style: dashed;
   color: #918477;
   background: rgba(0, 0, 0, 0.12);
+}
+
+.journal-entry.discovered {
+  position: relative;
+  border-color: rgba(255, 202, 122, 0.34);
+  background:
+    linear-gradient(145deg, rgba(255, 202, 122, 0.08), transparent 60%),
+    rgba(255, 255, 255, 0.035);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.collection-stamp {
+  justify-self: start;
+  border: 1px solid rgba(255, 202, 122, 0.28);
+  border-radius: 4px;
+  padding: 2px 5px;
+  color: #ffca7a;
+  font-size: 0.64rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.unknown .collection-stamp {
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #918477;
+}
+
+.discovery-ribbon {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.discovery-ribbon span {
+  border: 1px solid rgba(255, 202, 122, 0.3);
+  border-radius: 4px;
+  padding: 7px 9px;
+  color: #f4dec4;
+  background: rgba(255, 202, 122, 0.07);
+  font-size: 0.78rem;
 }
 
 .challenge-list {
@@ -1500,6 +1797,15 @@ select {
   .journal-entry-grid,
   .repair-path-grid {
     grid-template-columns: 1fr;
+  }
+
+  .milestone-card {
+    padding: 22px 18px;
+  }
+
+  .chest-panel .game-icon {
+    width: 92px;
+    height: 92px;
   }
 }
 

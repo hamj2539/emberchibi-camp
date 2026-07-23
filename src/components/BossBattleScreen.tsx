@@ -4,6 +4,7 @@ import { combatActions } from "../data/classes";
 import type { Dispatch } from "react";
 import { labelCoreQuality } from "../game/combat";
 import type { BossAction, CombatStatusId, CombatStatuses, GameAction, GameState } from "../game/state";
+import { GameIcon, type GameIconName } from "./GameIcon";
 
 type Props = {
   state: GameState;
@@ -41,7 +42,7 @@ export function BossBattleScreen({ state, dispatch }: Props) {
 
   return (
     <section className="screen boss-layout">
-      <div className={`panel boss-scene scene-${battle.beaconId}`}>
+      <div className={`panel boss-scene scene-${battle.beaconId} ${battle.lastCounterFeedback.startsWith("Counter worked") ? "combat-flash-success" : battle.lastCounterFeedback.startsWith("Counter missed") ? "combat-flash-danger" : ""}`}>
         <p className="eyebrow">Beacon Guardian</p>
         <h2>{battle.bossName}</h2>
         <div className={`boss-art boss-${battle.bossId}`} aria-label={battle.bossName}>
@@ -83,7 +84,8 @@ export function BossBattleScreen({ state, dispatch }: Props) {
         <h3>Party</h3>
         <div className="survivor-list">
           {party.map((survivor) => (
-            <article className="survivor-row" key={survivor.id}>
+            <article className={`survivor-row ${survivor.currentHp <= 0 ? "survivor-downed" : survivor.currentHp < survivor.stats.hp / 3 ? "survivor-critical" : ""}`} key={survivor.id}>
+              <span className={`portrait portrait-mini portrait-${survivor.classId}`} aria-hidden="true" />
               <div>
                 <strong>{survivor.name}</strong>
                 <span>
@@ -116,6 +118,9 @@ export function BossBattleScreen({ state, dispatch }: Props) {
         ) : (
           <div className="result-box">
             <h3>{battle.status === "won" ? "Guardian Defeated" : "Attempt Failed"}</h3>
+            {battle.status === "won" && battle.coreQuality && (
+              <GameIcon name={`${battle.coreQuality}Core` as GameIconName} label={labelCoreQuality(battle.coreQuality, battle.coreName)} size="lg" />
+            )}
             <p>
               {battle.status === "won" && battle.coreQuality
                 ? labelCoreQuality(battle.coreQuality, battle.coreName)
@@ -189,7 +194,7 @@ function StatusRow({ label, statuses }: { label: string; statuses: CombatStatuse
       <span>{label}</span>
       {active.map(([id, stacks]) => (
         <span className={`combat-status status-${id}`} key={id} title={statusMeta[id].detail}>
-          <b aria-hidden="true">{statusMeta[id].icon}</b> {id} {stacks}
+          <b className={`status-icon status-icon-${id}`} aria-hidden="true" /> {id} {stacks}
         </span>
       ))}
     </div>

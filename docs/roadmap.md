@@ -4,10 +4,10 @@ Last updated: 2026-07-23
 
 ## Current Release
 
-**Solo Alpha 7: Story Routes and Alternate Paths**
+**Solo Alpha 8: Feel and Presentation**
 
-The solo build now carries multi-route stories through a run, unlocks
-Bond-gated personal events, and offers alternate Beacon and ending paths.
+The existing solo systems now have stronger visual hierarchy, milestone
+presentation, consistent UI assets, combat feedback, and reward polish.
 
 | Area | Status | Current implementation |
 | --- | --- | --- |
@@ -33,6 +33,9 @@ Bond-gated personal events, and offers alternate Beacon and ending paths.
 | Personal stories | Alpha 7 | Rook, Mira, Bram, and four starter stories |
 | Alternate paths | Alpha 7 | standard, risky, and survivor/relic Beacon repair methods |
 | Ending variants | Alpha 7 | perfect alignment, quiet seal, and saved collapse |
+| Presentation | Alpha 8 | milestone overlays, particles, scene glow, contextual audio |
+| UI assets | Alpha 8 | generated items, chests, statuses, Cores, and Beacon states |
+| Combat feel | Alpha 8 | phase emphasis, telegraph pulse, counter flashes, downed styling |
 | Assets and UI | Complete for prototype | route art, Guardian art, responsive layouts |
 | Production | Complete for prototype | GitHub Pages workflow and installable PWA shell |
 
@@ -144,6 +147,18 @@ Bond-gated personal events, and offers alternate Beacon and ending paths.
 - Added Journal chain progress, route story/relic hints, and end-run story outcomes.
 - Expanded the automated suite from 69 to 75 game-logic tests.
 
+### Solo Alpha 8 - Feel and Presentation
+
+- Added milestone overlays for Beacons, Guardians, Gate, Herald, Collapse,
+  chest rewards, secrets, and Bond levels.
+- Added contextual cues for routes, crises, boss telegraphs, and counters.
+- Integrated three generated sprite sheets for items, chest grades, statuses,
+  Core quality, and all five lit/unlit Beacon states.
+- Added combat portraits, phase emphasis, intent pulse, counter flashes,
+  critical/downed states, and clearer battle log grouping.
+- Polished Journal cards and end-run discovery, Bond, secret, and challenge rewards.
+- Preserved keyboard controls, mute state, mobile layouts, and reduced motion.
+
 ## Next Phase
 
 ### P1 - External Alpha Playtest
@@ -182,4 +197,4 @@ The current prototype is complete when:
 - Automated tests and production build pass.
 - GitHub Pages serves the app, manifest, and service worker successfully.
 
-All prototype criteria remain met in Solo Alpha 7.
+All prototype criteria remain met in Solo Alpha 8.

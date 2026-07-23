@@ -16,7 +16,21 @@ export type GameIconName =
   | "ironChest"
   | "ancientChest"
   | "cinderHeart"
-  | "beacon";
+  | "beacon"
+  | "pristineCore"
+  | "stableCore"
+  | "crackedCore"
+  | "fadedCore"
+  | "emberBeaconUnlit"
+  | "emberBeaconLit"
+  | "tidalBeaconUnlit"
+  | "tidalBeaconLit"
+  | "galeBeaconUnlit"
+  | "galeBeaconLit"
+  | "rootBeaconUnlit"
+  | "rootBeaconLit"
+  | "lunarBeaconUnlit"
+  | "lunarBeaconLit";
 
 type Props = {
   name: GameIconName;
@@ -25,17 +39,5 @@ type Props = {
 };
 
 export function GameIcon({ name, label, size = "md" }: Props) {
-  return (
-    <span aria-label={label} className={`game-icon game-icon-${size} icon-${name}`} role="img">
-      {initials(label)}
-    </span>
-  );
-}
-
-function initials(label: string): string {
-  return label
-    .split(" ")
-    .map((word) => word[0])
-    .join("")
-    .slice(0, 2);
+  return <span aria-label={label} className={`game-icon game-icon-${size} icon-${name}`} role="img" />;
 }

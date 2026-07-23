@@ -1,6 +1,6 @@
 # Emberchibi Camp
 
-Solo Alpha 7 survival roguelite RPG with event chains, survivor stories, alternate Beacon paths, collections, optional challenges, phased boss combat,
+Solo Alpha 8 survival roguelite RPG with polished milestone presentation, generated UI asset sheets, event chains, survivor stories, collections, and phased boss combat.
 exploration decisions, idle management, and turn-based key encounters.
 
 **Live build:** https://hamj2539.github.io/emberchibi-camp/
@@ -30,6 +30,8 @@ exploration decisions, idle management, and turn-based key encounters.
 - Four three-step event chains with alternate outcomes and seven Bond-gated personal stories.
 - Ten additional biome encounters and three repair approaches for every Beacon.
 - Perfect Alignment, Herald Sealed, and Collapse-but-Saved ending variants.
+- Animated milestone scenes, combat feedback, collectible Journal cards, and reward-focused end-run presentation.
+- Generated item, chest, status, Core, and Beacon sprite sheets with reduced-motion support.
 - Local save migration, responsive layout, sound feedback, and PWA support.
 
 ## Development

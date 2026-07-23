@@ -1,5 +1,7 @@
 # Emberchibi Camp Asset Batch Spec v1
 
+Alpha 8 integration status: generated and integrated.
+
 Goal: generate one consistent asset pass for the playable prototype after gameplay settles.
 
 ## Style Direction
@@ -90,15 +92,19 @@ Prompt anchor:
 
 ## File Plan
 
-- `public/assets/items/item-icon-sheet.png`
-- `public/assets/ui/chest-sheet.png`
-- `public/assets/ui/core-beacon-sheet.png`
+- `public/assets/ui/item-sheet.png` - 4x3 resources, supplies, and crafted items.
+- `public/assets/ui/chest-status-sheet.png` - 4x3 chest grades and combat statuses.
+- `public/assets/ui/core-beacon-sheet.png` - 4x4 Core qualities and five Beacon pairs.
+- `public/assets/characters/portrait-sheet.png`
+- `public/assets/guardians/*.png`
+- `public/assets/backgrounds/*.png`
 - `public/assets/enemies/cinder-stag.png`
 
 ## Integration Plan
 
 - Add reusable `GameIcon` component.
 - Add sprite classes for resources, craft items, chest grades, core qualities, and beacon states.
-- Replace current text initials in Craft and End Run with icons.
-- Replace `CS` boss placeholder with Cinder Stag art.
+- GameIcon and combat statuses use generated sprite cells with CSS fallbacks.
+- Craft, Camp, Explore, Repair, combat, and End Run use integrated art.
+- Guardian initials and inventory initials have been removed.
 - Keep CSS color fallbacks for slow or failed image loads.

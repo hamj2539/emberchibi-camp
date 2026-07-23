@@ -42,7 +42,8 @@ export function JournalScreen({ state, dispatch }: Props) {
               {journalCollections[category].map((entry) => {
                 const discovered = state.legacy.collection[category].includes(entry.id);
                 return (
-                  <article className={`journal-entry ${discovered ? "" : "unknown"}`} key={entry.id}>
+                  <article className={`journal-entry ${discovered ? "discovered" : "unknown"}`} key={entry.id}>
+                    <span className="collection-stamp" aria-hidden="true">{discovered ? "Found" : "Hidden"}</span>
                     <strong>{discovered ? entry.name : "???"}</strong>
                     <p>{discovered ? entry.flavor : "Undiscovered"}</p>
                   </article>

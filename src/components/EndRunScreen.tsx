@@ -3,6 +3,8 @@ import { describeChestGrade } from "../game/rewards";
 import { labelChestGrade } from "../game/scoring";
 import type { GameAction, GameState } from "../game/state";
 import { GameIcon } from "./GameIcon";
+import { bondLevel } from "../game/journal";
+import { challengeDefinitions, secretDefinitions } from "../data/journal";
 
 type Props = {
   state: GameState;
@@ -43,13 +45,20 @@ export function EndRunScreen({ state, dispatch }: Props) {
         </span>
       </div>
 
-      {(storyOutcomes.length > 0 || state.run.storyEventsSeen.length > 0) && (
+      {(storyOutcomes.length > 0 || state.run.storyEventsSeen.length > 0 || state.run.secretsFound.length > 0 || state.legacy.completedChallenges.length > 0) && (
         <div className="panel">
-          <p className="eyebrow">Story Outcomes</p>
-          <h3>Discoveries carried from this run</h3>
-          <div className="core-summary">
+          <p className="eyebrow">Run Discoveries</p>
+          <h3>Stories carried forward</h3>
+          <div className="discovery-ribbon">
             {storyOutcomes.map(([chain, progress]) => <span key={chain}>{chain}: {progress.outcome}</span>)}
             {state.run.storyEventsSeen.map((story) => <span key={story}>{story} remembered</span>)}
+            {state.run.secretsFound.map((id) => <span key={id}>Secret: {secretDefinitions.find((secret) => secret.id === id)?.name ?? id}</span>)}
+            {state.run.survivors.map((survivor) => (
+              <span key={survivor.id}>{survivor.name} Bond {bondLevel(state.legacy.bonds[survivor.id] ?? 0)}</span>
+            ))}
+            {challengeDefinitions.filter((challenge) => state.legacy.completedChallenges.includes(challenge.id)).map((challenge) => (
+              <span key={challenge.id}>Challenge: {challenge.name}</span>
+            ))}
           </div>
         </div>
       )}
