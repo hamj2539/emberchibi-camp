@@ -5,6 +5,7 @@ import type { Dispatch } from "react";
 import { labelCoreQuality } from "../game/combat";
 import type { BossAction, CombatStatusId, CombatStatuses, GameAction, GameState } from "../game/state";
 import { GameIcon, type GameIconName } from "./GameIcon";
+import { combatCue } from "../game/presentation";
 
 type Props = {
   state: GameState;
@@ -39,10 +40,11 @@ export function BossBattleScreen({ state, dispatch }: Props) {
   const definition = guardianCombat[battle.beaconId];
   const phase = definition.phases.find((entry) => entry.id === battle.phaseId) ?? definition.phases[0];
   const intent = getIntent(definition, battle.pendingIntentId);
+  const cue = combatCue(battle.lastCounterFeedback);
 
   return (
     <section className="screen boss-layout">
-      <div className={`panel boss-scene scene-${battle.beaconId} ${battle.lastCounterFeedback.startsWith("Counter worked") ? "combat-flash-success" : battle.lastCounterFeedback.startsWith("Counter missed") ? "combat-flash-danger" : ""}`}>
+      <div className={`panel boss-scene scene-${battle.beaconId} combat-cue-${cue} ${battle.lastCounterFeedback.startsWith("Counter worked") ? "combat-flash-success" : battle.lastCounterFeedback.startsWith("Counter missed") ? "combat-flash-danger" : ""}`}>
         <p className="eyebrow">Beacon Guardian</p>
         <h2>{battle.bossName}</h2>
         <div className={`boss-art boss-${battle.bossId}`} aria-label={battle.bossName}>
@@ -64,7 +66,7 @@ export function BossBattleScreen({ state, dispatch }: Props) {
         </div>
         <StatusRow label="Party" statuses={battle.partyStatuses} />
         <StatusRow label="Guardian" statuses={battle.bossStatuses} />
-        <p className={`counter-feedback ${battle.lastCounterFeedback.startsWith("Counter worked") ? "counter-success" : ""}`}>
+        <p className={`counter-feedback ${battle.lastCounterFeedback.startsWith("Counter worked") ? "counter-success" : ""}`} aria-live="polite">
           {battle.lastCounterFeedback}
         </p>
         <div className="encounter-hints">

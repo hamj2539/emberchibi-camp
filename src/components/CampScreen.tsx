@@ -7,6 +7,7 @@ import { getCrisis } from "../data/crises";
 import { canResolveCrisisChoice } from "../game/crises";
 import { getRunItem } from "../data/runItems";
 import type { CampPressureKey, GameAction, GameState, ResourceKey, RunEquipmentSlot } from "../game/state";
+import { useI18n } from "../i18n";
 
 type Props = {
   state: GameState;
@@ -55,6 +56,7 @@ const slotLabels: Record<RunEquipmentSlot, string> = {
 };
 
 export function CampScreen({ state, dispatch, onReset }: Props) {
+  const { t } = useI18n();
   const expedition = state.run.activeExpedition;
   const secondsLeft = expedition ? Math.max(0, Math.ceil((expedition.endsAt - Date.now()) / 1000)) : 0;
   const litBeacons = beacons.filter((beacon) => state.run.beacons[beacon.id].repaired).length;
@@ -66,7 +68,7 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
   return (
     <section className="screen dashboard">
       <div className="panel camp-hero">
-        <p className="eyebrow">Campfire Status</p>
+        <p className="eyebrow">{t("camp.status")}</p>
         <h2>Camp holds for {formatTime(state.run.daySeconds)}</h2>
         <p>Assign idle jobs, gather enough supplies, and send careful expeditions into the dark forest.</p>
         <div className="status-strip">
@@ -81,21 +83,21 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
       <div className="panel pressure-panel">
         <div className="panel-heading">
           <div>
-            <p className="eyebrow">Camp Pressure</p>
-            <h3>Survival stability</h3>
+            <p className="eyebrow">{t("camp.pressure")}</p>
+            <h3>{t("camp.stability")}</h3>
           </div>
           <strong className={state.run.collapseMeter >= 70 ? "critical-text" : ""}>
-            Collapse {Math.round(state.run.collapseMeter)}%
+            {t("camp.collapse")} {Math.round(state.run.collapseMeter)}%
           </strong>
         </div>
         <div className="pressure-grid">
           {(Object.entries(state.run.campPressure) as [CampPressureKey, number][]).map(([key, value]) => (
             <div className="pressure-item" key={key}>
               <div>
-                <span>{pressureLabels[key]}</span>
+                <span>{t(`camp.${key}`, undefined, pressureLabels[key])}</span>
                 <strong>{Math.round(value)}</strong>
               </div>
-              <div className="pressure-meter" aria-label={`${pressureLabels[key]} ${Math.round(value)} percent`}>
+              <div className="pressure-meter" aria-label={`${t(`camp.${key}`, undefined, pressureLabels[key])} ${Math.round(value)} percent`}>
                 <span className={value <= 30 ? "danger-fill" : ""} style={{ width: `${value}%` }} />
               </div>
             </div>

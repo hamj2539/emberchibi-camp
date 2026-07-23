@@ -1,4 +1,4 @@
-# Emberchibi Camp Solo Alpha 8 QA
+# Emberchibi Camp Alpha 11 QA
 
 Last updated: 2026-07-23
 
@@ -6,7 +6,7 @@ Build target: GitHub Pages static build
 
 ## Automated Checks
 
-- `npm run test`: 75 passing game-logic tests.
+- `npm run test`: 93 passing game-logic tests.
 - `npm run build`: production build passes.
 - Full clean-run simulation reaches the Cinder Gate, defeats Night Herald, and awards an Ancient Chest.
 - Route events, choice requirements/effects, normal encounters, all four modifiers,
@@ -200,6 +200,16 @@ Vite reports expected build-time warnings for absolute asset paths under
 15. Reload an old timer-only expedition save and verify it resumes in Auto-safe mode.
 16. Enable reduced motion and verify ambient, path, teaser, and party animations stop.
 17. At 390x844, verify the path, status grid, choices, and party stay usable without overflow.
+
+## Fun Alpha 11 Localization and Feel QA
+
+1. Use the `EN` / `ไทย` header control, reload, and confirm the selection persists without resetting the active run.
+2. In Thai, verify navigation, camp pressure, Explore setup, live expedition controls, route names/purposes, node labels, and biome moods.
+3. Confirm untranslated dynamic story/log text remains readable through the English fallback.
+4. At 390x844 in Thai, verify the header, route titles, status cards, choice buttons, and segmented controls have no horizontal overflow.
+5. Start a manual route and verify discovery, hazard, and boss-gate cues are distinct while party activity remains readable.
+6. Verify combat telegraph pulses, counter success/miss flashes, status chips, and newest battle-log entry clarify the latest outcome.
+7. Enable OS reduced motion and confirm ambient, party, telegraph, milestone, and microinteraction animation settles immediately.
 
 ## Alpha 1 Exploration Regression Checklist
 

@@ -5,6 +5,7 @@ import { calculateGateStability } from "../game/gate";
 import { combatActions } from "../data/classes";
 import { getIntent, heraldCombat } from "../data/bossCombat";
 import { CrewPicker } from "./CrewPicker";
+import { combatCue } from "../game/presentation";
 
 type Props = {
   state: GameState;
@@ -31,10 +32,11 @@ export function GateScreen({ state, dispatch }: Props) {
   const stability = calculateGateStability(state);
   const phase = heraldCombat.phases.find((entry) => entry.id === gate.phaseId) ?? heraldCombat.phases[0];
   const intent = getIntent(heraldCombat, gate.pendingIntentId);
+  const cue = combatCue(gate.lastCounterFeedback);
 
   return (
     <section className="screen boss-layout">
-      <div className={`panel boss-scene gate-scene ${gate.lastCounterFeedback.startsWith("Counter worked") ? "combat-flash-success" : gate.lastCounterFeedback.startsWith("Counter missed") ? "combat-flash-danger" : ""}`}>
+      <div className={`panel boss-scene gate-scene combat-cue-${cue} ${gate.lastCounterFeedback.startsWith("Counter worked") ? "combat-flash-success" : gate.lastCounterFeedback.startsWith("Counter missed") ? "combat-flash-danger" : ""}`}>
         <p className="eyebrow">Cinder Gate</p>
         <h2>{gate.status === "active" ? "Night Herald" : "The Gate Is Open"}</h2>
         <div className="boss-art boss-nightHerald" aria-label="Night Herald">NH</div>
@@ -59,7 +61,7 @@ export function GateScreen({ state, dispatch }: Props) {
             </div>
             <StatusRow label="Party" statuses={gate.partyStatuses} />
             <StatusRow label="Herald" statuses={gate.bossStatuses} />
-            <p className={`counter-feedback ${gate.lastCounterFeedback.startsWith("Counter worked") ? "counter-success" : ""}`}>
+            <p className={`counter-feedback ${gate.lastCounterFeedback.startsWith("Counter worked") ? "counter-success" : ""}`} aria-live="polite">
               {gate.lastCounterFeedback}
             </p>
             <div className="meter">

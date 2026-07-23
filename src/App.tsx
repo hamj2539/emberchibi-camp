@@ -17,23 +17,23 @@ import { beacons } from "./data/beacons";
 import { gameReducer } from "./game/reducer";
 import { deleteSave, loadGame, saveGame } from "./game/save";
 import type { Screen } from "./game/state";
+import { I18nProvider, useI18n } from "./i18n";
 
-const navItems: { screen: Screen; label: string; when?: "boss" | "repair" | "gate" | "end" }[] = [
-  { screen: "camp", label: "Camp" },
-  { screen: "explore", label: "Explore" },
-  { screen: "survivors", label: "Survivors" },
-  { screen: "craft", label: "Craft" },
-  { screen: "meta", label: "Meta" },
-  { screen: "journal", label: "Journal" },
-  { screen: "boss", label: "Boss", when: "boss" },
-  { screen: "repair", label: "Repair", when: "repair" },
-  { screen: "gate", label: "Gate", when: "gate" },
-  { screen: "end", label: "End", when: "end" },
+const navItems: { screen: Screen; key: string; when?: "boss" | "repair" | "gate" | "end" }[] = [
+  { screen: "camp", key: "nav.camp" }, { screen: "explore", key: "nav.explore" }, { screen: "survivors", key: "nav.survivors" },
+  { screen: "craft", key: "nav.craft" }, { screen: "meta", key: "nav.meta" }, { screen: "journal", key: "nav.journal" },
+  { screen: "boss", key: "nav.boss", when: "boss" }, { screen: "repair", key: "nav.repair", when: "repair" },
+  { screen: "gate", key: "nav.gate", when: "gate" }, { screen: "end", key: "nav.end", when: "end" },
 ];
 
 export default function App() {
+  return <I18nProvider><GameApp /></I18nProvider>;
+}
+
+function GameApp() {
   const [state, dispatch] = useReducer(gameReducer, undefined, loadGame);
   const [muted, setMuted] = useState(() => localStorage.getItem("emberchibiCamp.muted") === "true");
+  const { language, setLanguage, t } = useI18n();
 
   useEffect(() => {
     dispatch({ type: "tick", now: Date.now() });
@@ -80,7 +80,7 @@ export default function App() {
       <MilestoneOverlay muted={muted} state={state} />
       <header className="topbar">
         <div>
-          <p className="eyebrow">Prototype Run</p>
+          <p className="eyebrow">{t("app.prototype")}</p>
           <h1>Emberchibi Camp</h1>
         </div>
         {state.run.started && (
@@ -99,21 +99,25 @@ export default function App() {
                   key={item.screen}
                   onClick={() => dispatch({ type: "setScreen", screen: item.screen })}
                 >
-                  {item.label}
+                  {t(item.key)}
                 </button>
               ))}
           </nav>
         )}
         {!state.run.started && (
-          <button onClick={() => dispatch({ type: "setScreen", screen: "journal" })}>Journal</button>
+          <button onClick={() => dispatch({ type: "setScreen", screen: "journal" })}>{t("nav.journal")}</button>
         )}
+        <div className="language-toggle" role="group" aria-label={t("language.label")}>
+          <button className={language === "en" ? "active" : ""} aria-pressed={language === "en"} onClick={() => setLanguage("en")}>EN</button>
+          <button className={language === "th" ? "active" : ""} aria-pressed={language === "th"} onClick={() => setLanguage("th")}>ไทย</button>
+        </div>
         <button
           className="sound-toggle"
-          aria-label={muted ? "Enable sound" : "Mute sound"}
-          title={muted ? "Enable sound" : "Mute sound"}
+          aria-label={muted ? t("sound.enable") : t("sound.mute")}
+          title={muted ? t("sound.enable") : t("sound.mute")}
           onClick={() => setMuted((current) => !current)}
         >
-          {muted ? "Sound off" : "Sound on"}
+          {muted ? t("sound.off") : t("sound.on")}
         </button>
       </header>
 

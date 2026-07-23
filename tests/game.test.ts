@@ -40,6 +40,9 @@ import { aggregateRunMetrics, getLongTermGoals } from "../src/game/alpha9.js";
 import { runVows } from "../src/data/alpha9Progression.js";
 import { legacyProjects } from "../src/data/progression.js";
 import { shardAmount } from "../src/game/rewards.js";
+import { createTranslator, interpolate, readStoredLanguage, resolveLanguage } from "../src/i18n/core.js";
+import { en, th } from "../src/i18n/translations.js";
+import { combatCue, expeditionCue } from "../src/game/presentation.js";
 
 const tests: { name: string; run: () => void }[] = [
   {
@@ -1551,6 +1554,36 @@ const tests: { name: string; run: () => void }[] = [
       const migrated = migrateV1({ ...started, run: { ...started.run, activeExpedition: old } });
       assertEqual((migrated.run.activeExpedition?.nodes.length ?? 0) >= 4, true);
       assertEqual(migrated.run.activeExpedition?.mode, "autoSafe");
+    },
+  },
+  {
+    name: "Thai translator uses localized keys, English fallback, and interpolation",
+    run: () => {
+      const t = createTranslator("th", en, th);
+      assertEqual(t("nav.camp"), "ค่าย");
+      assertEqual(t("explore.modifier"), "ตัวปรับแต่งรอบ");
+      assertEqual(t("route.mistwoodEdge.name"), "ขอบป่าหมอก");
+      assertEqual(t("missing.key", undefined, "Fallback copy"), "Fallback copy");
+      assertEqual(interpolate("Hello {name}", { name: "Mira" }), "Hello Mira");
+    },
+  },
+  {
+    name: "language setting rejects invalid storage values and preserves Thai",
+    run: () => {
+      assertEqual(resolveLanguage("th"), "th");
+      assertEqual(resolveLanguage("jp"), "en");
+      assertEqual(readStoredLanguage({ getItem: () => "th" }), "th");
+      assertEqual(readStoredLanguage({ getItem: () => "unexpected" }), "en");
+    },
+  },
+  {
+    name: "presentation cues map expedition danger and combat feedback deterministically",
+    run: () => {
+      assertEqual(expeditionCue("resource", "gathering"), "discovery");
+      assertEqual(expeditionCue("bossGate", "walking"), "threat");
+      assertEqual(expeditionCue("clue", "reacting"), "threat");
+      assertEqual(combatCue("Counter worked: Guard broke the charge."), "triumph");
+      assertEqual(combatCue("Counter missed: the mark resolves."), "threat");
     },
   },
 ];

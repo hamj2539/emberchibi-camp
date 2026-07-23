@@ -82,6 +82,23 @@ select {
   padding: 18px 0 28px;
 }
 
+.language-toggle {
+  display: inline-flex;
+  align-items: center;
+}
+
+.language-toggle button {
+  min-width: 46px;
+  min-height: 36px;
+  padding: 0.35rem 0.55rem;
+  border-radius: 0;
+  font-size: 0.78rem;
+}
+
+.language-toggle button:first-child { border-radius: 5px 0 0 5px; }
+.language-toggle button:last-child { border-radius: 0 5px 5px 0; }
+.language-toggle .active { color: #24180f; background: #ffca7a; border-color: #ffca7a; }
+
 .topbar h1,
 .intro h2,
 .panel h2,
@@ -506,6 +523,11 @@ select {
   border-color: rgba(255, 151, 122, 0.55) !important;
 }
 
+.combat-cue-threat .boss-art { animation: guardian-breathe 1.3s ease-in-out infinite, combat-threat 620ms ease-out; }
+.combat-cue-triumph .boss-art { animation: guardian-breathe 2.8s ease-in-out infinite, combat-triumph 620ms ease-out; }
+.combat-status { transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease; }
+.combat-status:hover { transform: translateY(-1px); background: rgba(255, 255, 255, 0.1); }
+
 .intent-card p {
   color: #f4dec4;
 }
@@ -584,6 +606,9 @@ select {
   0%, 100% { transform: translateY(0); filter: brightness(0.96); }
   50% { transform: translateY(-4px); filter: brightness(1.08); }
 }
+
+@keyframes combat-threat { 45% { filter: brightness(1.24) saturate(1.22); transform: translateX(4px); } }
+@keyframes combat-triumph { 45% { filter: brightness(1.2) saturate(0.86); transform: translateY(-10px) scale(1.025); } }
 
 .boss-cinderStag { background-image: url("/emberchibi-camp/assets/guardians/cinder-stag.png"); }
 .boss-brineWarden { background-image: url("/emberchibi-camp/assets/guardians/brine-warden.png"); }
@@ -1912,6 +1937,26 @@ select {
   padding: 84px 7% 30px;
 }
 
+.scene-cue {
+  position: absolute;
+  top: 18px;
+  left: 7%;
+  z-index: 5;
+  padding: 5px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 4px;
+  color: #fff2d9;
+  background: rgba(12, 11, 9, 0.65);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.cue-discovery .scene-cue { border-color: rgba(126, 182, 140, 0.66); color: #c8edd0; }
+.cue-hazard .scene-cue,
+.cue-threat .scene-cue { border-color: rgba(255, 143, 111, 0.72); color: #ffd0bf; animation: scene-alert 1.15s ease-in-out infinite; }
+
 .live-path {
   position: relative;
   display: grid;
@@ -2236,6 +2281,8 @@ select {
 @keyframes path-pulse {
   50% { box-shadow: 0 0 0 12px rgba(255, 202, 122, 0.04), 0 0 34px #e18a52; }
 }
+
+@keyframes scene-alert { 50% { box-shadow: 0 0 16px rgba(215, 93, 69, 0.5); } }
 
 @keyframes chibi-walk {
   to { transform: translateY(-5px) rotate(2deg); }

@@ -4,17 +4,18 @@ Last updated: 2026-07-23
 
 ## Current Release
 
-**Fun Alpha 10: Interactive Live Expedition**
+**Fun Alpha 11: Thai i18n and Expedition Feel**
 
 Routes now unfold as animated node journeys with manual branches, Auto-safe
-compatibility, visible party activity, ambient biome moods, and boss lead-ins.
+compatibility, visible party activity, ambient biome moods, Thai/English UI,
+and stronger encounter feedback.
 
 | Area | Status | Current implementation |
 | --- | --- | --- |
 | Project shell | Complete | Vite, React, TypeScript, reducer architecture |
 | Save and offline | Complete | localStorage, backup recovery, migration, 8h offline cap |
 | Camp | Alpha 2 | six idle jobs, three upgrades, four pressure values, five crises |
-| Exploration | Alpha 10 | eleven live node journeys, route branches, events, encounters |
+| Exploration | Alpha 11 | eleven localized live node journeys, route branches, events, encounters |
 | Run variation | Alpha 3 | five biome/run modifiers and twelve build-defining run items |
 | Run loadout | Alpha 3 | Tool, Charm, and Provision slots with source and trigger history |
 | Survivors | Alpha 1 | four starters plus branched/delayed Rook, Mira, and Bram recruitment |
@@ -183,6 +184,18 @@ compatibility, visible party activity, ambient biome moods, and boss lead-ins.
 - Added fog, ember, rain, wind, root, moonlight, path, and Beacon/Guardian effects.
 - Preserved existing reward, recruit, route event, Guardian, Beacon, and save flows.
 - Added safe old-timer migration and expanded the automated suite from 81 to 90 tests.
+
+### Fun Alpha 11 - Thai i18n and Game Feel
+
+- Added English/Thai translation files with typed fallback, interpolation,
+  data-driven route/mood keys, and a persistent language selector.
+- Kept language preference separate from the local game-save schema, preserving
+  existing run and Legacy migrations.
+- Localized navigation, camp pressure, route setup, live expedition controls,
+  route names/purposes, biome moods, and core combat labels.
+- Added deterministic presentation cues for node danger/discovery and combat
+  feedback, plus stronger telegraph, status, milestone, and party-scene polish.
+- Preserved reduced-motion behavior and expanded visual QA for Thai mobile layout.
 
 ## Next Phase
 

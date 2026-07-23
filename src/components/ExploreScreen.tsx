@@ -10,6 +10,7 @@ import { bondLevel } from "../game/journal";
 import { CrewPicker } from "./CrewPicker";
 import { GameIcon, type GameIconName } from "./GameIcon";
 import { LiveExpeditionView } from "./LiveExpeditionView";
+import { useI18n } from "../i18n";
 
 type Props = {
   state: GameState;
@@ -17,6 +18,7 @@ type Props = {
 };
 
 export function ExploreScreen({ state, dispatch }: Props) {
+  const { t } = useI18n();
   const [useRation, setUseRation] = useState(false);
   const [useTorch, setUseTorch] = useState(false);
   const [selectedIds, setSelectedIds] = useState(() =>
@@ -53,11 +55,11 @@ export function ExploreScreen({ state, dispatch }: Props) {
     <section className="screen">
       <div className="panel compact modifier-banner">
         <div>
-          <p className="eyebrow">Run Modifier</p>
-          <h3>{modifier.name}</h3>
+          <p className="eyebrow">{t("explore.modifier")}</p>
+          <h3>{t(`modifier.${modifier.id}.name`, undefined, modifier.name)}</h3>
         </div>
         <div>
-          <p>{modifier.description}</p>
+          <p>{t(`modifier.${modifier.id}.description`, undefined, modifier.description)}</p>
           <small className="modifier-forecast">{modifier.forecast}</small>
         </div>
       </div>
@@ -86,8 +88,8 @@ export function ExploreScreen({ state, dispatch }: Props) {
       {!expedition && !activeDecision && (
         <div className="panel compact expedition-prep">
           <div>
-            <p className="eyebrow">Expedition Supplies</p>
-            <h3>Prepare the next route</h3>
+            <p className="eyebrow">{t("explore.supplies")}</p>
+            <h3>{t("explore.prepare")}</h3>
           </div>
           <label>
             <input
@@ -111,8 +113,8 @@ export function ExploreScreen({ state, dispatch }: Props) {
       )}
       {!expedition && !activeDecision && (
         <div className="panel compact">
-          <p className="eyebrow">Expedition Crew</p>
-          <h3>Select 1–2 survivors</h3>
+          <p className="eyebrow">{t("explore.crew")}</p>
+          <h3>{t("explore.selectCrew")}</h3>
           <CrewPicker
             survivors={availableSurvivors}
             selectedIds={selectedIds}
@@ -123,7 +125,7 @@ export function ExploreScreen({ state, dispatch }: Props) {
         </div>
       )}
       <div className="panel compact">
-        <p className="eyebrow">Five Beacon Skeleton</p>
+        <p className="eyebrow">{t("explore.beacons")}</p>
         <div className="beacon-strip">
           {beacons.map((beacon) => {
             const progress = state.run.beacons[beacon.id];
@@ -136,7 +138,7 @@ export function ExploreScreen({ state, dispatch }: Props) {
                   label={`${beacon.name} ${progress.repaired ? "lit" : "unlit"}`}
                   size="sm"
                 />
-                <strong>{beacon.name}</strong>
+                <strong>{t(`beacon.${beacon.id}.name`, undefined, beacon.name)}</strong>
                 <span>{status}</span>
               </div>
             );
@@ -182,8 +184,8 @@ export function ExploreScreen({ state, dispatch }: Props) {
           return (
             <article className={`route-card route-${route.id}`} key={route.id}>
               <p className="eyebrow">{locked ? "Undiscovered" : route.requirement}</p>
-              <h2>{route.name}</h2>
-              <p>{route.purpose}</p>
+              <h2>{t(`route.${route.id}.name`, undefined, route.name)}</h2>
+              <p>{t(`route.${route.id}.purpose`, undefined, route.purpose)}</p>
               <div className="route-meta">
                 <span>{duration}s</span>
                 <span>Danger {route.danger}</span>
@@ -192,7 +194,7 @@ export function ExploreScreen({ state, dispatch }: Props) {
                 <span>Clears {progress.completed}</span>
                 <span>Fails {progress.failed}</span>
                 <span>{selectedSurvivors.length} selected</span>
-                {modifier.routes?.includes(route.id) && <span>{modifier.name}: {modifier.counterClass && selectedSurvivors.some((survivor) => survivor.classId === modifier.counterClass) ? "Countered" : "Active"}</span>}
+                {modifier.routes?.includes(route.id) && <span>{t(`modifier.${modifier.id}.name`, undefined, modifier.name)}: {modifier.counterClass && selectedSurvivors.some((survivor) => survivor.classId === modifier.counterClass) ? "Countered" : "Active"}</span>}
               </div>
               <div className="reward-list">
                 {beacon && <span>{beacon.bonus}</span>}
@@ -210,7 +212,7 @@ export function ExploreScreen({ state, dispatch }: Props) {
               <button
                 className="primary"
                 disabled={disabled}
-                title={disabledReason ?? `Start ${route.name}.`}
+                title={disabledReason ?? `Start ${t(`route.${route.id}.name`, undefined, route.name)}.`}
                 onClick={() => startRoute(route.id)}
               >
                 {locked ? "Find clues first" : needsParty ? (route.kind === "boss" ? `Select ${bossPartySize} survivor${bossPartySize === 1 ? "" : "s"}` : "Select a survivor") : "Start Expedition"}
