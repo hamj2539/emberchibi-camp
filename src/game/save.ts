@@ -1,4 +1,5 @@
 import { createInitialState, emptyBeaconProgress, emptyInventory, type GameState } from "./state.js";
+import { getRecruitDefinition } from "../data/events.js";
 
 const SAVE_KEY = "emberchibiCamp.v1";
 const BACKUP_KEY = "emberchibiCamp.v1.backup";
@@ -55,7 +56,9 @@ export function migrateV1(state: GameState): GameState {
       shards: state.legacy.shards ?? 0,
       unlocks: state.legacy.unlocks ?? [],
       relics: state.legacy.relics ?? [],
+      equippedRelics: state.legacy.equippedRelics ?? [],
       blueprints: state.legacy.blueprints ?? [],
+      projects: state.legacy.projects ?? [],
       runsCompleted: state.legacy.runsCompleted ?? 0,
       bestScore: state.legacy.bestScore ?? 0,
       bestChestGrade: state.legacy.bestChestGrade ?? null,
@@ -67,13 +70,22 @@ export function migrateV1(state: GameState): GameState {
       routes: { ...defaults.run.routes, ...(state.run.routes ?? {}) },
       beacons: migrateBeacons(state, defaults),
       craftQueue: state.run.craftQueue ?? [],
-      recruitEvent: state.run.recruitEvent ?? null,
-      bossBattle,
+      recruitEvent: migrateRecruitEvent(state),
+      bossBattle: bossBattle ? { ...bossBattle, usedSkills: bossBattle.usedSkills ?? [] } : null,
       beaconRepair,
-      gate: state.run.gate ?? defaults.run.gate,
-      endRun: state.run.endRun ?? null,
+      campUpgrades: state.run.campUpgrades ?? [],
+      gate: state.run.gate ? { ...state.run.gate, usedSkills: state.run.gate.usedSkills ?? [] } : defaults.run.gate,
+      endRun: state.run.endRun
+        ? { ...state.run.endRun, outcome: state.run.endRun.outcome ?? "victory" }
+        : null,
     },
   };
+}
+
+function migrateRecruitEvent(state: GameState): GameState["run"]["recruitEvent"] {
+  if (!state.run.recruitEvent) return null;
+  const definition = getRecruitDefinition(state.run.recruitEvent.id);
+  return { ...definition, ...state.run.recruitEvent };
 }
 
 function migrateBeacons(state: GameState, defaults: GameState): GameState["run"]["beacons"] {

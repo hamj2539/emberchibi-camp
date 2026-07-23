@@ -21,6 +21,7 @@ export function openGate(state: GameState, partyIds: string[]): GameState {
         nightPressure: startingPressure,
         turn: 1,
         partyIds: party.map((survivor) => survivor.id),
+        usedSkills: [],
         log: [
           `Night Herald steps through the Cinder Gate. Party resolve ${partyResolve(party)}.`,
           `Beacon Stability ${stability}/15 weakens the Herald to ${heraldMaxHp} HP and ${startingPressure} Night pressure.`,
@@ -44,6 +45,7 @@ export function resolveGateAction(state: GameState, action: GateAction): GameSta
   let heraldHp = gate.heraldHp;
   let guardStacks = gate.guardStacks;
   let nightPressure = gate.nightPressure;
+  let usedSkills = gate.usedSkills ?? [];
   let survivors = state.run.survivors;
 
   if (action === "attack") {
@@ -55,6 +57,29 @@ export function resolveGateAction(state: GameState, action: GateAction): GameSta
   if (action === "guard") {
     guardStacks += 2;
     log.unshift("The party anchors itself in Beacon light.");
+  }
+
+  if (action === "skill") {
+    const user = party.find((survivor) => survivor.currentHp > 0 && !usedSkills.includes(survivor.id));
+    if (!user) return state;
+    usedSkills = [...usedSkills, user.id];
+    if (user.classId === "scout") {
+      heraldHp = Math.max(0, heraldHp - 12);
+      guardStacks += 2;
+      log.unshift(`${user.name} uses Shadowstep through the Gate.`);
+    } else if (user.classId === "hunter") {
+      const damage = 20 + user.stats.atk;
+      heraldHp = Math.max(0, heraldHp - damage);
+      log.unshift(`${user.name} lands a Marked Shot for ${damage}.`);
+    } else if (user.classId === "herbalist") {
+      survivors = healParty(survivors, gate.partyIds);
+      nightPressure = Math.max(1, nightPressure - 2);
+      log.unshift(`${user.name} uses Cleansing Bloom against the night.`);
+    } else {
+      heraldHp = Math.max(0, heraldHp - 10);
+      guardStacks += 3;
+      log.unshift(`${user.name} anchors an Ember Turret at the Gate.`);
+    }
   }
 
   if (action === "useTorch") {
@@ -73,7 +98,8 @@ export function resolveGateAction(state: GameState, action: GateAction): GameSta
   }
 
   if (heraldHp <= 0) {
-    const cleared = finishGate(state, { ...gate, heraldHp, guardStacks, nightPressure, status: "cleared", log });
+    const actionState = { ...state, run: { ...state.run, items, survivors } };
+    const cleared = finishGate(actionState, { ...gate, heraldHp, guardStacks, nightPressure, usedSkills, status: "cleared", log });
     return {
       ...cleared,
       run: {
@@ -91,11 +117,12 @@ export function resolveGateAction(state: GameState, action: GateAction): GameSta
   log.unshift(heraldTurn.message);
 
   if (partyDefeated(survivors, gate.partyIds)) {
-    return finishGate(state, {
+    return finishGate({ ...state, run: { ...state.run, items, survivors, bossFailures: state.run.bossFailures + 1 } }, {
       ...gate,
       heraldHp,
       guardStacks,
       nightPressure,
+      usedSkills,
       turn: gate.turn + 1,
       status: "lost",
       log: ["The Night Herald breaks the final campfire line.", ...log].slice(0, 12),
@@ -108,7 +135,7 @@ export function resolveGateAction(state: GameState, action: GateAction): GameSta
       ...state.run,
       items,
       survivors,
-      gate: { ...gate, heraldHp, guardStacks, nightPressure, turn: gate.turn + 1, log: log.slice(0, 12) },
+      gate: { ...gate, heraldHp, guardStacks, nightPressure, usedSkills, turn: gate.turn + 1, log: log.slice(0, 12) },
     },
   };
 }
@@ -127,7 +154,7 @@ export function finishGate(state: GameState, gate: GateProgress): GameState {
 
   if (gate.status !== "cleared") return nextState;
   const result = calculateScore(nextState);
-  return { ...nextState, run: { ...nextState.run, endRun: { ...result, reward: null, claimed: false } } };
+  return { ...nextState, run: { ...nextState.run, endRun: { outcome: "victory", ...result, reward: null, claimed: false } } };
 }
 
 function allBeaconsLit(state: GameState): boolean {

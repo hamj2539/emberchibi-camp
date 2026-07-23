@@ -1,4 +1,5 @@
 import { beacons, getBeaconByBossRoute, getBeaconByPrepRoute } from "../data/beacons.js";
+import { getRecruitForRoute } from "../data/events.js";
 import { getRoute } from "../data/routes.js";
 import { createGuardianBattle } from "./combat.js";
 import { calculateExpeditionSafety } from "./expedition.js";
@@ -19,10 +20,12 @@ export function resolveIdleProgress(state: GameState, elapsedSeconds: number): G
       resources.herb += elapsedSeconds / 45;
     }
     if (survivor.job === "rest") {
+      const infirmaryMultiplier = state.run.campUpgrades.includes("infirmary") ? 2 : 1;
       return {
         ...survivor,
-        currentHp: Math.min(survivor.stats.hp, survivor.currentHp + elapsedSeconds / 15),
+        currentHp: Math.min(survivor.stats.hp, survivor.currentHp + (elapsedSeconds / 15) * infirmaryMultiplier),
         fatigue: Math.max(0, survivor.fatigue - elapsedSeconds / 18),
+        injury: Math.max(0, survivor.injury - (state.run.campUpgrades.includes("infirmary") ? elapsedSeconds / 60 : 0)),
       };
     }
     return survivor;
@@ -58,11 +61,12 @@ function resolveCraftProgress(state: GameState, elapsedSeconds: number): GameSta
   const craftPower = state.run.survivors
     .filter((survivor) => !survivor.onExpedition && survivor.job === "craft")
     .reduce((sum, survivor) => sum + 1 + Math.floor(survivor.stats.craft / 4), 0);
-  const progressSeconds = elapsedSeconds * Math.max(1, craftPower);
+  const progressSeconds =
+    elapsedSeconds * Math.max(1, craftPower) * (state.run.campUpgrades.includes("workshop") ? 1.35 : 1);
   const items = { ...state.run.items };
   const log = [...state.run.log];
   const remaining = state.run.craftQueue
-    .map((task) => ({ ...task, remainingSeconds: task.remainingSeconds - progressSeconds }))
+    .map((task, index) => ({ ...task, remainingSeconds: task.remainingSeconds - (index === 0 ? progressSeconds : 0) }))
     .filter((task) => {
       if (task.remainingSeconds > 0) return true;
       items[task.recipeId] += 1;
@@ -91,7 +95,11 @@ function resolveRepairProgress(state: GameState, elapsedSeconds: number): GameSt
     0,
   );
   const qualityBonus = coreRepairBonus(repair.coreQuality);
-  const nextProgress = Math.min(repair.requiredProgress, repair.progress + elapsedSeconds * repairPower * qualityBonus);
+  const workshopBonus = state.run.campUpgrades.includes("workshop") ? 1.35 : 1;
+  const nextProgress = Math.min(
+    repair.requiredProgress,
+    repair.progress + elapsedSeconds * repairPower * qualityBonus * workshopBonus,
+  );
 
   if (nextProgress < repair.requiredProgress) {
     return {
@@ -218,8 +226,8 @@ export function resolveExpedition(state: GameState, now: number): GameState {
     if (prepBeacon) {
       routes[prepBeacon.bossRouteId] = { ...routes[prepBeacon.bossRouteId], discovered: true };
       log.unshift(`${route.name} revealed the ${prepBeacon.name} site.`);
-    } else if (route.id === "mistwoodEdge" && !hasRook(state) && !state.run.recruitEvent) {
-      log.unshift("The party found a wounded hunter near a burned trail.");
+    } else if (availableRecruit(state, route.id)) {
+      log.unshift(`The party encountered ${availableRecruit(state, route.id)?.name}.`);
     } else {
       log.unshift(`${route.name} completed. Supplies were added to camp.`);
     }
@@ -233,18 +241,20 @@ export function resolveExpedition(state: GameState, now: number): GameState {
       routes,
       survivors,
       activeExpedition: null,
-      recruitEvent:
-        !failed && route.id === "mistwoodEdge" && !hasRook(state) && !state.run.recruitEvent
-          ? { id: "rook", status: "available" }
-          : state.run.recruitEvent,
+      recruitEvent: !failed && availableRecruit(state, route.id)
+        ? { ...availableRecruit(state, route.id)!, status: "available" }
+        : state.run.recruitEvent,
       routeFailures: state.run.routeFailures + (failed ? 1 : 0),
       log: log.slice(0, 12),
     },
   };
 }
 
-function hasRook(state: GameState): boolean {
-  return state.run.survivors.some((survivor) => survivor.id === "survivor-rook");
+function availableRecruit(state: GameState, routeId: Parameters<typeof getRecruitForRoute>[0]) {
+  if (state.run.recruitEvent && state.run.recruitEvent.status === "available") return undefined;
+  const definition = getRecruitForRoute(routeId);
+  if (!definition || state.run.survivors.some((survivor) => survivor.id === definition.survivor.id)) return undefined;
+  return definition;
 }
 
 function labelItem(itemId: ItemId): string {

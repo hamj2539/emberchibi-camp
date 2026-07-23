@@ -22,6 +22,7 @@ export function createGuardianBattle(state: GameState, partyIds: string[], beaco
     turn: 1,
     status: "active",
     coreQuality: null,
+    usedSkills: [],
     log: [
       `${beacon.bossName} takes shape before ${beacon.name}. Party power ${partyPower(party) + spearBonus}.`,
       state.run.items.warmCloak > 0 ? "Warm Cloak softens the pressure around the party." : "Guardian pressure closes in.",
@@ -43,6 +44,7 @@ export function resolveBossAction(state: GameState, action: BossAction): GameSta
   let bossHp = battle.bossHp;
   let guardStacks = battle.guardStacks;
   let burnPressure = battle.burnPressure;
+  let usedSkills = battle.usedSkills ?? [];
   let survivors = state.run.survivors;
 
   if (action === "attack") {
@@ -54,6 +56,29 @@ export function resolveBossAction(state: GameState, action: BossAction): GameSta
   if (action === "guard") {
     guardStacks += beacon.guardGain;
     log.unshift(`The party braces and gains ${beacon.guardGain} Guard.`);
+  }
+
+  if (action === "skill") {
+    const user = party.find((survivor) => survivor.currentHp > 0 && !usedSkills.includes(survivor.id));
+    if (!user) return state;
+    usedSkills = [...usedSkills, user.id];
+    if (user.classId === "scout") {
+      bossHp = Math.max(0, bossHp - 10);
+      guardStacks += 2;
+      log.unshift(`${user.name} uses Shadowstep: 10 damage and 2 Guard.`);
+    } else if (user.classId === "hunter") {
+      const damage = 18 + user.stats.atk;
+      bossHp = Math.max(0, bossHp - damage);
+      log.unshift(`${user.name} uses Marked Shot for ${damage} damage.`);
+    } else if (user.classId === "herbalist") {
+      survivors = healParty(survivors, battle.partyIds);
+      burnPressure = Math.max(1, burnPressure - 2);
+      log.unshift(`${user.name} uses Cleansing Bloom: party healed and pressure reduced.`);
+    } else {
+      bossHp = Math.max(0, bossHp - 8);
+      guardStacks += 3;
+      log.unshift(`${user.name} deploys an Ember Turret: 8 damage and 3 Guard.`);
+    }
   }
 
   if (action === "useTorch") {
@@ -87,6 +112,7 @@ export function resolveBossAction(state: GameState, action: BossAction): GameSta
           burnPressure,
           status: "won",
           coreQuality: quality,
+          usedSkills,
           log: [`${battle.bossName} falls. ${labelCoreQuality(quality, battle.coreName)} recovered.`, ...log].slice(0, 12),
         },
         log: [`${battle.bossName} defeated. ${labelCoreQuality(quality, battle.coreName)} recovered.`, ...state.run.log].slice(
@@ -125,6 +151,7 @@ export function resolveBossAction(state: GameState, action: BossAction): GameSta
           burnPressure,
           turn: battle.turn + 1,
           status: "lost",
+          usedSkills,
           log: ["The party collapses under ember pressure.", ...log].slice(0, 12),
         },
         log: [`Boss attempt failed. ${battle.coreName} quality will drop.`, ...state.run.log].slice(0, 12),
@@ -143,6 +170,7 @@ export function resolveBossAction(state: GameState, action: BossAction): GameSta
         bossHp,
         guardStacks,
         burnPressure,
+        usedSkills,
         turn: battle.turn + 1,
         log: log.slice(0, 12),
       },
@@ -167,7 +195,7 @@ function resolveBossTurn(
   burnPressure: number,
   incomingBase: number,
 ): { survivors: Survivor[]; guardStacks: number; burnPressure: number; message: string } {
-  const target = survivors.find((survivor) => partyIds.includes(survivor.id) && survivor.currentHp > 1);
+  const target = survivors.find((survivor) => partyIds.includes(survivor.id) && survivor.currentHp > 0);
   if (!target) return { survivors, guardStacks, burnPressure, message: "The guardian circles through the ash." };
 
   const damage = Math.max(2, incomingBase + burnPressure * 2 - guardStacks * 3 - Math.floor(target.stats.def / 2));

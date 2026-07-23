@@ -11,13 +11,16 @@ export function getLegacyBonuses(legacy: LegacyState): LegacyBonus[] {
   addIfOwned(bonuses, legacy.blueprints, "Torch Blueprint", "+1 Torch at the start of each run");
   addIfOwned(bonuses, legacy.blueprints, "Repair Kit Blueprint", "+1 Repair Kit at the start of each run");
   addIfOwned(bonuses, legacy.blueprints, "Warm Cloak Blueprint", "+1 Warm Cloak at the start of each run");
-  addIfOwned(bonuses, legacy.relics, "Coalglass Charm", "+4 starting Wood");
-  addIfOwned(bonuses, legacy.relics, "Ashen Compass", "+3 starting Food");
-  addIfOwned(bonuses, legacy.relics, "Stagbone Token", "+1 Stone Spear at the start of each run");
+  addIfOwned(bonuses, legacy.equippedRelics, "Coalglass Charm", "+4 starting Wood");
+  addIfOwned(bonuses, legacy.equippedRelics, "Ashen Compass", "+3 starting Food");
+  addIfOwned(bonuses, legacy.equippedRelics, "Stagbone Token", "+1 Stone Spear at the start of each run");
   addIfOwned(bonuses, legacy.unlocks, "Rook Camp Trait", "+3 HP and +1 ATK for the first survivor");
   addIfOwned(bonuses, legacy.unlocks, "Mistwood Scout Rumor", "+2 starting Herb");
   addIfOwned(bonuses, legacy.unlocks, "Ember Adept Class", "+1 WIS and +1 Relic Shard");
   addIfOwned(bonuses, legacy.unlocks, "Warden Class", "+1 DEF and +4 starting Stone");
+  addIfOwned(bonuses, legacy.projects, "fieldManual", "+3 route safety");
+  addIfOwned(bonuses, legacy.projects, "deepPockets", "+1 Ration and +1 Torch");
+  addIfOwned(bonuses, legacy.projects, "hearthstone", "+5 HP for the first survivor");
 
   return bonuses;
 }
@@ -31,9 +34,13 @@ export function applyLegacyStartBonuses(state: GameState): GameState {
   if (legacy.blueprints.includes("Torch Blueprint")) items.torch += 1;
   if (legacy.blueprints.includes("Repair Kit Blueprint")) items.repairKit += 1;
   if (legacy.blueprints.includes("Warm Cloak Blueprint")) items.warmCloak += 1;
-  if (legacy.relics.includes("Coalglass Charm")) resources.wood += 4;
-  if (legacy.relics.includes("Ashen Compass")) resources.food += 3;
-  if (legacy.relics.includes("Stagbone Token")) items.stoneSpear += 1;
+  if (legacy.equippedRelics.includes("Coalglass Charm")) resources.wood += 4;
+  if (legacy.equippedRelics.includes("Ashen Compass")) resources.food += 3;
+  if (legacy.equippedRelics.includes("Stagbone Token")) items.stoneSpear += 1;
+  if (legacy.projects.includes("deepPockets")) {
+    items.ration += 1;
+    items.torch += 1;
+  }
   if (legacy.unlocks.includes("Mistwood Scout Rumor")) resources.herb += 2;
   if (legacy.unlocks.includes("Ember Adept Class")) {
     resources.relicShard += 1;
@@ -47,6 +54,7 @@ export function applyLegacyStartBonuses(state: GameState): GameState {
     statBonuses.hp = 3;
     statBonuses.atk = 1;
   }
+  if (legacy.projects.includes("hearthstone")) statBonuses.hp = (statBonuses.hp ?? 0) + 5;
 
   return {
     ...state,

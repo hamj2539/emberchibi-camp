@@ -47,6 +47,16 @@ export function calculateScore(state: GameState): { score: number; lines: ScoreL
   return { score, lines, chestGrade: chestGradeForScore(score) };
 }
 
+export function calculateCollapseScore(state: GameState): { score: number; lines: ScoreLine[]; chestGrade: ChestGrade } {
+  const result = calculateScore(state);
+  const penalty = -Math.ceil(result.score / 2);
+  return {
+    score: Math.max(0, result.score + penalty),
+    lines: [...result.lines, { label: "Run Collapse (score x0.5)", points: penalty }],
+    chestGrade: "broken",
+  };
+}
+
 export function labelChestGrade(grade: ChestGrade): string {
   const labels: Record<ChestGrade, string> = {
     broken: "Broken Legacy Chest",

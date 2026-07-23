@@ -28,11 +28,14 @@ export type RouteId =
   | "moonwellPath"
   | "lunarBeaconSite";
 export type ItemId = "torch" | "ration" | "stoneSpear" | "herbSalve" | "warmCloak" | "repairKit";
-export type BossAction = "attack" | "guard" | "useTorch" | "useSalve";
+export type BossAction = "attack" | "guard" | "skill" | "useTorch" | "useSalve";
 export type GateAction = BossAction;
 export type CoreQuality = "pristine" | "stable" | "cracked" | "faded";
 export type ChestGrade = "broken" | "faded" | "iron" | "ancient";
 export type RewardType = "legacyShards" | "blueprint" | "relic" | "survivorUnlock" | "classUnlock";
+export type CampUpgradeId = "infirmary" | "workshop" | "watchtower";
+export type LegacyProjectId = "fieldManual" | "deepPockets" | "hearthstone";
+export type RunOutcome = "victory" | "collapse";
 
 export type Stats = Record<StatKey, number>;
 export type Resources = Record<ResourceKey, number>;
@@ -76,7 +79,11 @@ export type CraftTask = {
 };
 
 export type RecruitEvent = {
-  id: "rook";
+  id: "rook" | "mira" | "bram";
+  name: string;
+  description: string;
+  herbCost: number;
+  foodCost: number;
   status: "available" | "resolved";
 };
 
@@ -93,6 +100,7 @@ export type BossBattle = {
   turn: number;
   status: "active" | "won" | "lost";
   coreQuality: CoreQuality | null;
+  usedSkills: string[];
   log: string[];
 };
 
@@ -128,6 +136,7 @@ export type ChestReward = {
 };
 
 export type EndRunResult = {
+  outcome: RunOutcome;
   score: number;
   lines: ScoreLine[];
   chestGrade: ChestGrade;
@@ -143,6 +152,7 @@ export type GateProgress = {
   nightPressure: number;
   turn: number;
   partyIds: string[];
+  usedSkills: string[];
   log: string[];
 };
 
@@ -160,6 +170,7 @@ export type RunState = {
   recruitEvent: RecruitEvent | null;
   bossBattle: BossBattle | null;
   beaconRepair: BeaconRepair | null;
+  campUpgrades: CampUpgradeId[];
   gate: GateProgress;
   endRun: EndRunResult | null;
   log: string[];
@@ -171,7 +182,9 @@ export type LegacyState = {
   shards: number;
   unlocks: string[];
   relics: string[];
+  equippedRelics: string[];
   blueprints: string[];
+  projects: LegacyProjectId[];
   runsCompleted: number;
   bestScore: number;
   bestChestGrade: ChestGrade | null;
@@ -188,6 +201,7 @@ export type GameAction =
   | { type: "chooseStarter"; classId: StarterClassId }
   | { type: "setScreen"; screen: Screen }
   | { type: "assignJob"; survivorId: string; job: IdleJob }
+  | { type: "buyCampUpgrade"; upgradeId: CampUpgradeId }
   | { type: "startExpedition"; routeId: RouteId; survivorIds: string[]; useRation?: boolean; useTorch?: boolean }
   | { type: "resolveRecruit"; choice: "herb" | "food" | "ignore" }
   | { type: "startCraft"; recipeId: ItemId }
@@ -198,6 +212,9 @@ export type GameAction =
   | { type: "gateAction"; action: GateAction }
   | { type: "leaveGateResult" }
   | { type: "claimChest" }
+  | { type: "buyLegacyProject"; projectId: LegacyProjectId }
+  | { type: "toggleRelic"; relic: string }
+  | { type: "abandonRun" }
   | { type: "tick"; now: number }
   | { type: "resetRun"; keepLegacy: boolean };
 
@@ -257,6 +274,7 @@ export function createInitialState(now = Date.now()): GameState {
       recruitEvent: null,
       bossBattle: null,
       beaconRepair: null,
+      campUpgrades: [],
       gate: {
         status: "sealed",
         heraldHp: 160,
@@ -265,6 +283,7 @@ export function createInitialState(now = Date.now()): GameState {
         nightPressure: 4,
         turn: 1,
         partyIds: [],
+        usedSkills: [],
         log: ["The Cinder Gate is sealed behind five cold sockets."],
       },
       endRun: null,
@@ -276,7 +295,9 @@ export function createInitialState(now = Date.now()): GameState {
       shards: 0,
       unlocks: [],
       relics: [],
+      equippedRelics: [],
       blueprints: [],
+      projects: [],
       runsCompleted: 0,
       bestScore: 0,
       bestChestGrade: null,

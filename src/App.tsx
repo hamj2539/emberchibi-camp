@@ -1,4 +1,4 @@
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { BeaconRepairScreen } from "./components/BeaconRepairScreen";
 import { BossBattleScreen } from "./components/BossBattleScreen";
 import { CampScreen } from "./components/CampScreen";
@@ -29,6 +29,7 @@ const navItems: { screen: Screen; label: string; when?: "boss" | "repair" | "gat
 
 export default function App() {
   const [state, dispatch] = useReducer(gameReducer, undefined, loadGame);
+  const [muted, setMuted] = useState(() => localStorage.getItem("emberchibiCamp.muted") === "true");
 
   useEffect(() => {
     dispatch({ type: "tick", now: Date.now() });
@@ -39,6 +40,28 @@ export default function App() {
   useEffect(() => {
     saveGame(state);
   }, [state]);
+
+  useEffect(() => {
+    localStorage.setItem("emberchibiCamp.muted", String(muted));
+    if (muted) return;
+    const playClick = (event: MouseEvent) => {
+      if (!(event.target instanceof HTMLButtonElement) || event.target.disabled) return;
+      const AudioContextClass = window.AudioContext;
+      if (!AudioContextClass) return;
+      const context = new AudioContextClass();
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.frequency.value = event.target.classList.contains("primary") ? 440 : 320;
+      gain.gain.setValueAtTime(0.025, context.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.06);
+      oscillator.connect(gain).connect(context.destination);
+      oscillator.start();
+      oscillator.stop(context.currentTime + 0.06);
+      oscillator.addEventListener("ended", () => void context.close());
+    };
+    document.addEventListener("click", playClick);
+    return () => document.removeEventListener("click", playClick);
+  }, [muted]);
 
   function resetRun() {
     deleteSave();
@@ -76,6 +99,14 @@ export default function App() {
               ))}
           </nav>
         )}
+        <button
+          className="sound-toggle"
+          aria-label={muted ? "Enable sound" : "Mute sound"}
+          title={muted ? "Enable sound" : "Mute sound"}
+          onClick={() => setMuted((current) => !current)}
+        >
+          {muted ? "Sound off" : "Sound on"}
+        </button>
       </header>
 
       <main>

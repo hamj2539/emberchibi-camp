@@ -27,9 +27,13 @@ export function EndRunScreen({ state, dispatch }: Props) {
   return (
     <section className="screen end-layout">
       <div className="panel camp-hero">
-        <p className="eyebrow">Run Complete</p>
+        <p className="eyebrow">{endRun.outcome === "victory" ? "Run Complete" : "Run Collapsed"}</p>
         <h2>{endRun.score} Score</h2>
-        <p>The Night Herald is defeated. The five Beacons hold the forest gate open until the next run.</p>
+        <p>
+          {endRun.outcome === "victory"
+            ? "The Night Herald is defeated. The five Beacons hold the forest gate open until the next run."
+            : "The survivors carried what they could back through the dark. Collapse halves the score and yields a Broken Chest."}
+        </p>
         <strong>{labelChestGrade(endRun.chestGrade)}</strong>
       </div>
 

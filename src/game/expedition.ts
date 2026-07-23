@@ -19,6 +19,8 @@ export function calculateExpeditionSafety(
   return (
     party.reduce((sum, survivor) => sum + survivor.stats.surv + survivor.stats.spd + survivor.stats.luck, 0) +
     campGuards * 4 +
+    (state.run.campUpgrades.includes("watchtower") ? 6 : 0) +
+    (state.legacy.projects.includes("fieldManual") ? 3 : 0) +
     (supplies.useRation ? 6 : 0) +
     (supplies.useTorch && route.danger >= 35 ? 5 : 0)
   );

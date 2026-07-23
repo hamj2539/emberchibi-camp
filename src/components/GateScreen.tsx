@@ -11,6 +11,7 @@ type Props = {
 const actions: { action: GateAction; label: string; detail: string }[] = [
   { action: "attack", label: "Attack", detail: "Push damage through the Gate." },
   { action: "guard", label: "Guard", detail: "Reduce the next Herald mark." },
+  { action: "skill", label: "Class Skill", detail: "Use the next survivor's once-per-battle ability." },
   { action: "useTorch", label: "Torch", detail: "Spend Torch to cut night pressure." },
   { action: "useSalve", label: "Salve", detail: "Spend Herb Salve to heal the party." },
 ];
@@ -121,6 +122,10 @@ export function GateScreen({ state, dispatch }: Props) {
 function isDisabled(action: GateAction, state: GameState): boolean {
   if (action === "useTorch") return state.run.items.torch <= 0;
   if (action === "useSalve") return state.run.items.herbSalve <= 0;
+  if (action === "skill") {
+    const gate = state.run.gate;
+    return !gate.partyIds.some((id) => !gate.usedSkills.includes(id) && state.run.survivors.some((survivor) => survivor.id === id && survivor.currentHp > 0));
+  }
   return false;
 }
 

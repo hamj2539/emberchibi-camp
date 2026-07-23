@@ -44,6 +44,10 @@ button:not(:disabled):hover {
   transform: translateY(-1px);
 }
 
+button:not(:disabled):active {
+  transform: translateY(1px) scale(0.99);
+}
+
 button:focus-visible,
 select:focus-visible {
   outline: 3px solid rgba(255, 189, 115, 0.72);
@@ -103,6 +107,39 @@ select {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.sound-toggle {
+  white-space: nowrap;
+}
+
+.upgrade-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.upgrade-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  padding: 10px 0;
+}
+
+.upgrade-row div,
+.upgrade-row span,
+.upgrade-row small {
+  display: grid;
+  gap: 3px;
+}
+
+.upgrade-row span {
+  color: var(--muted);
+}
+
+.upgrade-row small {
+  color: #ffbd73;
 }
 
 .nav button.active,
@@ -378,6 +415,12 @@ select {
   background-size: cover;
   font-size: 4rem;
   font-weight: 900;
+  animation: guardian-breathe 2.8s ease-in-out infinite;
+}
+
+@keyframes guardian-breathe {
+  0%, 100% { transform: translateY(0); filter: brightness(0.96); }
+  50% { transform: translateY(-4px); filter: brightness(1.08); }
 }
 
 .boss-cinderStag { background-image: url("/emberchibi-camp/assets/guardians/cinder-stag.png"); }
@@ -407,6 +450,43 @@ select {
   border-radius: inherit;
   background: linear-gradient(90deg, #ffba6b, #ef5d3c);
   transition: width 180ms ease;
+}
+
+.meter span[style="width: 0%;"] {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 820px) {
+  .topbar {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .nav {
+    order: 3;
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .upgrade-row {
+    grid-template-columns: 1fr;
+  }
+
+  .upgrade-row button {
+    width: 100%;
+  }
 }
 
 .action-grid {

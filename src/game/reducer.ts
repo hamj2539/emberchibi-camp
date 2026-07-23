@@ -1,5 +1,7 @@
 import { getBeacon } from "../data/beacons.js";
 import { getStarterClass } from "../data/classes.js";
+import { getRecruitDefinition } from "../data/events.js";
+import { campUpgrades, legacyProjects } from "../data/progression.js";
 import { getRecipe } from "../data/recipes.js";
 import { getRoute } from "../data/routes.js";
 import { resolveBossAction } from "./combat.js";
@@ -7,6 +9,7 @@ import { openGate, resolveGateAction } from "./gate.js";
 import { calculateExpeditionDuration } from "./expedition.js";
 import { applyLegacyStartBonuses } from "./meta.js";
 import { applyReward, rollChestReward } from "./rewards.js";
+import { calculateCollapseScore } from "./scoring.js";
 import { resolveExpedition, resolveIdleProgress } from "./tick.js";
 import type { ChestGrade, GameAction, GameState, IdleJob, ResourceKey, Survivor } from "./state.js";
 import { createInitialState } from "./state.js";
@@ -64,6 +67,22 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           log: [`Assigned ${jobLabels[action.job]}.`, ...state.run.log].slice(0, 12),
         },
       });
+    case "buyCampUpgrade": {
+      if (state.run.campUpgrades.includes(action.upgradeId)) return state;
+      const upgrade = campUpgrades.find((entry) => entry.id === action.upgradeId);
+      if (!upgrade || !canAfford(state, upgrade.cost)) return state;
+      const resources = { ...state.run.resources };
+      for (const [key, amount] of Object.entries(upgrade.cost) as [ResourceKey, number][]) resources[key] -= amount;
+      return stamp({
+        ...state,
+        run: {
+          ...state.run,
+          resources,
+          campUpgrades: [...state.run.campUpgrades, upgrade.id],
+          log: [`Camp upgrade built: ${upgrade.name}.`, ...state.run.log].slice(0, 12),
+        },
+      });
+    }
     case "startExpedition": {
       if (state.run.activeExpedition) return state;
       const route = getRoute(action.routeId);
@@ -109,24 +128,25 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       });
     }
     case "resolveRecruit": {
-      if (state.run.recruitEvent?.id !== "rook" || state.run.recruitEvent.status !== "available") return state;
+      if (!state.run.recruitEvent || state.run.recruitEvent.status !== "available") return state;
+      const definition = getRecruitDefinition(state.run.recruitEvent.id);
 
       const resources = { ...state.run.resources };
       const log = [...state.run.log];
       const survivors = [...state.run.survivors];
 
       if (action.choice === "herb") {
-        if (resources.herb < 2) return state;
-        resources.herb -= 2;
-        survivors.push(createRook());
-        log.unshift("Rook joins the camp after you bind his burned trail wounds.");
+        if (resources.herb < definition.herbCost) return state;
+        resources.herb -= definition.herbCost;
+        survivors.push({ ...definition.survivor });
+        log.unshift(`${definition.survivor.name} joins the camp after receiving medicine.`);
       }
 
       if (action.choice === "food") {
-        if (resources.food < 4) return state;
-        resources.food -= 4;
-        survivors.push(createRook());
-        log.unshift("Rook follows the scent of warm rations back to camp.");
+        if (resources.food < definition.foodCost) return state;
+        resources.food -= definition.foodCost;
+        survivors.push({ ...definition.survivor });
+        log.unshift(`${definition.survivor.name} joins the camp over a warm meal.`);
       }
 
       if (action.choice === "ignore") {
@@ -174,11 +194,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       });
     }
     case "bossAction":
-      return stamp(resolveBossAction(state, action.action));
+      return stamp(collapseIfStranded(resolveBossAction(state, action.action)));
     case "startGate":
       return stamp(openGate(state, action.survivorIds));
     case "gateAction":
-      return stamp(resolveGateAction(state, action.action));
+      return stamp(collapseIfStranded(resolveGateAction(state, action.action)));
     case "leaveGateResult":
       return stamp({
         ...state,
@@ -212,7 +232,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case "startRepair": {
       const battle = state.run.bossBattle;
       const quality = battle?.coreQuality;
-      if (!battle || !quality || state.run.beaconRepair?.status === "active" || action.survivorIds.length < 1) return state;
+      if (!battle || !quality || state.run.beaconRepair?.status === "active" || action.survivorIds.length < 1 || action.survivorIds.length > 2) return state;
+      if (new Set(action.survivorIds).size !== action.survivorIds.length) return state;
+      const validRepairers = state.run.survivors.filter(
+        (survivor) => action.survivorIds.includes(survivor.id) && !survivor.onExpedition && survivor.currentHp > 0,
+      );
+      if (validRepairers.length !== action.survivorIds.length) return state;
       const beacon = getBeacon(battle.beaconId);
       if (state.run.resources.wood < beacon.repairCost.wood || state.run.resources.stone < beacon.repairCost.stone) return state;
       if (action.useRepairKit && state.run.items.repairKit < 1) return state;
@@ -269,6 +294,35 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         },
       });
     }
+    case "buyLegacyProject": {
+      if (state.legacy.projects.includes(action.projectId)) return state;
+      const project = legacyProjects.find((entry) => entry.id === action.projectId);
+      if (!project || state.legacy.shards < project.cost) return state;
+      return stamp({
+        ...state,
+        legacy: {
+          ...state.legacy,
+          shards: state.legacy.shards - project.cost,
+          projects: [...state.legacy.projects, project.id],
+        },
+      });
+    }
+    case "toggleRelic": {
+      if (!state.legacy.relics.includes(action.relic)) return state;
+      const equipped = state.legacy.equippedRelics.includes(action.relic);
+      if (!equipped && state.legacy.equippedRelics.length >= 2) return state;
+      return stamp({
+        ...state,
+        legacy: {
+          ...state.legacy,
+          equippedRelics: equipped
+            ? state.legacy.equippedRelics.filter((relic) => relic !== action.relic)
+            : [...state.legacy.equippedRelics, action.relic],
+        },
+      });
+    }
+    case "abandonRun":
+      return stamp(finalizeCollapse(state, "The campfire was abandoned before the forest could claim the last survivors."));
     case "tick": {
       const elapsedSeconds = Math.max(0, Math.floor((action.now - state.savedAt) / 1000));
       const idleSeconds = calculateIdleElapsed(elapsedSeconds);
@@ -317,18 +371,25 @@ function canAfford(state: GameState, cost: Partial<Record<ResourceKey, number>>)
   return Object.entries(cost).every(([key, amount]) => state.run.resources[key as ResourceKey] >= amount);
 }
 
-function createRook(): Survivor {
+function collapseIfStranded(state: GameState): GameState {
+  if (state.run.endRun || state.run.survivors.length === 0) return state;
+  if (state.run.survivors.some((survivor) => survivor.currentHp > 0)) return state;
+  return finalizeCollapse(state, "Every survivor is unable to continue. The run collapses.");
+}
+
+function finalizeCollapse(state: GameState, message: string): GameState {
+  if (state.run.endRun) return state;
+  const result = calculateCollapseScore(state);
   return {
-    id: "survivor-rook",
-    name: "Rook",
-    classId: "hunter",
-    role: "Lost Hunter",
-    stats: { hp: 28, atk: 7, def: 4, spd: 5, wis: 3, craft: 3, surv: 8, luck: 4 },
-    currentHp: 21,
-    fatigue: 12,
-    injury: 8,
-    job: "rest",
-    onExpedition: false,
+    ...state,
+    run: {
+      ...state.run,
+      screen: "end",
+      activeExpedition: null,
+      survivors: state.run.survivors.map((survivor) => ({ ...survivor, onExpedition: false })),
+      endRun: { outcome: "collapse", ...result, reward: null, claimed: false },
+      log: [message, ...state.run.log].slice(0, 12),
+    },
   };
 }
 

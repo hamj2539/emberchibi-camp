@@ -11,6 +11,7 @@ type Props = {
 const actionLabels: { action: BossAction; label: string; detail: string }[] = [
   { action: "attack", label: "Attack", detail: "Party damage, stronger with Stone Spear." },
   { action: "guard", label: "Guard", detail: "Reduce the next scorch hits." },
+  { action: "skill", label: "Class Skill", detail: "Use the next survivor's once-per-battle ability." },
   { action: "useTorch", label: "Torch", detail: "Spend Torch to cut burn pressure." },
   { action: "useSalve", label: "Salve", detail: "Spend Herb Salve to heal party burns." },
 ];
@@ -117,6 +118,10 @@ export function BossBattleScreen({ state, dispatch }: Props) {
 function isDisabled(action: BossAction, state: GameState): boolean {
   if (action === "useTorch") return state.run.items.torch <= 0;
   if (action === "useSalve") return state.run.items.herbSalve <= 0;
+  if (action === "skill") {
+    const battle = state.run.bossBattle;
+    return !battle || !battle.partyIds.some((id) => !battle.usedSkills.includes(id) && state.run.survivors.some((survivor) => survivor.id === id && survivor.currentHp > 0));
+  }
   return false;
 }
 

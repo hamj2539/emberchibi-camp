@@ -1,7 +1,8 @@
 import type { Dispatch } from "react";
 import { beacons } from "../data/beacons";
 import { GameIcon, type GameIconName } from "./GameIcon";
-import type { GameAction, GameState } from "../game/state";
+import { campUpgrades } from "../data/progression";
+import type { GameAction, GameState, ResourceKey } from "../game/state";
 
 type Props = {
   state: GameState;
@@ -56,24 +57,24 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
         {expedition && <strong>Expedition returns in {secondsLeft}s</strong>}
       </div>
 
-      {state.run.recruitEvent?.id === "rook" && state.run.recruitEvent.status === "available" && (
+      {state.run.recruitEvent?.status === "available" && (
         <div className="panel recruit-panel">
           <p className="eyebrow">Recruit Event</p>
-          <h3>Rook, Lost Hunter</h3>
-          <p>The party found a wounded hunter beside a burned trail. He watches the campfire like it might vanish.</p>
+          <h3>{state.run.recruitEvent.name}</h3>
+          <p>{state.run.recruitEvent.description}</p>
           <div className="choice-row">
             <button
               className="primary"
-              disabled={state.run.resources.herb < 2}
+              disabled={state.run.resources.herb < state.run.recruitEvent.herbCost}
               onClick={() => dispatch({ type: "resolveRecruit", choice: "herb" })}
             >
-              Spend 2 Herb
+              Spend {state.run.recruitEvent.herbCost} Herb
             </button>
             <button
-              disabled={state.run.resources.food < 4}
+              disabled={state.run.resources.food < state.run.recruitEvent.foodCost}
               onClick={() => dispatch({ type: "resolveRecruit", choice: "food" })}
             >
-              Spend 4 Food
+              Spend {state.run.recruitEvent.foodCost} Food
             </button>
             <button className="danger" onClick={() => dispatch({ type: "resolveRecruit", choice: "ignore" })}>
               Ignore
@@ -128,6 +129,35 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
         </div>
       </div>
 
+      <div className="panel">
+        <p className="eyebrow">This Run</p>
+        <h3>Camp Upgrades</h3>
+        <div className="upgrade-grid">
+          {campUpgrades.map((upgrade) => {
+            const built = state.run.campUpgrades.includes(upgrade.id);
+            const affordable = Object.entries(upgrade.cost).every(
+              ([key, amount]) => state.run.resources[key as ResourceKey] >= (amount ?? 0),
+            );
+            return (
+              <article className="upgrade-row" key={upgrade.id}>
+                <div>
+                  <strong>{upgrade.name}</strong>
+                  <span>{upgrade.description}</span>
+                  <small>{formatCost(upgrade.cost)}</small>
+                </div>
+                <button
+                  className={built ? "" : "primary"}
+                  disabled={built || !affordable}
+                  onClick={() => dispatch({ type: "buyCampUpgrade", upgradeId: upgrade.id })}
+                >
+                  {built ? "Built" : "Build"}
+                </button>
+              </article>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="panel log-panel">
         <h3>Camp Log</h3>
         <ol className="log">
@@ -138,9 +168,21 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
         <button className="danger" onClick={onReset}>
           Reset Run
         </button>
+        <button
+          className="danger"
+          onClick={() => {
+            if (window.confirm("End this run with a Broken Chest and half score?")) dispatch({ type: "abandonRun" });
+          }}
+        >
+          Abandon Run
+        </button>
       </div>
     </section>
   );
+}
+
+function formatCost(cost: Partial<Record<ResourceKey, number>>): string {
+  return Object.entries(cost).map(([key, value]) => `${value} ${resourceLabels[key as keyof typeof resourceLabels]}`).join(" · ");
 }
 
 function formatAmount(value: number): string {

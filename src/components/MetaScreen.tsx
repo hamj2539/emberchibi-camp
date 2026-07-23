@@ -1,6 +1,7 @@
 import type { Dispatch } from "react";
 import { getLegacyBonuses } from "../game/meta";
 import { labelChestGrade } from "../game/scoring";
+import { legacyProjects } from "../data/progression";
 import type { GameAction, GameState } from "../game/state";
 
 type Props = {
@@ -33,6 +34,50 @@ export function MetaScreen({ state, dispatch }: Props) {
             {bonuses.map((bonus) => <div className="legacy-row" key={bonus.source}><strong>{bonus.source}</strong><span>{bonus.effect}</span></div>)}
           </div>
         ) : <p>Open Legacy Chests to earn permanent starting bonuses.</p>}
+      </div>
+
+      <div className="panel">
+        <p className="eyebrow">Shard Workshop</p>
+        <h3>Legacy Projects</h3>
+        <div className="upgrade-grid">
+          {legacyProjects.map((project) => {
+            const owned = legacy.projects.includes(project.id);
+            return (
+              <article className="upgrade-row" key={project.id}>
+                <div><strong>{project.name}</strong><span>{project.description}</span><small>{project.cost} Shards</small></div>
+                <button
+                  className={owned ? "" : "primary"}
+                  disabled={owned || legacy.shards < project.cost}
+                  onClick={() => dispatch({ type: "buyLegacyProject", projectId: project.id })}
+                >
+                  {owned ? "Owned" : "Unlock"}
+                </button>
+              </article>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="panel">
+        <p className="eyebrow">2 Slots</p>
+        <h3>Equipped Relics</h3>
+        {legacy.relics.length ? (
+          <div className="choice-row">
+            {legacy.relics.map((relic) => {
+              const equipped = legacy.equippedRelics.includes(relic);
+              return (
+                <button
+                  className={equipped ? "primary" : ""}
+                  disabled={!equipped && legacy.equippedRelics.length >= 2}
+                  key={relic}
+                  onClick={() => dispatch({ type: "toggleRelic", relic })}
+                >
+                  {equipped ? "Equipped: " : "Equip: "}{relic}
+                </button>
+              );
+            })}
+          </div>
+        ) : <p>Find relics in Legacy Chests to create a loadout.</p>}
       </div>
 
       <div className="panel">

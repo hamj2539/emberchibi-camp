@@ -269,6 +269,7 @@ const tests: { name: string; run: () => void }[] = [
           ...state.legacy,
           blueprints: ["Torch Blueprint"],
           relics: ["Coalglass Charm"],
+          equippedRelics: ["Coalglass Charm"],
           unlocks: ["Rook Camp Trait", "Warden Class"],
         },
       }, { type: "chooseStarter", classId: "scout" });
@@ -322,7 +323,7 @@ const tests: { name: string; run: () => void }[] = [
         legacy: { ...state.legacy, runsCompleted: 2, bestScore: 1500, bestChestGrade: "ancient" },
         run: {
           ...state.run,
-          endRun: { score: 1200, lines: [], chestGrade: "iron", reward: null, claimed: false },
+          endRun: { outcome: "victory", score: 1200, lines: [], chestGrade: "iron", reward: null, claimed: false },
         },
       }, { type: "claimChest" });
       assertEqual(next.legacy.runsCompleted, 3);
@@ -345,6 +346,120 @@ const tests: { name: string; run: () => void }[] = [
       const state = gateClearedRun("stable", 0, 0);
       const objective = getCurrentObjective(state);
       assertEqual(objective.title, "Open the Legacy Chest");
+    },
+  },
+  {
+    name: "camp upgrades spend resources once and improve idle recovery",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "herbalist" });
+      const funded = {
+        ...started,
+        run: {
+          ...started.run,
+          resources: { ...started.run.resources, wood: 20, herb: 10 },
+          survivors: started.run.survivors.map((survivor) => ({
+            ...survivor,
+            currentHp: 10,
+            injury: 20,
+            job: "rest" as const,
+          })),
+        },
+      };
+      const upgraded = gameReducer(funded, { type: "buyCampUpgrade", upgradeId: "infirmary" });
+      assertEqual(upgraded.run.resources.wood, 12);
+      const recovered = resolveIdleProgress(upgraded, 60);
+      assertEqual(recovered.run.survivors[0].currentHp, 18);
+      assertEqual(recovered.run.survivors[0].injury, 19);
+      assertEqual(gameReducer(upgraded, { type: "buyCampUpgrade", upgradeId: "infirmary" }), upgraded);
+    },
+  },
+  {
+    name: "Legacy Shards buy projects and relic loadout is limited to two slots",
+    run: () => {
+      const initial = createInitialState();
+      const state = {
+        ...initial,
+        legacy: {
+          ...initial.legacy,
+          shards: 30,
+          relics: ["Coalglass Charm", "Ashen Compass", "Stagbone Token"],
+        },
+      };
+      const project = gameReducer(state, { type: "buyLegacyProject", projectId: "fieldManual" });
+      assertEqual(project.legacy.shards, 22);
+      const first = gameReducer(project, { type: "toggleRelic", relic: "Coalglass Charm" });
+      const second = gameReducer(first, { type: "toggleRelic", relic: "Ashen Compass" });
+      const blocked = gameReducer(second, { type: "toggleRelic", relic: "Stagbone Token" });
+      assertEqual(blocked.legacy.equippedRelics.length, 2);
+    },
+  },
+  {
+    name: "class skills can be used once per survivor in a Guardian battle",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "hunter" });
+      const battle = createGuardianBattle(started, ["survivor-hunter"], getBeacon("ember"));
+      const fighting = { ...started, run: { ...started.run, bossBattle: battle } };
+      const skilled = resolveBossAction(fighting, "skill");
+      assertEqual(skilled.run.bossBattle?.usedSkills.length, 1);
+      assertEqual(skilled.run.bossBattle?.bossHp, 64);
+      assertEqual(resolveBossAction(skilled, "skill"), skilled);
+    },
+  },
+  {
+    name: "abandoning a run produces half score and a Broken Chest",
+    run: () => {
+      const state = completedRun("pristine", 0, 0);
+      const fullScore = calculateScore(state).score;
+      const collapsed = gameReducer(state, { type: "abandonRun" });
+      assertEqual(collapsed.run.endRun?.outcome, "collapse");
+      assertEqual(collapsed.run.endRun?.score, Math.floor(fullScore / 2));
+      assertEqual(collapsed.run.endRun?.chestGrade, "broken");
+      assertEqual(collapsed.run.screen, "end");
+    },
+  },
+  {
+    name: "event routes offer distinct survivors across the run",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "scout" });
+      const expedition = {
+        id: "event-test",
+        routeId: "saltmarshRun" as const,
+        survivorIds: ["survivor-scout"],
+        startedAt: 0,
+        endsAt: 1,
+      };
+      const originalRandom = Math.random;
+      Math.random = () => 0.999;
+      try {
+        const resolved = resolveExpedition({ ...started, run: { ...started.run, activeExpedition: expedition } }, 2);
+        assertEqual(resolved.run.recruitEvent?.id, "mira");
+        const recruited = gameReducer(
+          { ...resolved, run: { ...resolved.run, resources: { ...resolved.run.resources, food: 20 } } },
+          { type: "resolveRecruit", choice: "food" },
+        );
+        assertEqual(recruited.run.survivors.some((survivor) => survivor.id === "survivor-mira"), true);
+      } finally {
+        Math.random = originalRandom;
+      }
+    },
+  },
+  {
+    name: "full clean run opens a balanced Gate and records a victory result",
+    run: () => {
+      const ready = allBeaconsCompletedRun("pristine");
+      let state = openGate(ready, ["survivor-scout", "survivor-rook"]);
+      const originalRandom = Math.random;
+      Math.random = () => 0.999;
+      try {
+        for (let turn = 0; turn < 20 && state.run.gate.status === "active"; turn += 1) {
+          state = gameReducer(state, { type: "gateAction", action: turn < 2 ? "skill" : "attack" });
+        }
+        assertEqual(state.run.gate.status, "cleared");
+        assertEqual(state.run.endRun?.outcome, "victory");
+        assertEqual(state.run.endRun?.chestGrade, "ancient");
+      } finally {
+        Math.random = originalRandom;
+      }
     },
   },
 ];
@@ -414,6 +529,7 @@ function completedRun(coreQuality: "pristine" | "stable" | "cracked" | "faded", 
         turn: 5,
         status: "won",
         coreQuality,
+        usedSkills: [],
         log: [],
       },
       beaconRepair: {
@@ -456,6 +572,7 @@ function gateClearedRun(
         nightPressure: 5,
         turn: 8,
         partyIds: ["survivor-scout", "survivor-rook"],
+        usedSkills: [],
         log: [],
       },
     },
