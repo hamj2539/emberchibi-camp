@@ -4,11 +4,11 @@ Last updated: 2026-07-23
 
 ## Current Release
 
-**Alpha 3: Run Builds and Biome Variation**
+**Alpha 4: Guardian Combat Depth**
 
-Each run can now create a temporary build from Tool, Charm, and Provision
-equipment. Biome-aware modifiers change route duration, risk, camp pressure, or
-Guardian behavior and expose their counters in route forecasts.
+Guardians and the Night Herald now use readable phases, one-turn telegraphs,
+class/tool counters, and standardized statuses. Combat remains a compact
+turn-based decision loop rather than a tactical grid.
 
 | Area | Status | Current implementation |
 | --- | --- | --- |
@@ -20,9 +20,9 @@ Guardian behavior and expose their counters in route forecasts.
 | Run loadout | Alpha 3 | Tool, Charm, and Provision slots with source and trigger history |
 | Survivors | Alpha 1 | four starters plus branched/delayed Rook, Mira, and Bram recruitment |
 | Crafting | Complete | six recipes and sequential craft queue |
-| Guardians | Complete | five bosses, distinct tuning, Core quality |
+| Guardians | Alpha 4 | five two-phase bosses, unique intents, counters, statuses |
 | Beacon repair | Complete | assigned crew, costs, quality and tool modifiers |
-| Final encounter | Complete | Gate Stability and Night Herald |
+| Final encounter | Alpha 4 | Gate Stability and three-phase Night Herald |
 | Run ending | Alpha 2 | victory or pressure-driven collapse, partial score, graded chest |
 | Meta progression | Complete | shards, projects, blueprints, unlocks, relic loadout |
 | Assets and UI | Complete for prototype | route art, Guardian art, responsive layouts |
@@ -89,21 +89,35 @@ Guardian behavior and expose their counters in route forecasts.
 - Kept permanent Legacy relics separate and clear all run equipment at run end.
 - Expanded the automated suite from 42 to 50 game-logic tests.
 
+### Alpha 4 - Guardian Combat Depth
+
+- Added data-driven phase and intent definitions for all five Guardians.
+- Added three phases and three telegraphed intents for Night Herald.
+- Added one-action counter windows with explicit worked/missed feedback.
+- Gave Ember, Tidal, Gale, Root, and Lunar distinct damage/status patterns.
+- Standardized Burn, Poison, Guarded, Exposed, Bound, Inspired, Cursed, and Focused.
+- Added class identity actions for Scout, Hunter, Herbalist, and Tinker;
+  recruits inherit actions from their class.
+- Made class skills cleanse, disrupt, expose, guard, inspire, and counter intents.
+- Updated Core quality to include failed attempts, counters, turns, and downed count.
+- Added phase, intent, status, and counter UI plus safe battle-save migration.
+- Expanded the automated suite from 50 to 58 game-logic tests.
+
 ## Next Phase
 
-### P1 - Alpha 3 Playtest and Balance
+### P1 - Alpha 4 Playtest and Balance
 
-- Measure item acquisition frequency and slot replacement decisions.
-- Verify each starter can counter at least one meaningful modifier path.
-- Tune Ash Bell, Ember Pick, Moon Thread, and Old Compass tradeoffs.
-- Review modifier and item messages for excessive Camp Log noise.
-- Measure crisis trigger frequency and time-to-response by loadout.
+- Measure counter success rate and turns-to-kill for each Guardian.
+- Verify every party composition has a viable preparation counter.
+- Tune status duration, intent damage, and pressure growth.
+- Review Core quality recovery/penalty frequency.
+- Verify the two-survivor Gate remains possible but three survivors are safer.
 - Record average run duration and resource bottlenecks.
 - Measure route, Guardian, and Gate failure rates by starter class.
 - Tune camp upgrade and Legacy Project costs.
 - Review chest reward duplication and long-term shard pacing.
 
-### P2 - Alpha 4 Candidates
+### P2 - Alpha 5 Candidates
 
 - Add event chains that react to flags from earlier choices.
 - Add more biome-specific normal encounter variants.
@@ -127,4 +141,4 @@ The current prototype is complete when:
 - Automated tests and production build pass.
 - GitHub Pages serves the app, manifest, and service worker successfully.
 
-All prototype criteria remain met in Alpha 3.
+All prototype criteria remain met in Alpha 4.

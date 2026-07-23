@@ -30,6 +30,8 @@ export type RouteId =
 export type ItemId = "torch" | "ration" | "stoneSpear" | "herbSalve" | "warmCloak" | "repairKit";
 export type BossAction = "attack" | "guard" | "skill" | "useTorch" | "useSalve";
 export type GateAction = BossAction;
+export type CombatStatusId = "burn" | "poison" | "guarded" | "exposed" | "bound" | "inspired" | "cursed" | "focused";
+export type CombatStatuses = Partial<Record<CombatStatusId, number>>;
 export type CoreQuality = "pristine" | "stable" | "cracked" | "faded";
 export type ChestGrade = "broken" | "faded" | "iron" | "ancient";
 export type RewardType = "legacyShards" | "blueprint" | "relic" | "survivorUnlock" | "classUnlock";
@@ -152,6 +154,14 @@ export type BossBattle = {
   status: "active" | "won" | "lost";
   coreQuality: CoreQuality | null;
   usedSkills: string[];
+  phaseId: string;
+  pendingIntentId: string;
+  partyStatuses: CombatStatuses;
+  bossStatuses: CombatStatuses;
+  counterSuccesses: number;
+  counterFailures: number;
+  downedCount: number;
+  lastCounterFeedback: string;
   log: string[];
 };
 
@@ -204,6 +214,14 @@ export type GateProgress = {
   turn: number;
   partyIds: string[];
   usedSkills: string[];
+  phaseId: string;
+  pendingIntentId: string;
+  partyStatuses: CombatStatuses;
+  bossStatuses: CombatStatuses;
+  counterSuccesses: number;
+  counterFailures: number;
+  downedCount: number;
+  lastCounterFeedback: string;
   log: string[];
 };
 
@@ -375,6 +393,14 @@ export function createInitialState(now = Date.now()): GameState {
         turn: 1,
         partyIds: [],
         usedSkills: [],
+        phaseId: "veil",
+        pendingIntentId: "nightMark",
+        partyStatuses: {},
+        bossStatuses: {},
+        counterSuccesses: 0,
+        counterFailures: 0,
+        downedCount: 0,
+        lastCounterFeedback: "The Herald waits behind the sealed Gate.",
         log: ["The Cinder Gate is sealed behind five cold sockets."],
       },
       endRun: null,

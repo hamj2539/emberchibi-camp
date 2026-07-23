@@ -1,4 +1,4 @@
-# Emberchibi Camp Alpha 3 QA
+# Emberchibi Camp Alpha 4 QA
 
 Last updated: 2026-07-23
 
@@ -6,7 +6,7 @@ Build target: GitHub Pages static build
 
 ## Automated Checks
 
-- `npm run test`: 50 passing game-logic tests.
+- `npm run test`: 58 passing game-logic tests.
 - `npm run build`: production build passes.
 - Full clean-run simulation reaches the Cinder Gate, defeats Night Herald, and awards an Ancient Chest.
 - Route events, choice requirements/effects, normal encounters, all four modifiers,
@@ -15,6 +15,8 @@ Build target: GitHub Pages static build
   and pre-Alpha 2 migration have focused tests.
 - Run item definitions, acquisition, slot replacement, biome counters, Guardian
   rewards, effect triggers, end-run reset, and migration have focused tests.
+- Guardian/Herald phases, intent counters, missed consequences, status damage,
+  class cleanse interaction, Core quality, and battle migration have focused tests.
 - GitHub Pages deployment completed successfully.
 - Production page, manifest, and service worker return HTTP 200.
 
@@ -29,6 +31,8 @@ Vite reports expected build-time warnings for absolute asset paths under
 - Crisis panel shows severity, deadline, trigger reason, consequence, and 2-3 responses.
 - Run Loadout shows three slots plus each item's source, effect, and trigger.
 - Route cards show whether the active biome modifier is active or countered.
+- Combat screens show phase, incoming intent, counter hint, missed consequence,
+  active statuses, class actions, and counter feedback.
 - Meta screen shows shard projects, relic slots, and permanent collections.
 - Explore shows the run modifier and pending route decisions lock new expeditions.
 - Route Event and Normal Encounter choices resolve back into the existing route flow.
@@ -71,6 +75,25 @@ Vite reports expected build-time warnings for absolute asset paths under
 15. Verify Restless Roots injury risk is countered by Herbalist.
 16. End the run and verify all temporary items clear while legacy relics remain.
 17. Load a pre-Alpha 3 save and verify empty valid slots are migrated safely.
+
+## Alpha 4 Combat Checklist
+
+1. Enter each Guardian fight and verify phase name plus incoming intent appears.
+2. Let every Guardian intent resolve once and verify its distinct consequence.
+3. Counter Ember Charge with Guard or Tinker and Burn Wave with Torch/Herbalist.
+4. Counter Tidal poison/drain with cleanse, Salve, Guard, or Tinker.
+5. Counter Gale ambush/rush with Scout, Guard, attack, or Hunter.
+6. Counter Root Poison Bloom and Grasping Root with cleanse, Salve, attack, or Tinker.
+7. Counter Lunar curse/burst with Torch, Scout, Guard, or Tinker.
+8. Verify Counter worked/missed feedback explains the action and requirement.
+9. Verify all eight statuses appear with a tooltip and change combat values.
+10. Use Shadowstep, Marked Shot, Cleansing Bloom, and Ember Brace.
+11. Verify phase two starts at the configured Guardian HP threshold.
+12. Enter Night Herald and verify Veil, Unbound, and Last Dark phases.
+13. Resolve or counter Night Mark, Shadow Cast, and Beacon Rend.
+14. Win with different attempt/counter/turn/downed combinations and compare Core quality.
+15. Reload during a fight and verify phase, intent, statuses, and counters persist.
+16. Load a pre-Alpha 4 battle save and verify combat state migrates safely.
 
 ## Alpha 1 Exploration Regression Checklist
 
@@ -116,6 +139,8 @@ Vite reports expected build-time warnings for absolute asset paths under
 - Crisis tuning is intentionally simple; only one crisis is active at a time.
 - Temporary equipment applies to the whole run, not individual survivors.
 - Item drops are deterministic from matching content; weighted loot tables are deferred.
+- Boss target selection is deterministic and positioning/grid movement is intentionally absent.
+- Class identity actions remain once per survivor per encounter.
 - Sound is lightweight synthesized UI feedback; there is no music system.
 - PWA caching provides an offline shell, not cloud save or account sync.
 - Browser checks are manual; there is no automated end-to-end browser suite yet.

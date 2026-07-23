@@ -443,6 +443,91 @@ select {
     linear-gradient(135deg, #2a1712, #593120);
 }
 
+.phase-intent {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.35fr) minmax(0, 1fr);
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.phase-intent > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.phase-intent span,
+.phase-intent small {
+  color: #cdbba4;
+  font-size: 0.78rem;
+}
+
+.intent-card {
+  border-color: rgba(255, 151, 122, 0.55) !important;
+}
+
+.intent-card p {
+  color: #f4dec4;
+}
+
+.combat-statuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.combat-status {
+  padding: 0.28rem 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  color: #f4dec4;
+  font-size: 0.76rem;
+  text-transform: capitalize;
+}
+
+.combat-status b {
+  display: inline-grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  margin-right: 3px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.13);
+  font-size: 0.68rem;
+}
+
+.status-burn,
+.status-poison,
+.status-cursed,
+.status-bound {
+  border-color: rgba(215, 93, 69, 0.52);
+}
+
+.status-guarded,
+.status-inspired,
+.status-focused {
+  border-color: rgba(126, 182, 140, 0.58);
+}
+
+.counter-feedback {
+  margin-top: 10px !important;
+  padding: 9px;
+  border-left: 3px solid #d75d45;
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.counter-feedback.counter-success {
+  border-left-color: #7eb68c;
+}
+
 .boss-art {
   display: grid;
   width: min(100%, 280px);
@@ -1164,6 +1249,10 @@ select {
   .camp-hero {
     grid-column: auto;
     min-height: 220px;
+  }
+
+  .phase-intent {
+    grid-template-columns: 1fr;
   }
 
   .pressure-grid,

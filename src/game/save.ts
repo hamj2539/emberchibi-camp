@@ -4,6 +4,7 @@ import { runModifiers } from "../data/routeContent.js";
 import { getRouteDecision } from "../data/routeContent.js";
 import { crises } from "../data/crises.js";
 import { runItems } from "../data/runItems.js";
+import { guardianCombat, heraldCombat } from "../data/bossCombat.js";
 
 const SAVE_KEY = "emberchibiCamp.v1";
 const BACKUP_KEY = "emberchibiCamp.v1.backup";
@@ -76,7 +77,7 @@ export function migrateV1(state: GameState): GameState {
       craftQueue: state.run.craftQueue ?? [],
       activeRouteDecision: migrateRouteDecision(state, defaults),
       recruitEvent: migrateRecruitEvent(state),
-      bossBattle: bossBattle ? { ...bossBattle, usedSkills: bossBattle.usedSkills ?? [] } : null,
+      bossBattle: bossBattle ? migrateBossBattle(bossBattle) : null,
       beaconRepair,
       campUpgrades: state.run.campUpgrades ?? [],
       runModifier: runModifiers.some((modifier) => modifier.id === state.run.runModifier)
@@ -101,11 +102,50 @@ export function migrateV1(state: GameState): GameState {
       crisisScore: state.run.crisisScore ?? 0,
       crisisRouteRisk: state.run.crisisRouteRisk ?? 0,
       repairSpeedModifier: state.run.repairSpeedModifier ?? 1,
-      gate: state.run.gate ? { ...state.run.gate, usedSkills: state.run.gate.usedSkills ?? [] } : defaults.run.gate,
+      gate: state.run.gate ? migrateGate(state.run.gate) : defaults.run.gate,
       endRun: state.run.endRun
         ? { ...state.run.endRun, outcome: state.run.endRun.outcome ?? "victory" }
         : null,
     },
+  };
+}
+
+function migrateBossBattle(battle: NonNullable<GameState["run"]["bossBattle"]>): NonNullable<GameState["run"]["bossBattle"]> {
+  const definition = guardianCombat[battle.beaconId];
+  const phase = definition.phases.find((entry) => entry.id === battle.phaseId) ?? definition.phases[0];
+  const pendingIntentId = definition.intents.some((intent) => intent.id === battle.pendingIntentId)
+    ? battle.pendingIntentId
+    : phase.intentIds[0];
+  return {
+    ...battle,
+    usedSkills: battle.usedSkills ?? [],
+    phaseId: phase.id,
+    pendingIntentId,
+    partyStatuses: battle.partyStatuses ?? {},
+    bossStatuses: battle.bossStatuses ?? {},
+    counterSuccesses: battle.counterSuccesses ?? 0,
+    counterFailures: battle.counterFailures ?? 0,
+    downedCount: battle.downedCount ?? 0,
+    lastCounterFeedback: battle.lastCounterFeedback ?? "The Guardian reveals its next intent.",
+  };
+}
+
+function migrateGate(gate: GameState["run"]["gate"]): GameState["run"]["gate"] {
+  const phase = heraldCombat.phases.find((entry) => entry.id === gate.phaseId) ?? heraldCombat.phases[0];
+  const pendingIntentId = heraldCombat.intents.some((intent) => intent.id === gate.pendingIntentId)
+    ? gate.pendingIntentId
+    : phase.intentIds[0];
+  return {
+    ...gate,
+    usedSkills: gate.usedSkills ?? [],
+    phaseId: phase.id,
+    pendingIntentId,
+    partyStatuses: gate.partyStatuses ?? {},
+    bossStatuses: gate.bossStatuses ?? {},
+    counterSuccesses: gate.counterSuccesses ?? 0,
+    counterFailures: gate.counterFailures ?? 0,
+    downedCount: gate.downedCount ?? 0,
+    lastCounterFeedback: gate.lastCounterFeedback ?? "The Herald reveals its next intent.",
   };
 }
 

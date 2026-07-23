@@ -1,7 +1,9 @@
 import { getBeacon } from "../data/beacons";
+import { getIntent, guardianCombat } from "../data/bossCombat";
+import { combatActions } from "../data/classes";
 import type { Dispatch } from "react";
 import { labelCoreQuality } from "../game/combat";
-import type { BossAction, GameAction, GameState } from "../game/state";
+import type { BossAction, CombatStatusId, CombatStatuses, GameAction, GameState } from "../game/state";
 
 type Props = {
   state: GameState;
@@ -33,6 +35,9 @@ export function BossBattleScreen({ state, dispatch }: Props) {
   const party = state.run.survivors.filter((survivor) => battle.partyIds.includes(survivor.id));
   const bossHpPercent = Math.max(0, Math.round((battle.bossHp / battle.bossMaxHp) * 100));
   const beacon = getBeacon(battle.beaconId);
+  const definition = guardianCombat[battle.beaconId];
+  const phase = definition.phases.find((entry) => entry.id === battle.phaseId) ?? definition.phases[0];
+  const intent = getIntent(definition, battle.pendingIntentId);
 
   return (
     <section className="screen boss-layout">
@@ -43,6 +48,24 @@ export function BossBattleScreen({ state, dispatch }: Props) {
           {battle.bossName.split(" ").map((word) => word[0]).join("")}
         </div>
         <p>{beacon.name}</p>
+        <div className="phase-intent">
+          <div>
+            <span>Phase</span>
+            <strong>{phase.name}</strong>
+          </div>
+          <div className="intent-card">
+            <span>Incoming Intent</span>
+            <strong>{intent.name}</strong>
+            <p>{intent.telegraph}</p>
+            <small>Counter: {intent.counter.label}</small>
+            <small>If missed: {intent.consequence}</small>
+          </div>
+        </div>
+        <StatusRow label="Party" statuses={battle.partyStatuses} />
+        <StatusRow label="Guardian" statuses={battle.bossStatuses} />
+        <p className={`counter-feedback ${battle.lastCounterFeedback.startsWith("Counter worked") ? "counter-success" : ""}`}>
+          {battle.lastCounterFeedback}
+        </p>
         <div className="encounter-hints">
           <span><strong>Mechanic</strong>{beacon.mechanic}</span>
           <span><strong>Counter</strong>{beacon.counter}</span>
@@ -66,6 +89,7 @@ export function BossBattleScreen({ state, dispatch }: Props) {
                 <span>
                   HP {Math.floor(survivor.currentHp)}/{survivor.stats.hp} · Injury {Math.floor(survivor.injury)}
                 </span>
+                <small>{combatActions[survivor.classId].basic.name} · {combatActions[survivor.classId].identity.name}</small>
               </div>
             </article>
           ))}
@@ -128,5 +152,38 @@ function isDisabled(action: BossAction, state: GameState): boolean {
 function actionDetail(action: BossAction, detail: string, state: GameState): string {
   if (action === "useTorch") return `${detail} (${state.run.items.torch} ready)`;
   if (action === "useSalve") return `${detail} (${state.run.items.herbSalve} ready)`;
+  if (action === "skill") {
+    const battle = state.run.bossBattle;
+    const user = battle && state.run.survivors.find(
+      (survivor) => battle.partyIds.includes(survivor.id) && survivor.currentHp > 0 && !battle.usedSkills.includes(survivor.id),
+    );
+    return user ? `${user.name}: ${combatActions[user.classId].identity.name} — ${combatActions[user.classId].identity.detail}` : detail;
+  }
   return detail;
+}
+
+const statusMeta: Record<CombatStatusId, { icon: string; detail: string }> = {
+  burn: { icon: "B", detail: "Deals damage after each unresolved intent." },
+  poison: { icon: "P", detail: "Deals persistent damage after each turn." },
+  guarded: { icon: "G", detail: "Reduces incoming intent damage." },
+  exposed: { icon: "X", detail: "Takes increased attack damage." },
+  bound: { icon: "R", detail: "Reduces outgoing attack damage." },
+  inspired: { icon: "I", detail: "Increases party attack damage." },
+  cursed: { icon: "C", detail: "Raises incoming damage and status damage." },
+  focused: { icon: "F", detail: "Increases party attack damage." },
+};
+
+function StatusRow({ label, statuses }: { label: string; statuses: CombatStatuses }) {
+  const active = Object.entries(statuses).filter(([, stacks]) => (stacks ?? 0) > 0) as [CombatStatusId, number][];
+  if (!active.length) return null;
+  return (
+    <div className="combat-statuses">
+      <span>{label}</span>
+      {active.map(([id, stacks]) => (
+        <span className={`combat-status status-${id}`} key={id} title={statusMeta[id].detail}>
+          <b aria-hidden="true">{statusMeta[id].icon}</b> {id} {stacks}
+        </span>
+      ))}
+    </div>
+  );
 }

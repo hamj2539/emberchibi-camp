@@ -1,6 +1,6 @@
 # Emberchibi Camp
 
-Alpha 3 survival roguelite RPG with temporary run builds, camp crises,
+Alpha 4 survival roguelite RPG with phased boss combat, temporary run builds, camp crises,
 exploration decisions, idle management, and turn-based key encounters.
 
 **Live build:** https://hamj2539.github.io/emberchibi-camp/
@@ -17,7 +17,9 @@ exploration decisions, idle management, and turn-based key encounters.
 - Four run modifiers that alter route risk, event odds, encounter odds, or Guardian pressure.
 - Branched and delayed recruitment paths for Rook, Mira, and Bram.
 - Five Beacon route chains with distinct Guardians and Core quality.
-- Cinder Gate and Night Herald final encounter.
+- Five two-phase Guardians with telegraphed intents, counters, and standardized statuses.
+- Three-phase Night Herald final encounter with readable counter windows.
+- Class identity actions for every starter and recruit combat class.
 - Run victory, Run Collapse, score breakdown, and graded Legacy Chests.
 - Permanent shard projects, unlock collections, and two relic loadout slots.
 - Temporary run items track their source, trigger effects in the Camp Log, and reset at run end.
@@ -44,11 +46,12 @@ The app is configured for GitHub Pages under `/emberchibi-camp/`.
 npm run test
 ```
 
-The suite currently covers 50 game-logic cases, including save migration,
+The suite currently covers 58 game-logic cases, including save migration,
 offline progress, expeditions, combat, upgrades, meta progression, collapse,
 route decisions, encounters, recruit branches, run modifiers, crisis triggers,
 deadlines, choices, ignored consequences, run item acquisition, loadout limits,
-biome counters, run-end reset, and a clean full-run Gate simulation.
+biome counters, run-end reset, boss phases, telegraphs, counters, statuses,
+Core quality performance, and a clean full-run Gate simulation.
 
 ## Save Data
 

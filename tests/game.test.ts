@@ -1,11 +1,13 @@
 import { getCurrentObjective } from "../src/game/objectives.js";
 import { getBeacon } from "../src/data/beacons.js";
+import { guardianCombat, heraldCombat, phaseForHp } from "../src/data/bossCombat.js";
+import { combatActions } from "../src/data/classes.js";
 import { getRoute } from "../src/data/routes.js";
 import { getRecruitDefinition } from "../src/data/events.js";
 import { normalEncounters, routeEvents, runModifiers } from "../src/data/routeContent.js";
 import { crises, getCrisis } from "../src/data/crises.js";
 import { runItems } from "../src/data/runItems.js";
-import { createGuardianBattle, resolveBossAction } from "../src/game/combat.js";
+import { calculateCoreQuality, createGuardianBattle, resolveBossAction } from "../src/game/combat.js";
 import { advanceCampSystems, canResolveCrisisChoice, resolveCrisisChoice } from "../src/game/crises.js";
 import { calculateIdleElapsed, gameReducer, MAX_OFFLINE_SECONDS } from "../src/game/reducer.js";
 import { calculateGateStability, openGate } from "../src/game/gate.js";
@@ -248,7 +250,7 @@ const tests: { name: string; run: () => void }[] = [
       try {
         const guarded = resolveBossAction(fighting, "guard");
         const attacked = resolveBossAction(guarded, "attack");
-        assertEqual(attacked.run.bossBattle?.bossHp, 81);
+        assertEqual(attacked.run.bossBattle?.bossHp, 76);
       } finally {
         Math.random = originalRandom;
       }
@@ -458,13 +460,31 @@ const tests: { name: string; run: () => void }[] = [
   {
     name: "full clean run opens a balanced Gate and records a victory result",
     run: () => {
-      const ready = allBeaconsCompletedRun("pristine");
-      let state = openGate(ready, ["survivor-scout", "survivor-rook"]);
+      const base = allBeaconsCompletedRun("pristine");
+      const ready = {
+        ...base,
+        run: {
+          ...base.run,
+          items: { ...base.run.items, torch: 20, herbSalve: 20 },
+          survivors: [...base.run.survivors, { ...getRecruitDefinition("mira").survivor }],
+        },
+      };
+      let state = openGate(ready, ["survivor-scout", "survivor-rook", "survivor-mira"]);
       const originalRandom = Math.random;
       Math.random = () => 0.999;
       try {
-        for (let turn = 0; turn < 20 && state.run.gate.status === "active"; turn += 1) {
-          state = gameReducer(state, { type: "gateAction", action: turn < 2 ? "skill" : "attack" });
+        for (let turn = 0; turn < 30 && state.run.gate.status === "active"; turn += 1) {
+          const intent = state.run.gate.pendingIntentId;
+          const hunterSkillReady = !state.run.gate.usedSkills.includes("survivor-rook");
+          const action =
+            intent === "nightMark"
+              ? "guard"
+              : intent === "shadowCast"
+                ? "useTorch"
+                : hunterSkillReady
+                  ? "skill"
+                  : "attack";
+          state = gameReducer(state, { type: "gateAction", action });
         }
         assertEqual(state.run.gate.status, "cleared");
         assertEqual(state.run.endRun?.outcome, "victory");
@@ -968,6 +988,102 @@ const tests: { name: string; run: () => void }[] = [
       assertEqual(migrated.run.runLoadout.provision, null);
     },
   },
+  {
+    name: "all Guardians define two phases and telegraphed counter windows",
+    run: () => {
+      for (const definition of Object.values(guardianCombat)) {
+        assertEqual(definition.phases.length, 2);
+        assertEqual(definition.intents.length >= 2, true);
+        assertEqual(definition.intents.every((intent) => intent.telegraph.length > 0), true);
+        assertEqual(definition.intents.every((intent) => intent.counter.label.length > 0), true);
+      }
+    },
+  },
+  {
+    name: "Night Herald defines and enters three HP-driven phases",
+    run: () => {
+      assertEqual(heraldCombat.phases.length, 3);
+      assertEqual(phaseForHp(heraldCombat, 150, 160).id, "veil");
+      assertEqual(phaseForHp(heraldCombat, 90, 160).id, "unbound");
+      assertEqual(phaseForHp(heraldCombat, 40, 160).id, "lastDark");
+    },
+  },
+  {
+    name: "Guardian telegraph accepts the intended action counter",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "hunter" });
+      const battle = createGuardianBattle(started, ["survivor-hunter"], getBeacon("ember"));
+      assertEqual(battle.pendingIntentId, "emberCharge");
+      const countered = resolveBossAction({ ...started, run: { ...started.run, bossBattle: battle } }, "guard");
+      assertEqual(countered.run.bossBattle?.counterSuccesses, 1);
+      assertEqual(countered.run.bossBattle?.lastCounterFeedback.startsWith("Counter worked"), true);
+    },
+  },
+  {
+    name: "missed Root counter applies Poison with mechanical damage",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "hunter" });
+      const base = createGuardianBattle(started, ["survivor-hunter"], getBeacon("root"));
+      const battle = { ...base, pendingIntentId: "poisonBloom", phaseId: "oldBark" };
+      const before = started.run.survivors[0].currentHp;
+      const missed = resolveBossAction({ ...started, run: { ...started.run, bossBattle: battle } }, "attack");
+      assertEqual((missed.run.bossBattle?.partyStatuses.poison ?? 0) > 0, true);
+      assertEqual(missed.run.survivors[0].currentHp < before, true);
+      assertEqual(missed.run.bossBattle?.lastCounterFeedback.startsWith("Counter missed"), true);
+    },
+  },
+  {
+    name: "Herbalist identity action cleanses statuses and counters Poison Bloom",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "herbalist" });
+      const base = createGuardianBattle(started, ["survivor-herbalist"], getBeacon("root"));
+      const battle = {
+        ...base,
+        pendingIntentId: "poisonBloom",
+        phaseId: "oldBark",
+        partyStatuses: { poison: 3 as number, burn: 2 as number },
+      };
+      const cleansed = resolveBossAction({ ...started, run: { ...started.run, bossBattle: battle } }, "skill");
+      assertEqual(cleansed.run.bossBattle?.counterSuccesses, 1);
+      assertEqual(cleansed.run.bossBattle?.partyStatuses.poison, undefined);
+      assertEqual(cleansed.run.bossBattle?.partyStatuses.burn, undefined);
+    },
+  },
+  {
+    name: "each survivor class exposes a basic and identity combat action",
+    run: () => {
+      assertEqual(Object.keys(combatActions).length, 4);
+      assertEqual(Object.values(combatActions).every((actions) => actions.basic.name.length > 0), true);
+      assertEqual(Object.values(combatActions).every((actions) => actions.identity.name.length > 0), true);
+    },
+  },
+  {
+    name: "Core quality keeps attempts primary but rewards clean counters and efficiency",
+    run: () => {
+      assertEqual(calculateCoreQuality(0, 0, 12, 1), "stable");
+      assertEqual(calculateCoreQuality(0, 2, 6, 0), "pristine");
+      assertEqual(calculateCoreQuality(1, 0, 12, 1), "cracked");
+      assertEqual(calculateCoreQuality(1, 2, 6, 0), "pristine");
+      assertEqual(calculateCoreQuality(2, 2, 6, 0), "stable");
+      assertEqual(calculateCoreQuality(3, 2, 6, 0), "cracked");
+    },
+  },
+  {
+    name: "save migration adds Alpha 4 battle intent and status state",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "hunter" });
+      const battle = createGuardianBattle(started, ["survivor-hunter"], getBeacon("ember"));
+      const old = { ...started, run: { ...started.run, bossBattle: { ...battle } } };
+      delete (old.run.bossBattle as Partial<NonNullable<GameState["run"]["bossBattle"]>>).phaseId;
+      delete (old.run.bossBattle as Partial<NonNullable<GameState["run"]["bossBattle"]>>).pendingIntentId;
+      delete (old.run.bossBattle as Partial<NonNullable<GameState["run"]["bossBattle"]>>).partyStatuses;
+      delete (old.run.bossBattle as Partial<NonNullable<GameState["run"]["bossBattle"]>>).counterSuccesses;
+      const migrated = migrateV1(old);
+      assertEqual(migrated.run.bossBattle?.phaseId, "kindling");
+      assertEqual(migrated.run.bossBattle?.pendingIntentId, "emberCharge");
+      assertEqual(migrated.run.bossBattle?.counterSuccesses, 0);
+    },
+  },
 ];
 
 for (const test of tests) {
@@ -1036,6 +1152,14 @@ function completedRun(coreQuality: "pristine" | "stable" | "cracked" | "faded", 
         status: "won",
         coreQuality,
         usedSkills: [],
+        phaseId: "wildfire",
+        pendingIntentId: "burnWave",
+        partyStatuses: {},
+        bossStatuses: {},
+        counterSuccesses: 2,
+        counterFailures: 0,
+        downedCount: 0,
+        lastCounterFeedback: "Counter worked.",
         log: [],
       },
       beaconRepair: {
@@ -1079,6 +1203,14 @@ function gateClearedRun(
         turn: 8,
         partyIds: ["survivor-scout", "survivor-rook"],
         usedSkills: [],
+        phaseId: "lastDark",
+        pendingIntentId: "beaconRend",
+        partyStatuses: {},
+        bossStatuses: {},
+        counterSuccesses: 3,
+        counterFailures: 0,
+        downedCount: 0,
+        lastCounterFeedback: "Counter worked.",
         log: [],
       },
     },

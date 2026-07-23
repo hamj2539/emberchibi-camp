@@ -8,6 +8,30 @@ export type StarterClass = {
   stats: Stats;
 };
 
+export type CombatActionDefinition = {
+  basic: { name: string; detail: string };
+  identity: { name: string; detail: string };
+};
+
+export const combatActions: Record<StarterClassId, CombatActionDefinition> = {
+  scout: {
+    basic: { name: "Quick Strike", detail: "Reliable party attack." },
+    identity: { name: "Shadowstep", detail: "Disrupt casts; apply Focused and Exposed." },
+  },
+  hunter: {
+    basic: { name: "Driving Shot", detail: "Reliable party attack." },
+    identity: { name: "Marked Shot", detail: "Heavy burst and Inspired; interrupts rushes." },
+  },
+  herbalist: {
+    basic: { name: "Thorn Cast", detail: "Reliable party attack." },
+    identity: { name: "Cleansing Bloom", detail: "Heal and clear Burn, Poison, and Curse." },
+  },
+  tinker: {
+    basic: { name: "Tool Strike", detail: "Reliable party attack." },
+    identity: { name: "Ember Brace", detail: "Guard the party and expose armor." },
+  },
+};
+
 export const starterClasses: StarterClass[] = [
   {
     id: "scout",
