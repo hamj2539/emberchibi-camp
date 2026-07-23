@@ -5,6 +5,7 @@ import { bondLevel } from "../game/journal";
 import type { CollectionCategory, GameAction, GameState } from "../game/state";
 import { aggregateRunMetrics, getLongTermGoals } from "../game/alpha9";
 import { runVows } from "../data/alpha9Progression";
+import { DetailsDisclosure, VisualBadge } from "./VisualUI";
 
 type Props = {
   state: GameState;
@@ -33,8 +34,7 @@ export function JournalScreen({ state, dispatch }: Props) {
       <div className="panel journal-hero">
         <p className="eyebrow">Solo Discovery Record</p>
         <h2>Collection Journal</h2>
-        <p>Unknown records reveal their names and field notes when discovered during play.</p>
-        <strong>{discoveredTotal}/{collectionTotal} collection entries</strong>
+        <div className="journal-progress"><VisualBadge label="Found" value={`${discoveredTotal}/${collectionTotal}`} tone="good" /><div className="meter" aria-label={`${discoveredTotal} of ${collectionTotal} collection entries`}><span style={{ width: `${Math.round((discoveredTotal / collectionTotal) * 100)}%` }} /></div></div>
         {state.legacy.titles.length > 0 && <p className="journal-titles">Titles: {state.legacy.titles.join(" · ")}</p>}
       </div>
 
@@ -48,7 +48,7 @@ export function JournalScreen({ state, dispatch }: Props) {
               <article className={`long-goal ${goal.progress >= goal.target ? "complete" : ""}`} key={goal.id}>
                 <div><strong>{goal.name}</strong><span>{goal.progress}/{goal.target}</span></div>
                 <div className="meter" aria-label={`${goal.name}: ${percent}% complete`}><span style={{ width: `${percent}%` }} /></div>
-                <p>{goal.detail}</p>
+                <DetailsDisclosure summary="Goal details"><p>{goal.detail}</p></DetailsDisclosure>
               </article>
             );
           })}
@@ -63,10 +63,11 @@ export function JournalScreen({ state, dispatch }: Props) {
               {journalCollections[category].map((entry) => {
                 const discovered = state.legacy.collection[category].includes(entry.id);
                 return (
-                  <article className={`journal-entry ${discovered ? "discovered" : "unknown"}`} key={entry.id}>
-                    <span className="collection-stamp" aria-hidden="true">{discovered ? "Found" : "Hidden"}</span>
+                  <article className={`journal-entry collection-card ${discovered ? "discovered" : "unknown"}`} key={entry.id}>
+                    <span className="collection-stamp" aria-hidden="true">{discovered ? "Found" : "???"}</span>
+                    <span className="collection-glyph" aria-hidden="true">{discovered ? entry.name.slice(0, 1) : "?"}</span>
                     <strong>{discovered ? entry.name : "???"}</strong>
-                    <p>{discovered ? entry.flavor : "Undiscovered"}</p>
+                    {discovered ? <DetailsDisclosure summary="Field note"><p>{entry.flavor}</p></DetailsDisclosure> : <small>Undiscovered</small>}
                   </article>
                 );
               })}
@@ -82,10 +83,11 @@ export function JournalScreen({ state, dispatch }: Props) {
           {eventChainDefinitions.map((chain) => {
             const progress = state.run.eventChains[chain.id];
             return (
-              <article className="journal-entry" key={chain.id}>
+              <article className="journal-entry collection-card" key={chain.id}>
+                <span className="collection-glyph" aria-hidden="true">{Math.min(progress.step, chain.steps)}</span>
                 <strong>{chain.name}</strong>
-                <span>Step {Math.min(progress.step, chain.steps)}/{chain.steps}</span>
-                <p>{progress.outcome ? `Outcome: ${progress.outcome}` : progress.step > 0 ? "The next clue can appear on a later route." : "No clue found this run."}</p>
+                <VisualBadge label="Step" value={`${Math.min(progress.step, chain.steps)}/${chain.steps}`} tone={progress.outcome ? "good" : "info"} />
+                <DetailsDisclosure summary="Chain details"><p>{progress.outcome ? `Outcome: ${progress.outcome}` : progress.step > 0 ? "The next clue can appear on a later route." : "No clue found this run."}</p></DetailsDisclosure>
               </article>
             );
           })}
@@ -143,10 +145,11 @@ export function JournalScreen({ state, dispatch }: Props) {
             const points = state.legacy.bonds[entry.id] ?? 0;
             const level = bondLevel(points);
             return (
-              <article className={`journal-entry ${discovered ? "" : "unknown"}`} key={entry.id}>
+              <article className={`journal-entry collection-card ${discovered ? "" : "unknown"}`} key={entry.id}>
+                <span className="collection-glyph" aria-hidden="true">{discovered ? level : "?"}</span>
                 <strong>{discovered ? entry.name : "???"}</strong>
-                <span>Bond {level}/3 · {points}/9</span>
-                <p>{discovered ? bondNotes[level] : "Recruit this survivor to begin their bond."}</p>
+                <VisualBadge label="Bond" value={`${level}/3`} tone={level === 3 ? "good" : "info"} />
+                <DetailsDisclosure summary="Bond note"><p>{discovered ? bondNotes[level] : "Recruit this survivor to begin their bond."}</p></DetailsDisclosure>
               </article>
             );
           })}
@@ -160,9 +163,10 @@ export function JournalScreen({ state, dispatch }: Props) {
           {secretDefinitions.map((secret) => {
             const discovered = state.legacy.discoveredSecrets.includes(secret.id);
             return (
-              <article className={`journal-entry ${discovered ? "" : "unknown"}`} key={secret.id}>
+              <article className={`journal-entry collection-card ${discovered ? "" : "unknown"}`} key={secret.id}>
+                <span className="collection-glyph" aria-hidden="true">{discovered ? "!" : "?"}</span>
                 <strong>{discovered ? secret.name : "???"}</strong>
-                <p>{discovered ? secret.reward : secret.hint}</p>
+                <DetailsDisclosure summary={discovered ? "Reward" : "Hint"}><p>{discovered ? secret.reward : secret.hint}</p></DetailsDisclosure>
               </article>
             );
           })}

@@ -6,6 +6,7 @@ import { labelCoreQuality } from "../game/combat";
 import type { BossAction, CombatStatusId, CombatStatuses, GameAction, GameState } from "../game/state";
 import { GameIcon, type GameIconName } from "./GameIcon";
 import { combatCue } from "../game/presentation";
+import { CompactTimeline, DetailsDisclosure, VisualBadge } from "./VisualUI";
 
 type Props = {
   state: GameState;
@@ -51,17 +52,15 @@ export function BossBattleScreen({ state, dispatch }: Props) {
           {battle.bossName.split(" ").map((word) => word[0]).join("")}
         </div>
         <p>{beacon.name}</p>
-        <div className="phase-intent">
+        <div className="phase-intent visual-intent">
           <div>
             <span>Phase</span>
             <strong>{phase.name}</strong>
           </div>
           <div className="intent-card">
-            <span>Incoming Intent</span>
-            <strong>{intent.name}</strong>
-            <p>{intent.telegraph}</p>
-            <small>Counter: {intent.counter.label}</small>
-            <small>If missed: {intent.consequence}</small>
+            <span className="intent-emblem" aria-label="Dangerous intent">!</span><span>Incoming Intent</span><strong>{intent.name}</strong>
+            <div className="intent-badges"><VisualBadge label="Turn" value="1" tone="risk" /><VisualBadge label="Counter" value={intent.counter.label} tone="good" /></div>
+            <DetailsDisclosure summary="Intent details"><p>{intent.telegraph}</p><small>If missed: {intent.consequence}</small></DetailsDisclosure>
           </div>
         </div>
         <StatusRow label="Party" statuses={battle.partyStatuses} />
@@ -69,17 +68,11 @@ export function BossBattleScreen({ state, dispatch }: Props) {
         <p className={`counter-feedback ${battle.lastCounterFeedback.startsWith("Counter worked") ? "counter-success" : ""}`} aria-live="polite">
           {battle.lastCounterFeedback}
         </p>
-        <div className="encounter-hints">
-          <span><strong>Mechanic</strong>{beacon.mechanic}</span>
-          <span><strong>Counter</strong>{beacon.counter}</span>
-        </div>
+        <div className="encounter-hints"><span><strong>Mechanic</strong>{beacon.mechanic}</span><span><strong>Counter</strong>{beacon.counter}</span></div>
         <div className="meter">
           <span aria-label={`${battle.bossName} health ${bossHpPercent}%`} style={{ width: `${bossHpPercent}%` }} />
         </div>
-        <p>
-          HP {Math.ceil(battle.bossHp)}/{battle.bossMaxHp} · Burn {battle.burnPressure} · Guard {battle.guardStacks} ·
-          Turn {battle.turn} · Attempt {(state.run.beacons[battle.beaconId].failedAttempts ?? 0) + 1}
-        </p>
+        <div className="combat-readout"><VisualBadge label="HP" value={`${Math.ceil(battle.bossHp)}/${battle.bossMaxHp}`} /><VisualBadge label="Burn" value={battle.burnPressure} tone={battle.burnPressure > 2 ? "risk" : "neutral"} /><VisualBadge label="Guard" value={battle.guardStacks} tone="good" /><VisualBadge label="Try" value={(state.run.beacons[battle.beaconId].failedAttempts ?? 0) + 1} tone="info" /></div>
       </div>
 
       <div className="panel">
@@ -135,14 +128,7 @@ export function BossBattleScreen({ state, dispatch }: Props) {
         )}
       </div>
 
-      <div className="panel">
-        <h3>Battle Log</h3>
-        <ol className="log">
-          {battle.log.map((entry, index) => (
-            <li key={`${entry}-${index}`}>{entry}</li>
-          ))}
-        </ol>
-      </div>
+      <div className="panel"><CompactTimeline label="Battle timeline" entries={battle.log} /></div>
     </section>
   );
 }

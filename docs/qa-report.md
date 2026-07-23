@@ -211,6 +211,18 @@ Vite reports expected build-time warnings for absolute asset paths under
 6. Verify combat telegraph pulses, counter success/miss flashes, status chips, and newest battle-log entry clarify the latest outcome.
 7. Enable OS reduced motion and confirm ambient, party, telegraph, milestone, and microinteraction animation settles immediately.
 
+## Alpha 12 Text-to-Visual UX QA
+
+1. On desktop and 390x844 mobile, check Camp, Explore, active Expedition, crisis, combat, Journal, and End Run for horizontal overflow and clipped badges.
+2. In English and Thai, confirm route cards show title, Time, Risk, Safe, and Crew badges before any long text.
+3. Open event and encounter choices; compare action, cost/gain/risk badges, and requirements without opening details. Confirm full explanation remains available in the button title/details.
+4. Trigger a crisis and verify deadline, severity, response count, and response effect badges are visible before its full consequence text.
+5. Verify Camp, Gate, and Battle timelines expose a short outcome phrase first and reveal the complete log entry through the `More` disclosure.
+6. Enter a Guardian or Gate fight and verify the intent marker, counter badge, HP meter, status chips, and combat readout remain visible without reading the battle timeline.
+7. Open Journal and confirm unknown collection entries are silhouettes, discovered entries are grid cards, and field notes only appear after opening their disclosure.
+8. Keyboard-tab to every details summary and icon/badge-adjacent control; check focus remains visible and labels/titles describe non-text visual cues.
+9. Enable reduced motion and repeat route/combat checks; no visual-only state should depend on animation or color alone.
+
 ## Alpha 1 Exploration Regression Checklist
 
 1. Start a fresh run and open Explore; confirm the active Run Modifier is visible.

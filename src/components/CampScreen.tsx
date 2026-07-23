@@ -8,6 +8,7 @@ import { canResolveCrisisChoice } from "../game/crises";
 import { getRunItem } from "../data/runItems";
 import type { CampPressureKey, GameAction, GameState, ResourceKey, RunEquipmentSlot } from "../game/state";
 import { useI18n } from "../i18n";
+import { CompactTimeline, DetailsDisclosure, VisualBadge, choicePreview } from "./VisualUI";
 
 type Props = {
   state: GameState;
@@ -120,11 +121,8 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
               {crisisSecondsLeft}s remaining
             </strong>
           </div>
-          <p>{crisis.warning}</p>
-          <div className="crisis-facts">
-            <span><strong>Triggered:</strong> {activeCrisis.reason}</span>
-            <span><strong>If ignored:</strong> {crisis.consequence}</span>
-          </div>
+          <div className="crisis-scanline"><VisualBadge label="Deadline" value={`${crisisSecondsLeft}s`} tone="risk" /><VisualBadge label="Severity" value={crisis.severity} tone="risk" /><VisualBadge label="Responses" value={crisis.choices.length} tone="info" /></div>
+          <DetailsDisclosure summary="Why this matters"><p>{crisis.warning}</p><div className="crisis-facts"><span><strong>Triggered:</strong> {activeCrisis.reason}</span><span><strong>If ignored:</strong> {crisis.consequence}</span></div></DetailsDisclosure>
           <div className="crisis-choices">
             {crisis.choices.map((choice) => {
               const available = canResolveCrisisChoice(state, choice);
@@ -136,10 +134,7 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
                   title={available ? choice.result : `Unavailable: ${choice.detail}`}
                   key={choice.id}
                   onClick={() => dispatch({ type: "resolveCrisis", choiceId: choice.id })}
-                >
-                  <strong>{choice.label}</strong>
-                  <span>{choice.detail}</span>
-                </button>
+                ><strong>{choice.label}</strong><div className="choice-badges">{choicePreview(choice.effect).map((badge, index) => <VisualBadge key={`${badge.label}-${index}`} {...badge} />)}</div><small>{choice.detail}</small></button>
               );
             })}
           </div>
@@ -315,12 +310,7 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
       </div>
 
       <div className="panel log-panel">
-        <h3>Camp Log</h3>
-        <ol className="log">
-          {state.run.log.map((entry, index) => (
-            <li key={`${entry}-${index}`}>{entry}</li>
-          ))}
-        </ol>
+        <CompactTimeline label="Camp timeline" entries={state.run.log} />
         <button className="danger" onClick={onReset}>
           Reset Run
         </button>

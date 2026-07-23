@@ -11,6 +11,7 @@ import { CrewPicker } from "./CrewPicker";
 import { GameIcon, type GameIconName } from "./GameIcon";
 import { LiveExpeditionView } from "./LiveExpeditionView";
 import { useI18n } from "../i18n";
+import { DetailsDisclosure, VisualBadge, choicePreview } from "./VisualUI";
 
 type Props = {
   state: GameState;
@@ -65,23 +66,21 @@ export function ExploreScreen({ state, dispatch }: Props) {
       </div>
       {decision && (
         <div className="panel route-decision">
-          <p className="eyebrow">{decision.kind === "event" ? "Route Event" : "Normal Encounter"}</p>
-          <h2>{decision.name}</h2>
-          <p>{decision.description}</p>
+          <div className="visual-card-heading">
+            <span className={`decision-emblem decision-${decision.kind}`} aria-label={decision.kind === "event" ? "Route event" : "Normal encounter"}>{decision.kind === "event" ? "EV" : "EN"}</span>
+            <div><p className="eyebrow">{decision.kind === "event" ? "Route Event" : "Normal Encounter"}</p><h2>{decision.name}</h2></div>
+            <VisualBadge label="Choices" value={decision.choices.length} tone="info" />
+          </div>
+          <DetailsDisclosure summary="Scene details"><p>{decision.description}</p></DetailsDisclosure>
           <div className="decision-choices">
-            {decision.choices.map((choice) => (
-              <button
-                className="decision-choice"
-                disabled={!canResolveRouteChoice(state, choice)}
-                title={canResolveRouteChoice(state, choice) ? choice.result : `Unavailable: ${choice.detail}`}
-                aria-label={`${choice.label}. ${choice.detail}`}
-                key={choice.id}
-                onClick={() => dispatch({ type: "resolveRouteDecision", choiceId: choice.id })}
-              >
+            {decision.choices.map((choice) => {
+              const available = canResolveRouteChoice(state, choice);
+              return <button className="decision-choice visual-choice" disabled={!available} title={available ? choice.result : `Unavailable: ${choice.detail}`} aria-label={`${choice.label}. ${choice.detail}`} key={choice.id} onClick={() => dispatch({ type: "resolveRouteDecision", choiceId: choice.id })}>
                 <strong>{choice.label}</strong>
-                <span>{choice.detail}</span>
-              </button>
-            ))}
+                <div className="choice-badges">{choicePreview(choice.effect).map((badge, index) => <VisualBadge key={`${badge.label}-${index}`} {...badge} />)}</div>
+                <small>{choice.requirement ? choice.detail : available ? "Ready" : "Unavailable"}</small>
+              </button>;
+            })}
           </div>
         </div>
       )}
@@ -183,19 +182,9 @@ export function ExploreScreen({ state, dispatch }: Props) {
 
           return (
             <article className={`route-card route-${route.id}`} key={route.id}>
-              <p className="eyebrow">{locked ? "Undiscovered" : route.requirement}</p>
-              <h2>{t(`route.${route.id}.name`, undefined, route.name)}</h2>
-              <p>{t(`route.${route.id}.purpose`, undefined, route.purpose)}</p>
-              <div className="route-meta">
-                <span>{duration}s</span>
-                <span>Danger {route.danger}</span>
-                <span>Safety {safety}</span>
-                <span>{labelSuccessChance(successChance)} {successChance}%</span>
-                <span>Clears {progress.completed}</span>
-                <span>Fails {progress.failed}</span>
-                <span>{selectedSurvivors.length} selected</span>
-                {modifier.routes?.includes(route.id) && <span>{t(`modifier.${modifier.id}.name`, undefined, modifier.name)}: {modifier.counterClass && selectedSurvivors.some((survivor) => survivor.classId === modifier.counterClass) ? "Countered" : "Active"}</span>}
-              </div>
+              <div className="visual-card-heading route-heading"><span className="route-emblem" aria-label={route.kind === "boss" ? "Guardian route" : "Expedition route"}>{route.kind === "boss" ? "B" : "R"}</span><div><p className="eyebrow">{locked ? "Undiscovered" : route.requirement}</p><h2>{t(`route.${route.id}.name`, undefined, route.name)}</h2></div></div>
+              <div className="route-scanline"><VisualBadge label="Time" value={`${duration}s`} /><VisualBadge label="Risk" value={route.danger} tone={route.danger >= 40 ? "risk" : "neutral"} /><VisualBadge label="Safe" value={`${successChance}%`} tone={successChance >= 70 ? "good" : "risk"} /><VisualBadge label="Crew" value={selectedSurvivors.length} tone="info" /></div>
+              <DetailsDisclosure summary="Route details"><p>{t(`route.${route.id}.purpose`, undefined, route.purpose)}</p><div className="route-meta"><span>Safety {safety}</span><span>{labelSuccessChance(successChance)}</span><span>Clears {progress.completed}</span><span>Fails {progress.failed}</span></div></DetailsDisclosure>
               <div className="reward-list">
                 {beacon && <span>{beacon.bonus}</span>}
                 {state.legacy.projects.includes("trailArchive") && routeHints.length === 0 && (

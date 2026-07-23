@@ -4,18 +4,17 @@ Last updated: 2026-07-23
 
 ## Current Release
 
-**Fun Alpha 11: Thai i18n and Expedition Feel**
+**Alpha 12: Text-to-Visual UX Pass**
 
-Routes now unfold as animated node journeys with manual branches, Auto-safe
-compatibility, visible party activity, ambient biome moods, Thai/English UI,
-and stronger encounter feedback.
+The core game now presents routes, choices, combat, logs, and collection data
+through compact visual cards with expandable strategic detail.
 
 | Area | Status | Current implementation |
 | --- | --- | --- |
 | Project shell | Complete | Vite, React, TypeScript, reducer architecture |
 | Save and offline | Complete | localStorage, backup recovery, migration, 8h offline cap |
 | Camp | Alpha 2 | six idle jobs, three upgrades, four pressure values, five crises |
-| Exploration | Alpha 11 | eleven localized live node journeys, route branches, events, encounters |
+| Exploration | Alpha 12 | visual route scanlines, compact choices, localized live journeys |
 | Run variation | Alpha 3 | five biome/run modifiers and twelve build-defining run items |
 | Run loadout | Alpha 3 | Tool, Charm, and Provision slots with source and trigger history |
 | Survivors | Alpha 1 | four starters plus branched/delayed Rook, Mira, and Bram recruitment |
@@ -196,6 +195,19 @@ and stronger encounter feedback.
 - Added deterministic presentation cues for node danger/discovery and combat
   feedback, plus stronger telegraph, status, milestone, and party-scene polish.
 - Preserved reduced-motion behavior and expanded visual QA for Thai mobile layout.
+
+### Alpha 12 - Text-to-Visual UX Pass
+
+- Audited Camp, Explore, Live Expedition, choice, combat, Journal, and End Run
+  surfaces; kept immediate decisions visible and moved flavor/detail to native disclosures.
+- Added visual route scanlines, event/encounter headers, compact effect badges,
+  crisis response previews, and concise resource/risk indicators.
+- Replaced long Camp, Gate, and Battle logs with recent compact timelines whose
+  full entries remain available through keyboard-accessible details controls.
+- Reframed boss intent around a danger marker, one-turn counter badge, HP meter,
+  status chips, and a compact combat readout.
+- Redesigned Journal collection, chain, bond, and secret entries as visual grid
+  cards with silhouettes, progress badges, meters, and hidden field notes.
 
 ## Next Phase
 

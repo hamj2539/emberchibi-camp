@@ -6,6 +6,7 @@ import { combatActions } from "../data/classes";
 import { getIntent, heraldCombat } from "../data/bossCombat";
 import { CrewPicker } from "./CrewPicker";
 import { combatCue } from "../game/presentation";
+import { CompactTimeline, DetailsDisclosure, VisualBadge } from "./VisualUI";
 
 type Props = {
   state: GameState;
@@ -46,17 +47,15 @@ export function GateScreen({ state, dispatch }: Props) {
         </div>
         {gate.status === "active" ? (
           <>
-            <div className="phase-intent">
+          <div className="phase-intent visual-intent">
               <div>
                 <span>Phase</span>
                 <strong>{phase.name}</strong>
               </div>
-              <div className="intent-card">
-                <span>Incoming Intent</span>
-                <strong>{intent.name}</strong>
-                <p>{intent.telegraph}</p>
-                <small>Counter: {intent.counter.label}</small>
-                <small>If missed: {intent.consequence}</small>
+            <div className="intent-card">
+                <span className="intent-emblem" aria-label="Dangerous intent">!</span><span>Incoming Intent</span><strong>{intent.name}</strong>
+                <div className="intent-badges"><VisualBadge label="Turn" value="1" tone="risk" /><VisualBadge label="Counter" value={intent.counter.label} tone="good" /></div>
+                <DetailsDisclosure summary="Intent details"><p>{intent.telegraph}</p><small>If missed: {intent.consequence}</small></DetailsDisclosure>
               </div>
             </div>
             <StatusRow label="Party" statuses={gate.partyStatuses} />
@@ -67,10 +66,7 @@ export function GateScreen({ state, dispatch }: Props) {
             <div className="meter">
               <span aria-label={`Night Herald health ${hpPercent}%`} style={{ width: `${hpPercent}%` }} />
             </div>
-            <p>
-              HP {Math.ceil(gate.heraldHp)}/{gate.heraldMaxHp} · Night {gate.nightPressure} · Guard {gate.guardStacks} ·
-              Turn {gate.turn}
-            </p>
+            <div className="combat-readout"><VisualBadge label="HP" value={`${Math.ceil(gate.heraldHp)}/${gate.heraldMaxHp}`} /><VisualBadge label="Night" value={gate.nightPressure} tone="risk" /><VisualBadge label="Guard" value={gate.guardStacks} tone="good" /><VisualBadge label="Turn" value={gate.turn} tone="info" /></div>
           </>
         ) : (
           <p>All five Beacons are lit. Send your strongest crew through the Gate to finish the run.</p>
@@ -142,14 +138,7 @@ export function GateScreen({ state, dispatch }: Props) {
         )}
       </div>
 
-      <div className="panel">
-        <h3>Gate Log</h3>
-        <ol className="log">
-          {gate.log.map((entry, index) => (
-            <li key={`${entry}-${index}`}>{entry}</li>
-          ))}
-        </ol>
-      </div>
+      <div className="panel"><CompactTimeline label="Gate timeline" entries={gate.log} /></div>
     </section>
   );
 }
