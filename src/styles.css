@@ -777,6 +777,52 @@ select {
 @keyframes campfire-flicker{to{transform:scale(.88,1.12) rotate(5deg);filter:brightness(1.2)}}@keyframes map-mote{to{transform:translateY(-180px) translateX(18px);opacity:0}}@keyframes station-smoke{to{transform:translateY(-16px) translateX(4px);opacity:0}}@keyframes route-glow-flow{to{filter:brightness(1.35)}}@keyframes beacon-aura{50%{transform:scale(1.16);opacity:.7}}@keyframes beacon-crystal{50%{transform:translateX(-50%) rotate(45deg) scale(1.12);filter:brightness(1.3)}}@keyframes map-prompt{50%{transform:scale(1.25);box-shadow:0 0 20px #ffd28d}}@keyframes token-rest{50%{transform:translate(-50%,-47%)}}@keyframes token-forage{50%{transform:translate(-45%,-50%) rotate(3deg)}}@keyframes token-craft{to{transform:translate(-50%,-54%) rotate(-3deg)}}@keyframes token-guard{50%{transform:translate(-50%,-52%) rotate(2deg)}}@keyframes token-cook{to{transform:translate(-50%,-54%)}}@keyframes token-research{50%{transform:translate(-47%,-50%)}}@keyframes action-pulse{50%{box-shadow:0 0 20px rgba(255,143,111,.42)}}
 @media(max-width:640px){.living-camp-map{min-height:calc(100svh - 96px)}.camp-map-hud{grid-template-columns:auto minmax(0,1fr)}.map-resource-hud{display:none}.world-map-stage{min-height:590px}.camp-core{top:56%;transform:translate(-50%,-50%) scale(.9)}.camp-station{transform:translate(-50%,-50%) scale(.82)}.map-beacon{transform:translate(-50%,-50%) scale(.84)}.map-gate{transform:scale(.84)}.map-action-ring{right:8px;bottom:8px}.map-context{left:8px;bottom:8px}.map-context>div{width:220px}.sheet-job-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sheet-choice-grid{grid-template-columns:1fr}.map-sheet-backdrop{padding:10px}.map-detail-sheet{border-radius:8px 8px 0 0}}
 
+/* Generated diorama props: a single transparent 4 x 3 sprite sheet keeps the map cohesive. */
+.camp-station .station-object,
+.map-beacon,
+.map-expedition-token {
+  background-image: url("/emberchibi-camp/assets/map/living-camp-sprites.png");
+  background-repeat: no-repeat;
+  background-size: 400% 300%;
+}
+.camp-station .station-object { inset: -22px -26px -19px; background-color: transparent; background-position: 0 0; filter: drop-shadow(0 4px 3px rgba(0,0,0,.5)); }
+.camp-station .station-object > i,
+.station-cook .station-object::before,
+.station-forage .station-object::before,
+.station-research .station-object::before,
+.station-research .station-object::after,
+.station-guard .station-object::before { display: none; }
+.station-rest .station-object { background-position: 0 0; border: 0; box-shadow: none; }
+.station-cook .station-object { background-position: 33.333333% 0; border: 0; box-shadow: none; }
+.station-craft .station-object { background-position: 66.666667% 0; border: 0; box-shadow: none; }
+.station-guard .station-object { background-position: 100% 0; border: 0; box-shadow: none; }
+.station-forage .station-object { background-position: 0 50%; border: 0; box-shadow: none; }
+.station-research .station-object { background-position: 33.333333% 50%; border: 0; box-shadow: none; }
+.camp-station.occupied .station-object { filter: drop-shadow(0 0 9px rgba(255,210,130,.45)) drop-shadow(0 4px 3px rgba(0,0,0,.5)); }
+
+.map-beacon { width: 92px; height: 92px; background-position: 100% 50%; filter: drop-shadow(0 5px 4px rgba(0,0,0,.55)); }
+.map-beacon .beacon-halo,
+.map-beacon .beacon-structure,
+.map-beacon .beacon-crystal { display: none; }
+.map-beacon.beacon-ember { background-position: 100% 50%; }
+.map-beacon.beacon-tidal { background-position: 0 100%; }
+.map-beacon.beacon-gale { background-position: 33.333333% 100%; }
+.map-beacon.beacon-root { background-position: 66.666667% 100%; }
+.map-beacon.beacon-lunar { background-position: 100% 100%; }
+.map-beacon.state-hidden { filter: grayscale(1) brightness(.3) drop-shadow(0 5px 4px rgba(0,0,0,.55)); }
+.map-beacon.state-found { filter: saturate(.75) brightness(.82) drop-shadow(0 0 8px var(--beacon)) drop-shadow(0 5px 4px rgba(0,0,0,.55)); }
+.map-beacon.state-boss,
+.map-beacon.state-repair,
+.map-beacon.state-lit { animation: sprite-beacon-pulse 1.9s ease-in-out infinite; }
+.map-beacon.state-boss { filter: saturate(1.05) drop-shadow(0 0 11px #ff875d) drop-shadow(0 5px 4px rgba(0,0,0,.55)); }
+.map-beacon.state-repair { filter: brightness(1.12) drop-shadow(0 0 12px #ffe486) drop-shadow(0 5px 4px rgba(0,0,0,.55)); }
+.map-beacon.state-lit { filter: brightness(1.22) saturate(1.18) drop-shadow(0 0 16px #ffe486) drop-shadow(0 5px 4px rgba(0,0,0,.55)); }
+
+.map-expedition-token { width: 78px; height: 78px; background-position: 66.666667% 50%; background-color: transparent; filter: drop-shadow(0 0 10px rgba(255,210,131,.5)); }
+.map-expedition-token .portrait-mini { display: none; }
+.map-expedition-token b { position: absolute; right: 1px; bottom: 2px; }
+@keyframes sprite-beacon-pulse { 50% { transform: translate(-50%,-50%) scale(1.06); } }
+
 /* Keep the scene-first geometry authoritative over legacy expedition rules. */
 .scene-first.live-expedition { min-height: min(760px, calc(100vh - 118px)); display: grid; grid-template-rows: auto minmax(440px, 1fr) auto; }
 .scene-first .diorama-party { bottom: 12%; left: clamp(10%, var(--journey-progress), 88%); }

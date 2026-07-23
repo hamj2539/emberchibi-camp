@@ -1,9 +1,10 @@
-const CACHE = "emberchibi-camp-v1";
+const CACHE = "emberchibi-camp-v2";
 const ROOT = "/emberchibi-camp/";
 const CORE = [
   ROOT,
   `${ROOT}manifest.webmanifest`,
   `${ROOT}assets/backgrounds/camp.png`,
+  `${ROOT}assets/map/living-camp-sprites.png`,
   `${ROOT}assets/guardians/cinder-stag.png`,
 ];
 

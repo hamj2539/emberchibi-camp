@@ -95,6 +95,7 @@ Prompt anchor:
 - `public/assets/ui/item-sheet.png` - 4x3 resources, supplies, and crafted items.
 - `public/assets/ui/chest-status-sheet.png` - 4x3 chest grades and combat statuses.
 - `public/assets/ui/core-beacon-sheet.png` - 4x4 Core qualities and five Beacon pairs.
+- `public/assets/map/living-camp-sprites.png` - 4x3 transparent sheet for Camp stations, expedition marker, and elemental Beacon props.
 - `public/assets/characters/portrait-sheet.png`
 - `public/assets/guardians/*.png`
 - `public/assets/backgrounds/*.png`
