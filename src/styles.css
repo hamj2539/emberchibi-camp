@@ -823,6 +823,26 @@ select {
 .map-expedition-token b { position: absolute; right: 1px; bottom: 2px; }
 @keyframes sprite-beacon-pulse { 50% { transform: translate(-50%,-50%) scale(1.06); } }
 
+/* Survivor work cues sit above the chibi token, so a job is readable without a label. */
+.token-tool { position: absolute; z-index: 3; pointer-events: none; }
+.token-rest .token-tool { left: 31px; top: -3px; width: 7px; height: 7px; border: 2px solid #d8e9ff; border-right: 0; border-bottom: 0; border-radius: 50%; opacity: .9; animation: token-sleep 1.8s ease-in-out infinite; }
+.token-rest .token-tool::after { position: absolute; left: 7px; top: -8px; width: 4px; height: 4px; content: ""; border: 1px solid #d8e9ff; border-right: 0; border-bottom: 0; border-radius: 50%; }
+.token-forage .token-tool { left: -2px; top: 10px; width: 13px; height: 18px; border-radius: 90% 10% 90% 10%; background: #7fbc5e; box-shadow: 7px 3px 0 -2px #b8dd72; transform-origin: bottom right; animation: token-leaf-sweep 1.2s ease-in-out infinite; }
+.token-craft .token-tool { left: 31px; top: 12px; width: 4px; height: 20px; border-radius: 3px; background: #c99355; transform-origin: bottom center; animation: token-hammer 760ms ease-in-out infinite; }
+.token-craft .token-tool::after { position: absolute; left: -5px; top: -3px; width: 14px; height: 7px; content: ""; border-radius: 3px; background: #b6c0bf; }
+.token-guard .token-tool { left: 26px; top: 3px; width: 12px; height: 12px; border-radius: 50%; background: #ffd77a; box-shadow: 0 0 12px #ffd77a; animation: token-lantern-sweep 1.5s ease-in-out infinite; }
+.token-guard .token-tool::after { position: absolute; left: 4px; top: 10px; width: 3px; height: 22px; content: ""; background: #8f6842; }
+.token-cook .token-tool { left: 11px; top: -6px; width: 8px; height: 15px; border-radius: 50%; background: rgba(239,245,225,.56); filter: blur(1px); animation: token-steam 1.15s ease-in infinite; }
+.token-cook .token-tool::after { position: absolute; left: 9px; top: 8px; width: 6px; height: 12px; content: ""; border-radius: 50%; background: rgba(239,245,225,.34); }
+.token-research .token-tool { left: 30px; top: 4px; width: 8px; height: 8px; border-radius: 50%; background: #f5e69b; box-shadow: 0 0 12px #f5e69b; animation: token-spark 1.6s ease-in-out infinite; }
+.token-research .token-tool::after { position: absolute; left: 3px; top: -6px; width: 2px; height: 20px; content: ""; background: #f5e69b; transform: rotate(45deg); }
+@keyframes token-sleep { 50% { transform: translate(5px,-10px) scale(.78); opacity: .25; } }
+@keyframes token-leaf-sweep { 50% { transform: rotate(-28deg) translate(-5px,4px); } }
+@keyframes token-hammer { 48% { transform: rotate(-48deg); } 65% { transform: rotate(8deg); } }
+@keyframes token-lantern-sweep { 50% { transform: translateX(-11px); box-shadow: -9px 0 17px #ffd77a; } }
+@keyframes token-steam { to { transform: translate(5px,-16px) scale(.65); opacity: 0; } }
+@keyframes token-spark { 50% { transform: scale(1.5) rotate(45deg); opacity: .55; } }
+
 /* Keep the scene-first geometry authoritative over legacy expedition rules. */
 .scene-first.live-expedition { min-height: min(760px, calc(100vh - 118px)); display: grid; grid-template-rows: auto minmax(440px, 1fr) auto; }
 .scene-first .diorama-party { bottom: 12%; left: clamp(10%, var(--journey-progress), 88%); }

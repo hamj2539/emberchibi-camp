@@ -65,7 +65,7 @@ export function CampStation({ job, label, x, y, active }: { job: IdleJob; label:
 export function SurvivorToken({ survivor, onOpen }: { survivor: Survivor; onOpen: () => void }) {
   const station = stationByJob[survivor.job];
   const injured = survivor.injury >= 10 || survivor.currentHp <= survivor.stats.hp / 3;
-  return <button className={`map-survivor token-${survivor.job} ${injured ? "injured" : ""} ${survivor.currentHp <= 0 ? "downed" : ""}`} style={{ left: `${station.x + 3}%`, top: `${station.y - 5}%` }} title={`${survivor.name}: ${station.label}`} aria-label={`${survivor.name}, ${station.label}`} onClick={onOpen}><span className="token-activity" aria-hidden="true" /><span className={`portrait portrait-mini portrait-${survivor.classId}`} aria-hidden="true" /></button>;
+  return <button className={`map-survivor token-${survivor.job} ${injured ? "injured" : ""} ${survivor.currentHp <= 0 ? "downed" : ""}`} style={{ left: `${station.x + 3}%`, top: `${station.y - 5}%` }} title={`${survivor.name}: ${station.label}`} aria-label={`${survivor.name}, ${station.label}`} onClick={onOpen}><span className="token-activity" aria-hidden="true" /><span className="token-tool" aria-hidden="true" /><span className={`portrait portrait-mini portrait-${survivor.classId}`} aria-hidden="true" /></button>;
 }
 
 export function MapRoute({ index, beaconId, active, progress, onOpen }: { index: number; beaconId: BeaconId; active: boolean; progress: number; onOpen: () => void }) {
