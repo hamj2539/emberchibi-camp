@@ -27,6 +27,7 @@ export function LivingCampMap({ state, dispatch }: Props) {
   const lit = beacons.filter((beacon) => state.run.beacons[beacon.id].repaired).length;
   const actions = mapActionItems(state);
   const selectedSurvivor = state.run.survivors.find((survivor) => survivor.id === selectedSurvivorId) ?? null;
+  const activeBeaconId = expedition ? beaconForRoute(expedition.routeId) : null;
 
   return <section className="living-camp-map" aria-label="Living camp and world map">
     <div className="camp-map-hud">
@@ -37,11 +38,11 @@ export function LivingCampMap({ state, dispatch }: Props) {
 
     <div className="world-map-stage">
       <div className="map-ambient" aria-hidden="true"><i /><i /><i /><i /></div>
-      <div className="camp-core" aria-label="Emberchibi camp"><span className="campfire-flame" aria-hidden="true" /><strong>{t("map.camp")}</strong></div>
+      <div className="camp-core" aria-label="Emberchibi camp" title={t("map.camp")}><span className="campfire-flame" aria-hidden="true" /><span className="campfire-log log-one" aria-hidden="true" /><span className="campfire-log log-two" aria-hidden="true" /><span className="camp-smoke" aria-hidden="true" /></div>
       {Object.entries(stationByJob).map(([job, station]) => <CampStation key={job} job={job as IdleJob} {...station} active={state.run.survivors.some((survivor) => survivor.job === job && !survivor.onExpedition)} />)}
       {beacons.map((beacon, index) => <BeaconNode beaconId={beacon.id} index={index} key={beacon.id} state={state} onOpen={() => dispatch({ type: "setScreen", screen: mapBeaconStatus(state, beacon.id) === "repair" ? "repair" : "explore" })} />)}
-      {state.run.gate.status !== "sealed" && <button className="map-gate" aria-label="Cinder Gate" title="Cinder Gate" onClick={() => dispatch({ type: "setScreen", screen: "gate" })}>GATE</button>}
-      {beacons.map((beacon, index) => <MapRoute key={beacon.id} index={index} beaconId={beacon.id} active={expedition?.routeId === beacon.prepRouteId || expedition?.routeId === beacon.bossRouteId} progress={expedition ? expeditionProgress(expedition.currentNodeIndex, expedition.nodes.length) : 0} onOpen={() => dispatch({ type: "setScreen", screen: "explore" })} />)}
+      {state.run.gate.status !== "sealed" && <button className="map-gate" aria-label="Cinder Gate" title="Cinder Gate" onClick={() => dispatch({ type: "setScreen", screen: "gate" })}><span aria-hidden="true" /></button>}
+      {beacons.map((beacon, index) => <MapRoute key={beacon.id} index={index} beaconId={beacon.id} active={activeBeaconId === beacon.id} progress={expedition ? expeditionProgress(expedition.currentNodeIndex, expedition.nodes.length) : 0} onOpen={() => dispatch({ type: "setScreen", screen: "explore" })} />)}
       {state.run.survivors.filter((survivor) => !survivor.onExpedition).map((survivor) => <SurvivorToken survivor={survivor} key={survivor.id} onOpen={() => { setSelectedSurvivorId(survivor.id); setSheet("jobs"); }} />)}
       {expedition && <div className="map-expedition-token" style={{ "--expedition-progress": `${20 + expeditionProgress(expedition.currentNodeIndex, expedition.nodes.length) * 0.65}%` } as React.CSSProperties} title={t("map.expedition")}><span className="portrait portrait-mini portrait-scout" aria-hidden="true" /><b>{expedition.paused ? "!" : "GO"}</b></div>}
       <div className="map-action-ring">{actions.map((action) => <ActionIcon action={action} key={action.id} onOpen={() => {
@@ -57,14 +58,14 @@ export function LivingCampMap({ state, dispatch }: Props) {
   </section>;
 }
 
-export function CampStation({ job, label, x, y, glyph, active }: { job: IdleJob; label: string; x: number; y: number; glyph: string; active: boolean }) {
-  return <div className={`camp-station station-${job} ${active ? "occupied" : ""}`} style={{ left: `${x}%`, top: `${y}%` }} title={label} aria-label={`${label}${active ? ", active" : ""}`}><b>{glyph}</b><span /></div>;
+export function CampStation({ job, label, x, y, active }: { job: IdleJob; label: string; x: number; y: number; active: boolean }) {
+  return <div className={`camp-station station-${job} ${active ? "occupied" : ""}`} style={{ left: `${x}%`, top: `${y}%` }} title={label} aria-label={`${label}${active ? ", active" : ""}`}><span className="station-object" aria-hidden="true"><i /><i /><i /></span><span className="station-shadow" aria-hidden="true" /></div>;
 }
 
 export function SurvivorToken({ survivor, onOpen }: { survivor: Survivor; onOpen: () => void }) {
   const station = stationByJob[survivor.job];
   const injured = survivor.injury >= 10 || survivor.currentHp <= survivor.stats.hp / 3;
-  return <button className={`map-survivor token-${survivor.job} ${injured ? "injured" : ""} ${survivor.currentHp <= 0 ? "downed" : ""}`} style={{ left: `${station.x + 3}%`, top: `${station.y - 5}%` }} title={`${survivor.name}: ${station.label}`} aria-label={`${survivor.name}, ${station.label}`} onClick={onOpen}><span className={`portrait portrait-mini portrait-${survivor.classId}`} aria-hidden="true" /><small>{survivor.name}</small></button>;
+  return <button className={`map-survivor token-${survivor.job} ${injured ? "injured" : ""} ${survivor.currentHp <= 0 ? "downed" : ""}`} style={{ left: `${station.x + 3}%`, top: `${station.y - 5}%` }} title={`${survivor.name}: ${station.label}`} aria-label={`${survivor.name}, ${station.label}`} onClick={onOpen}><span className="token-activity" aria-hidden="true" /><span className={`portrait portrait-mini portrait-${survivor.classId}`} aria-hidden="true" /></button>;
 }
 
 export function MapRoute({ index, beaconId, active, progress, onOpen }: { index: number; beaconId: BeaconId; active: boolean; progress: number; onOpen: () => void }) {
@@ -74,11 +75,11 @@ export function MapRoute({ index, beaconId, active, progress, onOpen }: { index:
 
 export function BeaconNode({ beaconId, index, state, onOpen }: { beaconId: BeaconId; index: number; state: GameState; onOpen: () => void }) {
   const point = beaconPoint(index); const status = mapBeaconStatus(state, beaconId);
-  return <button className={`map-beacon beacon-${beaconId} state-${status}`} style={{ left: `${point.x}%`, top: `${point.y}%` }} onClick={onOpen} aria-label={`${beaconId} Beacon, ${status}`} title={`${beaconId} Beacon: ${status}`}><span aria-hidden="true">{status === "lit" ? "LIT" : status === "repair" ? "CORE" : status === "boss" ? "BOSS" : status === "found" ? "?" : "--"}</span></button>;
+  return <button className={`map-beacon beacon-${beaconId} state-${status}`} style={{ left: `${point.x}%`, top: `${point.y}%` }} onClick={onOpen} aria-label={`${beaconId} Beacon, ${status}`} title={`${beaconId} Beacon: ${status}`}><span className="beacon-halo" aria-hidden="true" /><span className="beacon-structure" aria-hidden="true"><i /><i /><i /></span><span className="beacon-crystal" aria-hidden="true" /></button>;
 }
 
 export function ActionIcon({ action, onOpen }: { action: { id: string; label: string; glyph: string; screen: "explore" | "boss" | "repair" | "gate" | "end" }; onOpen: () => void }) {
-  return <button className="map-action-icon" title={action.label} aria-label={action.label} onClick={onOpen}><b aria-hidden="true">{action.glyph}</b><span>{action.label}</span></button>;
+  return <button className={`map-action-icon action-${action.id}`} title={action.label} aria-label={action.label} onClick={onOpen}><b aria-hidden="true" /></button>;
 }
 
 export function DetailSheet({ title, children, onClose }: { title: string; children: React.ReactNode; onClose: () => void }) {
@@ -87,3 +88,4 @@ export function DetailSheet({ title, children, onClose }: { title: string; child
 
 function beaconPoint(index: number) { return [{ x: 16, y: 18 }, { x: 82, y: 18 }, { x: 89, y: 63 }, { x: 70, y: 85 }, { x: 22, y: 83 }][index]; }
 function expeditionProgress(index: number, total: number) { return Math.round((index / Math.max(1, total - 1)) * 100); }
+function beaconForRoute(routeId: string): BeaconId { return beacons.find((beacon) => beacon.prepRouteId === routeId || beacon.bossRouteId === routeId)?.id ?? "ember"; }
