@@ -118,6 +118,48 @@ select {
   gap: 10px;
 }
 
+.modifier-banner {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.35fr) minmax(0, 1fr);
+  align-items: center;
+  border-color: rgba(135, 188, 171, 0.32);
+}
+
+.modifier-banner h3,
+.modifier-banner p {
+  margin: 0;
+}
+
+.route-decision {
+  border-color: rgba(255, 189, 115, 0.45);
+  background:
+    linear-gradient(135deg, rgba(255, 189, 115, 0.14), rgba(45, 77, 65, 0.22)),
+    rgba(27, 24, 20, 0.94);
+}
+
+.decision-choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.decision-choice {
+  min-height: 92px;
+  text-align: left;
+}
+
+.decision-choice strong,
+.decision-choice span {
+  display: block;
+}
+
+.decision-choice span {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
 .upgrade-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -480,6 +522,9 @@ select {
 }
 
 @media (max-width: 520px) {
+  .modifier-banner {
+    grid-template-columns: 1fr;
+  }
   .upgrade-row {
     grid-template-columns: 1fr;
   }

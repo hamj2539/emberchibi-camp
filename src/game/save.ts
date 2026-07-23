@@ -1,5 +1,7 @@
 import { createInitialState, emptyBeaconProgress, emptyInventory, type GameState } from "./state.js";
 import { getRecruitDefinition } from "../data/events.js";
+import { runModifiers } from "../data/routeContent.js";
+import { getRouteDecision } from "../data/routeContent.js";
 
 const SAVE_KEY = "emberchibiCamp.v1";
 const BACKUP_KEY = "emberchibiCamp.v1.backup";
@@ -70,16 +72,37 @@ export function migrateV1(state: GameState): GameState {
       routes: { ...defaults.run.routes, ...(state.run.routes ?? {}) },
       beacons: migrateBeacons(state, defaults),
       craftQueue: state.run.craftQueue ?? [],
+      activeRouteDecision: migrateRouteDecision(state, defaults),
       recruitEvent: migrateRecruitEvent(state),
       bossBattle: bossBattle ? { ...bossBattle, usedSkills: bossBattle.usedSkills ?? [] } : null,
       beaconRepair,
       campUpgrades: state.run.campUpgrades ?? [],
+      runModifier: runModifiers.some((modifier) => modifier.id === state.run.runModifier)
+        ? state.run.runModifier
+        : defaults.run.runModifier,
+      eventFlags: state.run.eventFlags ?? [],
+      eventScore: state.run.eventScore ?? 0,
+      decisionsResolved: state.run.decisionsResolved ?? 0,
       gate: state.run.gate ? { ...state.run.gate, usedSkills: state.run.gate.usedSkills ?? [] } : defaults.run.gate,
       endRun: state.run.endRun
         ? { ...state.run.endRun, outcome: state.run.endRun.outcome ?? "victory" }
         : null,
     },
   };
+}
+
+function migrateRouteDecision(
+  state: GameState,
+  defaults: GameState,
+): GameState["run"]["activeRouteDecision"] {
+  const decision = state.run.activeRouteDecision;
+  if (!decision || !defaults.run.routes[decision.routeId]) return null;
+  try {
+    const definition = getRouteDecision(decision.id);
+    return definition.kind === decision.kind ? decision : null;
+  } catch {
+    return null;
+  }
 }
 
 function migrateRecruitEvent(state: GameState): GameState["run"]["recruitEvent"] {

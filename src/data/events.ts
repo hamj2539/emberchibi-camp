@@ -2,6 +2,10 @@ import type { RecruitEvent, RouteId, Survivor } from "../game/state.js";
 
 type RecruitDefinition = Omit<RecruitEvent, "status"> & {
   routeId: RouteId;
+  instantChoice: "herb" | "food";
+  delayedRouteId: RouteId;
+  delayedItem?: "repairKit";
+  delayedNote: string;
   survivor: Survivor;
 };
 
@@ -13,6 +17,9 @@ export const recruitDefinitions: RecruitDefinition[] = [
     description: "A wounded hunter watches the campfire from a burned trail.",
     herbCost: 2,
     foodCost: 4,
+    instantChoice: "herb",
+    delayedRouteId: "mistwoodEdge",
+    delayedNote: "Rook left trail marks deeper in Mistwood. Clear it again to find his hidden camp.",
     survivor: {
       id: "survivor-rook",
       name: "Rook",
@@ -33,6 +40,9 @@ export const recruitDefinitions: RecruitDefinition[] = [
     description: "A marsh healer offers her maps in exchange for a warm meal or medicine.",
     herbCost: 4,
     foodCost: 6,
+    instantChoice: "food",
+    delayedRouteId: "moonwellPath",
+    delayedNote: "Mira asks the party to recover moonwater. Clear Moonwell Path to earn her trust.",
     survivor: {
       id: "survivor-mira",
       name: "Mira",
@@ -53,6 +63,10 @@ export const recruitDefinitions: RecruitDefinition[] = [
     description: "A stranded mechanic can restore the camp workshop if given supplies.",
     herbCost: 5,
     foodCost: 7,
+    instantChoice: "food",
+    delayedRouteId: "windscarCliffs",
+    delayedItem: "repairKit",
+    delayedNote: "Bram needs a Repair Kit delivered on another Windscar Cliffs expedition.",
     survivor: {
       id: "survivor-bram",
       name: "Bram",

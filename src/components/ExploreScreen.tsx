@@ -1,8 +1,10 @@
 import { useState, type Dispatch } from "react";
 import { beacons, getBeaconByBossRoute, getBeaconByPrepRoute } from "../data/beacons";
 import { routes } from "../data/routes";
+import { getRouteDecision, getRunModifier } from "../data/routeContent";
 import type { GameAction, GameState, RouteId } from "../game/state";
 import { calculateExpeditionDuration, calculateExpeditionSafety, expeditionSuccessChance, labelSuccessChance } from "../game/expedition";
+import { canResolveRouteChoice } from "../game/routeDecisions";
 import { CrewPicker } from "./CrewPicker";
 
 type Props = {
@@ -19,6 +21,9 @@ export function ExploreScreen({ state, dispatch }: Props) {
   const availableSurvivors = state.run.survivors.filter((survivor) => !survivor.onExpedition);
   const selectedSurvivors = availableSurvivors.filter((survivor) => selectedIds.includes(survivor.id) && survivor.currentHp > 0);
   const expedition = state.run.activeExpedition;
+  const activeDecision = state.run.activeRouteDecision;
+  const decision = activeDecision ? getRouteDecision(activeDecision.id) : null;
+  const modifier = getRunModifier(state.run.runModifier);
 
   function startRoute(routeId: RouteId) {
     dispatch({
@@ -34,6 +39,33 @@ export function ExploreScreen({ state, dispatch }: Props) {
 
   return (
     <section className="screen">
+      <div className="panel compact modifier-banner">
+        <div>
+          <p className="eyebrow">Run Modifier</p>
+          <h3>{modifier.name}</h3>
+        </div>
+        <p>{modifier.description}</p>
+      </div>
+      {decision && (
+        <div className="panel route-decision">
+          <p className="eyebrow">{decision.kind === "event" ? "Route Event" : "Normal Encounter"}</p>
+          <h2>{decision.name}</h2>
+          <p>{decision.description}</p>
+          <div className="decision-choices">
+            {decision.choices.map((choice) => (
+              <button
+                className="decision-choice"
+                disabled={!canResolveRouteChoice(state, choice)}
+                key={choice.id}
+                onClick={() => dispatch({ type: "resolveRouteDecision", choiceId: choice.id })}
+              >
+                <strong>{choice.label}</strong>
+                <span>{choice.detail}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       {expedition && (
         <div className="panel compact">
           <p className="eyebrow">Active Expedition</p>
@@ -50,7 +82,7 @@ export function ExploreScreen({ state, dispatch }: Props) {
           )}
         </div>
       )}
-      {!expedition && (
+      {!expedition && !activeDecision && (
         <div className="panel compact expedition-prep">
           <div>
             <p className="eyebrow">Expedition Supplies</p>
@@ -76,7 +108,7 @@ export function ExploreScreen({ state, dispatch }: Props) {
           </label>
         </div>
       )}
-      {!expedition && (
+      {!expedition && !activeDecision && (
         <div className="panel compact">
           <p className="eyebrow">Expedition Crew</p>
           <h3>Select 1–2 survivors</h3>
@@ -110,7 +142,7 @@ export function ExploreScreen({ state, dispatch }: Props) {
           const progress = state.run.routes[route.id];
           const locked = !progress.discovered;
           const needsParty = route.kind === "boss" ? selectedSurvivors.length !== 2 : selectedSurvivors.length < 1;
-          const disabled = locked || needsParty || Boolean(state.run.activeExpedition);
+          const disabled = locked || needsParty || Boolean(state.run.activeExpedition) || Boolean(activeDecision);
           const beacon = getBeaconByBossRoute(route.id) ?? getBeaconByPrepRoute(route.id);
           const safety = calculateExpeditionSafety(state, selectedSurvivors.map((survivor) => survivor.id), route, { useRation, useTorch });
           const successChance = expeditionSuccessChance(safety, route.danger);

@@ -1,4 +1,5 @@
 import { getBeacon, type BeaconDefinition } from "../data/beacons.js";
+import { getRunModifier } from "../data/routeContent.js";
 import type { BossAction, BossBattle, CoreQuality, GameState, Survivor } from "./state.js";
 
 export function createGuardianBattle(state: GameState, partyIds: string[], beacon: BeaconDefinition): BossBattle {
@@ -17,7 +18,7 @@ export function createGuardianBattle(state: GameState, partyIds: string[], beaco
     bossHp: beacon.bossHp,
     bossMaxHp: beacon.bossHp,
     guardStacks: 0,
-    burnPressure: Math.max(1, beacon.pressure + cloakBonus + researchBonus),
+    burnPressure: Math.max(1, beacon.pressure + cloakBonus + researchBonus + getRunModifier(state.run.runModifier).bossPressure),
     partyIds: party.map((survivor) => survivor.id),
     turn: 1,
     status: "active",

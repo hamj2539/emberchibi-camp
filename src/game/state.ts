@@ -36,6 +36,17 @@ export type RewardType = "legacyShards" | "blueprint" | "relic" | "survivorUnloc
 export type CampUpgradeId = "infirmary" | "workshop" | "watchtower";
 export type LegacyProjectId = "fieldManual" | "deepPockets" | "hearthstone";
 export type RunOutcome = "victory" | "collapse";
+export type RunModifierId = "heavyFog" | "emberWinds" | "hungryNight" | "oldTrailSigns";
+export type RouteEventId =
+  | "oldTrailMarkers"
+  | "ashOrchard"
+  | "drownedShrine"
+  | "stormBridge"
+  | "rootWhispers"
+  | "moonMirror"
+  | "cinderCache"
+  | "galeNest";
+export type NormalEncounterId = "ashWolves" | "mireLeeches" | "rootboundRaiders";
 
 export type Stats = Record<StatKey, number>;
 export type Resources = Record<ResourceKey, number>;
@@ -84,7 +95,15 @@ export type RecruitEvent = {
   description: string;
   herbCost: number;
   foodCost: number;
-  status: "available" | "resolved";
+  status: "available" | "waiting" | "resolved" | "missed";
+  branchNote?: string;
+};
+
+export type ActiveRouteDecision = {
+  kind: "event" | "encounter";
+  id: RouteEventId | NormalEncounterId;
+  routeId: RouteId;
+  partyIds: string[];
 };
 
 export type BossBattle = {
@@ -166,11 +185,16 @@ export type RunState = {
   routes: Record<RouteId, RouteProgress>;
   beacons: Record<BeaconId, BeaconProgress>;
   activeExpedition: Expedition | null;
+  activeRouteDecision: ActiveRouteDecision | null;
   craftQueue: CraftTask[];
   recruitEvent: RecruitEvent | null;
   bossBattle: BossBattle | null;
   beaconRepair: BeaconRepair | null;
   campUpgrades: CampUpgradeId[];
+  runModifier: RunModifierId;
+  eventFlags: string[];
+  eventScore: number;
+  decisionsResolved: number;
   gate: GateProgress;
   endRun: EndRunResult | null;
   log: string[];
@@ -203,6 +227,7 @@ export type GameAction =
   | { type: "assignJob"; survivorId: string; job: IdleJob }
   | { type: "buyCampUpgrade"; upgradeId: CampUpgradeId }
   | { type: "startExpedition"; routeId: RouteId; survivorIds: string[]; useRation?: boolean; useTorch?: boolean }
+  | { type: "resolveRouteDecision"; choiceId: string }
   | { type: "resolveRecruit"; choice: "herb" | "food" | "ignore" }
   | { type: "startCraft"; recipeId: ItemId }
   | { type: "bossAction"; action: BossAction }
@@ -270,11 +295,16 @@ export function createInitialState(now = Date.now()): GameState {
       },
       beacons: { ...emptyBeaconProgress },
       activeExpedition: null,
+      activeRouteDecision: null,
       craftQueue: [],
       recruitEvent: null,
       bossBattle: null,
       beaconRepair: null,
       campUpgrades: [],
+      runModifier: "hungryNight",
+      eventFlags: [],
+      eventScore: 0,
+      decisionsResolved: 0,
       gate: {
         status: "sealed",
         heraldHp: 160,

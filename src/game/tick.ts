@@ -1,9 +1,11 @@
 import { beacons, getBeaconByBossRoute, getBeaconByPrepRoute } from "../data/beacons.js";
-import { getRecruitForRoute } from "../data/events.js";
+import { getRecruitDefinition, getRecruitForRoute } from "../data/events.js";
+import { getRunModifier } from "../data/routeContent.js";
 import { getRoute } from "../data/routes.js";
 import { createGuardianBattle } from "./combat.js";
 import { calculateExpeditionSafety } from "./expedition.js";
-import type { GameState, ItemId, ResourceKey, Resources } from "./state.js";
+import { rollRouteDecision } from "./routeDecisions.js";
+import type { GameState, ItemId, RecruitEvent, ResourceKey, Resources, Survivor } from "./state.js";
 
 export function resolveIdleProgress(state: GameState, elapsedSeconds: number): GameState {
   if (!state.run.started || elapsedSeconds <= 0) return state;
@@ -158,11 +160,12 @@ export function resolveExpedition(state: GameState, now: number): GameState {
   });
   const failed = safety + roll(1, 24) < route.danger;
   const resources: Resources = { ...state.run.resources };
+  const items = { ...state.run.items };
   const routes = { ...state.run.routes };
   const progress = routes[route.id];
   const log = [...state.run.log];
 
-  const survivors = state.run.survivors.map((survivor) => {
+  let survivors = state.run.survivors.map((survivor) => {
     if (!expedition.survivorIds.includes(survivor.id)) return survivor;
     const hasHerbalist = party.some((member) => member.classId === "herbalist");
     return {
@@ -219,18 +222,48 @@ export function resolveExpedition(state: GameState, now: number): GameState {
     for (const [key, range] of Object.entries(route.rewards) as [ResourceKey, [number, number]][]) {
       const reward = roll(range[0], range[1]);
       const hunterBonus = key === "food" && party.some((survivor) => survivor.classId === "hunter") ? Math.ceil(reward * 0.25) : 0;
-      resources[key] += reward + hunterBonus;
+      resources[key] += Math.max(0, Math.round((reward + hunterBonus) * getRunModifier(state.run.runModifier).rewardMultiplier));
     }
     routes[route.id] = { ...progress, completed: progress.completed + 1 };
     const prepBeacon = getBeaconByPrepRoute(route.id);
     if (prepBeacon) {
       routes[prepBeacon.bossRouteId] = { ...routes[prepBeacon.bossRouteId], discovered: true };
       log.unshift(`${route.name} revealed the ${prepBeacon.name} site.`);
-    } else if (availableRecruit(state, route.id)) {
-      log.unshift(`The party encountered ${availableRecruit(state, route.id)?.name}.`);
+    } else if (availableRecruit(state, route.id, survivors, state.run.recruitEvent)) {
+      log.unshift(`The party encountered ${availableRecruit(state, route.id, survivors, state.run.recruitEvent)?.name}.`);
     } else {
       log.unshift(`${route.name} completed. Supplies were added to camp.`);
     }
+  }
+
+  let recruitEvent = state.run.recruitEvent;
+  if (!failed && recruitEvent?.status === "waiting") {
+    const definition = getRecruitDefinition(recruitEvent.id);
+    const isDeliveryRoute = definition?.delayedRouteId === route.id;
+    const hasDeliveryItem = !definition?.delayedItem || items[definition.delayedItem] > 0;
+    if (definition && isDeliveryRoute && hasDeliveryItem) {
+      if (definition.delayedItem) items[definition.delayedItem] -= 1;
+      if (!survivors.some((survivor) => survivor.id === definition.survivor.id)) {
+        survivors = [...survivors, { ...definition.survivor }];
+      }
+      recruitEvent = { ...recruitEvent, status: "resolved", branchNote: undefined };
+      log.unshift(`${definition.survivor.name}'s delayed request is complete. They join the camp.`);
+    }
+  }
+
+  const newRecruit = !failed ? availableRecruit(state, route.id, survivors, recruitEvent) : undefined;
+  if (newRecruit) recruitEvent = { ...newRecruit, status: "available" };
+
+  const decisionState = {
+    ...state,
+    run: { ...state.run, resources, items, survivors, recruitEvent },
+  };
+  const activeRouteDecision =
+    !failed && route.kind !== "boss"
+      ? rollRouteDecision(decisionState, route.id, expedition.survivorIds)
+      : null;
+  if (activeRouteDecision) {
+    log.unshift(`Route decision: ${activeRouteDecision.kind === "event" ? "an event" : "an encounter"} blocks the path.`);
   }
 
   return {
@@ -238,22 +271,31 @@ export function resolveExpedition(state: GameState, now: number): GameState {
     run: {
       ...state.run,
       resources,
+      items,
       routes,
       survivors,
       activeExpedition: null,
-      recruitEvent: !failed && availableRecruit(state, route.id)
-        ? { ...availableRecruit(state, route.id)!, status: "available" }
-        : state.run.recruitEvent,
+      activeRouteDecision,
+      recruitEvent,
       routeFailures: state.run.routeFailures + (failed ? 1 : 0),
       log: log.slice(0, 12),
     },
   };
 }
 
-function availableRecruit(state: GameState, routeId: Parameters<typeof getRecruitForRoute>[0]) {
-  if (state.run.recruitEvent && state.run.recruitEvent.status === "available") return undefined;
+function availableRecruit(
+  state: GameState,
+  routeId: Parameters<typeof getRecruitForRoute>[0],
+  survivors: Survivor[],
+  current: RecruitEvent | null,
+) {
+  if (current && (current.status === "available" || current.status === "waiting")) return undefined;
   const definition = getRecruitForRoute(routeId);
-  if (!definition || state.run.survivors.some((survivor) => survivor.id === definition.survivor.id)) return undefined;
+  if (
+    !definition ||
+    survivors.some((survivor) => survivor.id === definition.survivor.id) ||
+    state.run.eventFlags.includes(`recruit-${definition.id}-missed`)
+  ) return undefined;
   return definition;
 }
 

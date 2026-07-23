@@ -1,6 +1,8 @@
 import { getCurrentObjective } from "../src/game/objectives.js";
 import { getBeacon } from "../src/data/beacons.js";
 import { getRoute } from "../src/data/routes.js";
+import { getRecruitDefinition } from "../src/data/events.js";
+import { normalEncounters, routeEvents, runModifiers } from "../src/data/routeContent.js";
 import { createGuardianBattle, resolveBossAction } from "../src/game/combat.js";
 import { calculateIdleElapsed, gameReducer, MAX_OFFLINE_SECONDS } from "../src/game/reducer.js";
 import { calculateGateStability, openGate } from "../src/game/gate.js";
@@ -8,7 +10,13 @@ import { migrateV1, parseGame } from "../src/game/save.js";
 import { applyReward } from "../src/game/rewards.js";
 import { calculateScore } from "../src/game/scoring.js";
 import { resolveExpedition, resolveIdleProgress } from "../src/game/tick.js";
-import { calculateExpeditionDuration, expeditionSuccessChance } from "../src/game/expedition.js";
+import { calculateExpeditionDuration, calculateExpeditionSafety, expeditionSuccessChance } from "../src/game/expedition.js";
+import {
+  canResolveRouteChoice,
+  modifierFromRoll,
+  resolveRouteChoice,
+  rollRouteDecision,
+} from "../src/game/routeDecisions.js";
 import { createInitialState, type GameState } from "../src/game/state.js";
 
 const tests: { name: string; run: () => void }[] = [
@@ -460,6 +468,270 @@ const tests: { name: string; run: () => void }[] = [
       } finally {
         Math.random = originalRandom;
       }
+    },
+  },
+  {
+    name: "Alpha 1 content includes eight events, three encounters, and four modifiers",
+    run: () => {
+      assertEqual(routeEvents.length, 8);
+      assertEqual(normalEncounters.length, 3);
+      assertEqual(runModifiers.length, 4);
+      assertEqual(new Set(routeEvents.flatMap((event) => event.routes)).size >= 5, true);
+    },
+  },
+  {
+    name: "route event choices enforce stats and apply resources, flags, and score",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "scout" });
+      const decision = {
+        kind: "event" as const,
+        id: "oldTrailMarkers" as const,
+        routeId: "mistwoodEdge" as const,
+        partyIds: ["survivor-scout"],
+      };
+      const deciding = { ...started, run: { ...started.run, activeRouteDecision: decision } };
+      const definition = routeEvents.find((event) => event.id === "oldTrailMarkers")!;
+      const follow = definition.choices.find((choice) => choice.id === "follow")!;
+      assertEqual(canResolveRouteChoice(deciding, follow), true);
+      const resolved = resolveRouteChoice(deciding, "follow");
+      assertEqual(resolved.run.resources.food, 13);
+      assertEqual(resolved.run.resources.wood, 14);
+      assertEqual(resolved.run.eventFlags.includes("followed-old-signs"), true);
+      assertEqual(resolved.run.eventScore, 8);
+      assertEqual(resolved.run.decisionsResolved, 1);
+      assertEqual(resolved.run.activeRouteDecision, null);
+      const repeated = resolveRouteChoice(
+        { ...resolved, run: { ...resolved.run, activeRouteDecision: decision } },
+        "follow",
+      );
+      assertEqual(repeated.run.eventScore, 8);
+      assertEqual(repeated.run.decisionsResolved, 2);
+    },
+  },
+  {
+    name: "unmet route choice requirements cannot mutate the run",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "hunter" });
+      const deciding = {
+        ...started,
+        run: {
+          ...started.run,
+          activeRouteDecision: {
+            kind: "event" as const,
+            id: "moonMirror" as const,
+            routeId: "moonwellPath" as const,
+            partyIds: ["survivor-hunter"],
+          },
+        },
+      };
+      const blocked = resolveRouteChoice(deciding, "study");
+      assertEqual(blocked, deciding);
+    },
+  },
+  {
+    name: "normal encounters auto-select from route data and resolve one tactical choice",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "hunter" });
+      const supplied = {
+        ...started,
+        run: { ...started.run, items: { ...started.run.items, torch: 1 } },
+      };
+      const decision = rollRouteDecision(supplied, "burntGrove", ["survivor-hunter"], 0, 0);
+      assertEqual(decision?.kind, "encounter");
+      assertEqual(decision?.id, "ashWolves");
+      const resolved = resolveRouteChoice(
+        { ...supplied, run: { ...supplied.run, activeRouteDecision: decision } },
+        "flare",
+      );
+      assertEqual(resolved.run.items.torch, 0);
+      assertEqual(resolved.run.decisionsResolved, 1);
+    },
+  },
+  {
+    name: "run modifier rolls cover all variants and Heavy Fog changes route safety",
+    run: () => {
+      assertEqual(modifierFromRoll(0), "heavyFog");
+      assertEqual(modifierFromRoll(0.26), "emberWinds");
+      assertEqual(modifierFromRoll(0.51), "hungryNight");
+      assertEqual(modifierFromRoll(0.99), "oldTrailSigns");
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "scout" });
+      const heavy = { ...started, run: { ...started.run, runModifier: "heavyFog" as const } };
+      const signs = { ...started, run: { ...started.run, runModifier: "oldTrailSigns" as const } };
+      const route = getRoute("burntGrove");
+      const heavySafety = calculateExpeditionSafety(heavy, ["survivor-scout"], route, { useRation: false, useTorch: false });
+      const signsSafety = calculateExpeditionSafety(signs, ["survivor-scout"], route, { useRation: false, useTorch: false });
+      assertEqual(signsSafety - heavySafety, 7);
+    },
+  },
+  {
+    name: "Rook delayed branch joins after another Mistwood route",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "scout" });
+      const definition = getRecruitDefinition("rook");
+      const offered = {
+        ...started,
+        run: {
+          ...started.run,
+          resources: { ...started.run.resources, food: 20 },
+          recruitEvent: { ...definition, status: "available" as const },
+        },
+      };
+      const waiting = gameReducer(offered, { type: "resolveRecruit", choice: "food" });
+      assertEqual(waiting.run.recruitEvent?.status, "waiting");
+      const expedition = {
+        id: "rook-delay",
+        routeId: "mistwoodEdge" as const,
+        survivorIds: ["survivor-scout"],
+        startedAt: 0,
+        endsAt: 1,
+      };
+      const originalRandom = Math.random;
+      Math.random = () => 0.999;
+      try {
+        const resolved = resolveExpedition({ ...waiting, run: { ...waiting.run, activeExpedition: expedition } }, 2);
+        assertEqual(resolved.run.recruitEvent?.status, "resolved");
+        assertEqual(resolved.run.survivors.some((survivor) => survivor.id === "survivor-rook"), true);
+      } finally {
+        Math.random = originalRandom;
+      }
+    },
+  },
+  {
+    name: "Mira and Bram delayed branches require their route and Bram's Repair Kit",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "scout" });
+      const mira = getRecruitDefinition("mira");
+      const miraWaiting = gameReducer({
+        ...started,
+        run: {
+          ...started.run,
+          resources: { ...started.run.resources, herb: 20 },
+          recruitEvent: { ...mira, status: "available" as const },
+        },
+      }, { type: "resolveRecruit", choice: "herb" });
+      const originalRandom = Math.random;
+      Math.random = () => 0.999;
+      try {
+        const miraResolved = resolveExpedition({
+          ...miraWaiting,
+          run: {
+            ...miraWaiting.run,
+            activeExpedition: {
+              id: "mira-delay",
+              routeId: "moonwellPath",
+              survivorIds: ["survivor-scout"],
+              startedAt: 0,
+              endsAt: 1,
+            },
+          },
+        }, 2);
+        assertEqual(miraResolved.run.survivors.some((survivor) => survivor.id === "survivor-mira"), true);
+
+        const bram = getRecruitDefinition("bram");
+        const bramWaiting = gameReducer({
+          ...started,
+          run: {
+            ...started.run,
+            resources: { ...started.run.resources, herb: 20 },
+            recruitEvent: { ...bram, status: "available" as const },
+          },
+        }, { type: "resolveRecruit", choice: "herb" });
+        const withoutKit = resolveExpedition({
+          ...bramWaiting,
+          run: {
+            ...bramWaiting.run,
+            activeExpedition: {
+              id: "bram-delay-1",
+              routeId: "windscarCliffs",
+              survivorIds: ["survivor-scout"],
+              startedAt: 0,
+              endsAt: 1,
+            },
+          },
+        }, 2);
+        assertEqual(withoutKit.run.recruitEvent?.status, "waiting");
+        const withKit = resolveExpedition({
+          ...withoutKit,
+          run: {
+            ...withoutKit.run,
+            items: { ...withoutKit.run.items, repairKit: 1 },
+            activeExpedition: {
+              id: "bram-delay-2",
+              routeId: "windscarCliffs",
+              survivorIds: ["survivor-scout"],
+              startedAt: 0,
+              endsAt: 1,
+            },
+          },
+        }, 2);
+        assertEqual(withKit.run.survivors.some((survivor) => survivor.id === "survivor-bram"), true);
+        assertEqual(withKit.run.items.repairKit, 0);
+      } finally {
+        Math.random = originalRandom;
+      }
+    },
+  },
+  {
+    name: "pre-Alpha save migration adds route decision and variation defaults",
+    run: () => {
+      const old = JSON.parse(JSON.stringify(createInitialState())) as GameState;
+      delete (old.run as Partial<GameState["run"]>).activeRouteDecision;
+      delete (old.run as Partial<GameState["run"]>).eventFlags;
+      delete (old.run as Partial<GameState["run"]>).eventScore;
+      delete (old.run as Partial<GameState["run"]>).decisionsResolved;
+      delete (old.run as Partial<GameState["run"]>).runModifier;
+      const migrated = migrateV1(old);
+      assertEqual(migrated.run.activeRouteDecision, null);
+      assertEqual(migrated.run.eventFlags.length, 0);
+      assertEqual(migrated.run.eventScore, 0);
+      assertEqual(migrated.run.decisionsResolved, 0);
+      assertEqual(migrated.run.runModifier, "hungryNight");
+    },
+  },
+  {
+    name: "save migration drops malformed route decisions safely",
+    run: () => {
+      const state = createInitialState();
+      const malformed = {
+        ...state,
+        run: {
+          ...state.run,
+          activeRouteDecision: {
+            kind: "event",
+            id: "missing-event",
+            routeId: "mistwoodEdge",
+            partyIds: [],
+          },
+        },
+      } as unknown as GameState;
+      assertEqual(migrateV1(malformed).run.activeRouteDecision, null);
+    },
+  },
+  {
+    name: "recruit objective recovers after Rook is missed",
+    run: () => {
+      const state = createInitialState();
+      const missed = {
+        ...state,
+        run: {
+          ...state.run,
+          started: true,
+          survivors: [{
+            id: "survivor-scout",
+            name: "Scout",
+            classId: "scout" as const,
+            role: "Exploration",
+            stats: { hp: 24, atk: 4, def: 3, spd: 8, wis: 4, craft: 3, surv: 7, luck: 6 },
+            currentHp: 24,
+            fatigue: 0,
+            injury: 0,
+            job: "forage" as const,
+            onExpedition: false,
+          }],
+          eventFlags: ["recruit-rook-missed"],
+        },
+      };
+      assertEqual(getCurrentObjective(missed).detail.includes("Saltmarsh"), true);
     },
   },
 ];

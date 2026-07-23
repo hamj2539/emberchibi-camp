@@ -2,6 +2,7 @@ import type { Dispatch } from "react";
 import { beacons } from "../data/beacons";
 import { GameIcon, type GameIconName } from "./GameIcon";
 import { campUpgrades } from "../data/progression";
+import { getRecruitDefinition } from "../data/events";
 import type { GameAction, GameState, ResourceKey } from "../game/state";
 
 type Props = {
@@ -41,6 +42,7 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
   const expedition = state.run.activeExpedition;
   const secondsLeft = expedition ? Math.max(0, Math.ceil((expedition.endsAt - Date.now()) / 1000)) : 0;
   const litBeacons = beacons.filter((beacon) => state.run.beacons[beacon.id].repaired).length;
+  const recruitDefinition = state.run.recruitEvent ? getRecruitDefinition(state.run.recruitEvent.id) : null;
 
   return (
     <section className="screen dashboard">
@@ -69,17 +71,33 @@ export function CampScreen({ state, dispatch, onReset }: Props) {
               onClick={() => dispatch({ type: "resolveRecruit", choice: "herb" })}
             >
               Spend {state.run.recruitEvent.herbCost} Herb
+              {recruitDefinition?.instantChoice === "herb" ? " · Join now" : " · Delayed lead"}
             </button>
             <button
               disabled={state.run.resources.food < state.run.recruitEvent.foodCost}
               onClick={() => dispatch({ type: "resolveRecruit", choice: "food" })}
             >
               Spend {state.run.recruitEvent.foodCost} Food
+              {recruitDefinition?.instantChoice === "food" ? " · Join now" : " · Delayed lead"}
             </button>
             <button className="danger" onClick={() => dispatch({ type: "resolveRecruit", choice: "ignore" })}>
               Ignore
             </button>
           </div>
+        </div>
+      )}
+
+      {state.run.recruitEvent?.status === "waiting" && (
+        <div className="panel recruit-panel">
+          <p className="eyebrow">Recruit Lead</p>
+          <h3>{state.run.recruitEvent.name}</h3>
+          <p>{state.run.recruitEvent.branchNote}</p>
+          {recruitDefinition?.delayedItem && (
+            <div className="status-strip">
+              <span>Required: {recruitDefinition.delayedItem === "repairKit" ? "Repair Kit" : recruitDefinition.delayedItem}</span>
+              <span>Ready: {state.run.items[recruitDefinition.delayedItem]}</span>
+            </div>
+          )}
         </div>
       )}
 

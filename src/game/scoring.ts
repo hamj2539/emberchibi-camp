@@ -33,6 +33,9 @@ export function calculateScore(state: GameState): { score: number; lines: ScoreL
     lines.push({ label: "Defeated Night Herald", points: 220 });
     lines.push({ label: "Opened the Cinder Gate", points: 80 });
   }
+  if (state.run.eventScore > 0) {
+    lines.push({ label: `Exploration decisions (${state.run.decisionsResolved})`, points: state.run.eventScore });
+  }
   if (state.run.routeFailures > 0) {
     lines.push({ label: "Route failures", points: state.run.routeFailures * -15 });
   }

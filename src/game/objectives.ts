@@ -16,11 +16,19 @@ export function getCurrentObjective(state: GameState): Objective {
     };
   }
 
-  if (!state.run.survivors.some((survivor) => survivor.id === "survivor-rook")) {
+  if (state.run.survivors.length < 2) {
+    const rookMissed = state.run.eventFlags.includes("recruit-rook-missed");
     return {
       title: "Recruit a second survivor",
-      detail: "Run Mistwood Edge and help Rook when the event appears.",
-      progress: state.run.recruitEvent?.status === "available" ? 70 : 30,
+      detail: rookMissed
+        ? "Rook moved on. Search Saltmarsh Run or Windscar Cliffs for another recruit."
+        : "Run Mistwood Edge and help Rook when the event appears.",
+      progress:
+        state.run.recruitEvent?.status === "waiting"
+          ? 80
+          : state.run.recruitEvent?.status === "available"
+            ? 70
+            : 30,
     };
   }
 

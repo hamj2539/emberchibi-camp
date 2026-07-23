@@ -1,4 +1,5 @@
 import type { RouteDefinition } from "../data/routes.js";
+import { getRunModifier } from "../data/routeContent.js";
 import type { GameState, Survivor } from "./state.js";
 
 export type ExpeditionSupplyPlan = {
@@ -21,6 +22,7 @@ export function calculateExpeditionSafety(
     campGuards * 4 +
     (state.run.campUpgrades.includes("watchtower") ? 6 : 0) +
     (state.legacy.projects.includes("fieldManual") ? 3 : 0) +
+    getRunModifier(state.run.runModifier).safety +
     (supplies.useRation ? 6 : 0) +
     (supplies.useTorch && route.danger >= 35 ? 5 : 0)
   );

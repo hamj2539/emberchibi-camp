@@ -10,6 +10,7 @@ import { calculateExpeditionDuration } from "./expedition.js";
 import { applyLegacyStartBonuses } from "./meta.js";
 import { applyReward, rollChestReward } from "./rewards.js";
 import { calculateCollapseScore } from "./scoring.js";
+import { modifierFromRoll, resolveRouteChoice } from "./routeDecisions.js";
 import { resolveExpedition, resolveIdleProgress } from "./tick.js";
 import type { ChestGrade, GameAction, GameState, IdleJob, ResourceKey, Survivor } from "./state.js";
 import { createInitialState } from "./state.js";
@@ -84,7 +85,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       });
     }
     case "startExpedition": {
-      if (state.run.activeExpedition) return state;
+      if (state.run.activeExpedition || state.run.activeRouteDecision) return state;
       const route = getRoute(action.routeId);
       if (!state.run.routes[action.routeId].discovered) return state;
       const validParty = state.run.survivors.filter(
@@ -127,6 +128,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         },
       });
     }
+    case "resolveRouteDecision":
+      return stamp(resolveRouteChoice(state, action.choiceId));
     case "resolveRecruit": {
       if (!state.run.recruitEvent || state.run.recruitEvent.status !== "available") return state;
       const definition = getRecruitDefinition(state.run.recruitEvent.id);
@@ -135,23 +138,30 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const log = [...state.run.log];
       const survivors = [...state.run.survivors];
 
-      if (action.choice === "herb") {
-        if (resources.herb < definition.herbCost) return state;
-        resources.herb -= definition.herbCost;
-        survivors.push({ ...definition.survivor });
-        log.unshift(`${definition.survivor.name} joins the camp after receiving medicine.`);
-      }
-
-      if (action.choice === "food") {
-        if (resources.food < definition.foodCost) return state;
-        resources.food -= definition.foodCost;
-        survivors.push({ ...definition.survivor });
-        log.unshift(`${definition.survivor.name} joins the camp over a warm meal.`);
+      if (action.choice === "herb" || action.choice === "food") {
+        const cost = action.choice === "herb" ? definition.herbCost : definition.foodCost;
+        if (resources[action.choice] < cost) return state;
+        resources[action.choice] -= cost;
+        if (action.choice === definition.instantChoice) {
+          survivors.push({ ...definition.survivor });
+          log.unshift(`${definition.survivor.name} joins the camp.`);
+        } else {
+          log.unshift(definition.delayedNote);
+        }
       }
 
       if (action.choice === "ignore") {
-        log.unshift("The party leaves the wounded hunter behind and presses deeper into the mist.");
+        resources.food = Math.max(0, resources.food - 1);
+        log.unshift(`${definition.survivor.name} leaves a false trail behind. The camp loses 1 Food.`);
       }
+
+      const status =
+        action.choice === "ignore"
+          ? "missed"
+          : action.choice === definition.instantChoice
+            ? "resolved"
+            : "waiting";
+      const missedFlag = `recruit-${definition.id}-missed`;
 
       return stamp({
         ...state,
@@ -159,7 +169,15 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           ...state.run,
           resources,
           survivors,
-          recruitEvent: { ...state.run.recruitEvent, status: "resolved" },
+          recruitEvent: {
+            ...state.run.recruitEvent,
+            status,
+            branchNote: status === "waiting" ? definition.delayedNote : undefined,
+          },
+          eventFlags:
+            status === "missed" && !state.run.eventFlags.includes(missedFlag)
+              ? [...state.run.eventFlags, missedFlag]
+              : state.run.eventFlags,
           log: log.slice(0, 12),
         },
       });
@@ -341,7 +359,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
     case "resetRun": {
       const fresh = createInitialState();
-      return action.keepLegacy ? { ...fresh, legacy: state.legacy } : fresh;
+      const varied = {
+        ...fresh,
+        run: { ...fresh.run, runModifier: modifierFromRoll(Math.random()) },
+      };
+      return action.keepLegacy ? { ...varied, legacy: state.legacy } : varied;
     }
     default:
       return state;
