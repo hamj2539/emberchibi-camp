@@ -1,43 +1,56 @@
 # Emberchibi Camp Prototype QA
 
-Date: 2026-07-22
+Last updated: 2026-07-23
+
 Build target: GitHub Pages static build
 
-## Smoke Checks
+Validated commit: `98d7e51`
 
-- `npm run build` passes.
-- GitHub Pages workflow deploys `dist/`.
-- App loads under `/emberchibi-camp/`.
-- Save key remains `emberchibiCamp.v1`.
-- Existing save migration covers `items`, `craftQueue`, `recruitEvent`, `bossBattle`, `beaconRepair`, `endRun`, and legacy collections.
+## Automated Checks
+
+- `npm run test`: 26 passing game-logic tests.
+- `npm run build`: production build passes.
+- Full clean-run simulation reaches the Cinder Gate, defeats Night Herald, and awards an Ancient Chest.
+- Collapse, camp upgrades, class skills, recruit events, relic slots, and shard projects have focused tests.
+- GitHub Pages deployment completed successfully.
+- Production page, manifest, and service worker return HTTP 200.
+
+Vite reports expected build-time warnings for absolute asset paths under
+`/emberchibi-camp/`; the assets resolve correctly at runtime.
+
+## Browser Checks
+
+- Starter selection opens Camp correctly.
+- Camp resources, idle jobs, upgrades, Camp Log, and navigation render correctly.
+- Meta screen shows shard projects, relic slots, and permanent collections.
+- Desktop and 390x844 mobile layouts have no horizontal overflow.
+- Buttons and text remain inside their containers.
+- No browser console errors were observed in the production preview.
 
 ## Full Run Checklist
 
-1. Start from fresh save and choose any starter.
-2. Confirm Camp loads with resources, idle jobs, Camp Log, and status chips.
-3. Assign Rest after taking damage; HP should recover gradually.
-4. Complete Mistwood Edge and resolve Rook recruit event.
-5. Complete Burnt Grove and verify Ember Beacon Site unlocks.
-6. Craft at least one prep item such as Stone Spear, Torch, Herb Salve, or Repair Kit.
-7. Start Ember Beacon Site with 2 survivors and enter Cinder Stag battle.
-8. Resolve boss battle through win or loss.
-9. On win, verify Cinder Heart quality reflects boss failure count.
-10. Start Ember Beacon repair with enough Wood and Stone.
-11. Verify repair progress fills and then moves to End Run.
-12. Open Legacy Chest and verify reward persists in legacy state.
-13. Start Fresh Run and verify legacy values remain.
+1. Choose a starter and confirm the Camp save is created.
+2. Assign idle jobs and verify Rest, Forage, Craft, Guard, Cook, and Research.
+3. Complete Mistwood Edge and resolve the Rook event.
+4. Complete prep routes to reveal all five Beacon sites.
+5. Recruit Mira from Saltmarsh Run and Bram from Windscar Cliffs when offered.
+6. Craft and consume a Ration, Torch, Herb Salve, and Repair Kit.
+7. Build Field Infirmary, Ember Workshop, and Watchtower during a funded run.
+8. Defeat each Guardian and verify failed attempts lower only that Beacon's Core quality.
+9. Use each class skill once per survivor during boss encounters.
+10. Repair all five Beacons and verify Gate Stability totals 0-15.
+11. Enter the Cinder Gate with 2-3 survivors and defeat Night Herald.
+12. Verify score lines, chest grade, reward claim, and permanent legacy values.
+13. Spend Legacy Shards on a project and equip no more than two relics.
+14. Start a new run and verify equipped relic and project bonuses apply.
+15. Test Abandon Run and an all-survivors-downed collapse; both must award half score and a Broken Chest.
+16. Reload online and offline to verify local save recovery and PWA shell behavior.
 
-## Current QA Notes
+## Known Limits
 
-- Prototype timers are intentionally short for testing.
-- Camp Log overflow was fixed with an internal scroll region.
-- Rest recovery now uses fractional per-second progress.
-- Ancient Chest is reachable in a strong vertical-slice run after threshold tuning.
-- Asset paths are absolute to the GitHub Pages base path; Vite build warns but runtime resolution is expected.
-
-## Known Prototype Limits
-
-- No automated browser regression suite yet.
-- Boss AI is intentionally simple.
-- Asset set is partial: backgrounds and portraits exist, icon/boss/chest sheets are still planned.
-- Balance is tuned for fast prototype validation, not long-term progression.
+- Prototype timers are intentionally short.
+- Boss AI and normal route encounters are intentionally simple.
+- Camp crises and run-only relics are not implemented.
+- Sound is lightweight synthesized UI feedback; there is no music system.
+- PWA caching provides an offline shell, not cloud save or account sync.
+- Browser checks are manual; there is no automated end-to-end browser suite yet.
