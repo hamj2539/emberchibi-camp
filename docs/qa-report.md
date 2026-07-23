@@ -223,6 +223,18 @@ Vite reports expected build-time warnings for absolute asset paths under
 8. Keyboard-tab to every details summary and icon/badge-adjacent control; check focus remains visible and labels/titles describe non-text visual cues.
 9. Enable reduced motion and repeat route/combat checks; no visual-only state should depend on animation or color alone.
 
+## Alpha 13 Scene-First Expedition QA
+
+1. Start every biome route and verify the diorama occupies the primary viewport, with HUD overlays limited to route, mode, danger, supplies, and node progress.
+2. Verify clue, resource, shortcut, hazard, encounter, shrine, rest, and boss-gate nodes show as distinct environment objects rather than a text list.
+3. Watch the party change location as the node index advances and confirm walking, idle, gathering, investigating, startled, bracing, resting, and celebration states appear when applicable.
+4. Verify short in-scene floaters appear for recent route beats while full flavor remains behind `Route details`.
+5. In Manual mode, reach a major branch and verify the dimmed bottom sheet provides three compact option buttons, icon cues, requirement hints, and an optional details disclosure.
+6. In Auto-safe mode, verify the branch resolves without opening the sheet and the scene continues toward the next object.
+7. Check Ember heat/embers, Tidal rain/mist, Gale streaks, Root pulses, Lunar rays, and Mist fog are clearly visible.
+8. At 390x844 in English and Thai, verify the scene remains above the fold, path objects stay visible, and decision sheet buttons remain usable without horizontal overflow.
+9. Enable reduced motion and verify party, path, particles, object pulses, and floaters settle while state remains legible.
+
 ## Alpha 1 Exploration Regression Checklist
 
 1. Start a fresh run and open Explore; confirm the active Run Modifier is visible.

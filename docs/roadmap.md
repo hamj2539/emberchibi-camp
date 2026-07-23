@@ -4,17 +4,17 @@ Last updated: 2026-07-23
 
 ## Current Release
 
-**Alpha 12: Text-to-Visual UX Pass**
+**Alpha 13: Scene-First Expedition Redesign**
 
-The core game now presents routes, choices, combat, logs, and collection data
-through compact visual cards with expandable strategic detail.
+Expeditions now play as an animated route diorama, with path objects, party
+motion, biome layers, and compact overlays carrying the immediate state.
 
 | Area | Status | Current implementation |
 | --- | --- | --- |
 | Project shell | Complete | Vite, React, TypeScript, reducer architecture |
 | Save and offline | Complete | localStorage, backup recovery, migration, 8h offline cap |
 | Camp | Alpha 2 | six idle jobs, three upgrades, four pressure values, five crises |
-| Exploration | Alpha 12 | visual route scanlines, compact choices, localized live journeys |
+| Exploration | Alpha 13 | scene-first dioramas, route objects, compact choice sheets |
 | Run variation | Alpha 3 | five biome/run modifiers and twelve build-defining run items |
 | Run loadout | Alpha 3 | Tool, Charm, and Provision slots with source and trigger history |
 | Survivors | Alpha 1 | four starters plus branched/delayed Rook, Mira, and Bram recruitment |
@@ -208,6 +208,20 @@ through compact visual cards with expandable strategic detail.
   status chips, and a compact combat readout.
 - Redesigned Journal collection, chain, bond, and secret entries as visual grid
   cards with silhouettes, progress badges, meters, and hidden field notes.
+
+### Alpha 13 - Scene-First Expedition Redesign
+
+- Replaced the live route panel layout with a full-height animated diorama.
+- Turned each node into an in-scene object: resource, hazard, encounter, clue,
+  shrine, rest spot, hidden way, and Beacon threshold each have distinct forms.
+- Added scene HUD overlays for route, mode, danger, supplies, and node progress;
+  flavor/context stays inside a collapsed details control.
+- Added diorama path lighting, party travel, idle, investigation, startle,
+  bracing, rest, gathering, and celebration presentation states.
+- Reworked manual decisions into compact bottom sheets with option glyphs and
+  a single-line scene summary; detail remains optional.
+- Strengthened Ember, Tidal, Gale, Root, Lunar, and Mist biome motion layers
+  while preserving system reduced-motion support.
 
 ## Next Phase
 
