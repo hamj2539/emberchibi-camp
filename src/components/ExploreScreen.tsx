@@ -9,6 +9,7 @@ import { alpha7Events } from "../data/alpha7Content";
 import { bondLevel } from "../game/journal";
 import { CrewPicker } from "./CrewPicker";
 import { GameIcon, type GameIconName } from "./GameIcon";
+import { LiveExpeditionView } from "./LiveExpeditionView";
 
 type Props = {
   state: GameState;
@@ -38,6 +39,14 @@ export function ExploreScreen({ state, dispatch }: Props) {
     });
     setUseRation(false);
     setUseTorch(false);
+  }
+
+  if (expedition) {
+    return (
+      <section className="screen expedition-live-screen">
+        <LiveExpeditionView dispatch={dispatch} state={state} />
+      </section>
+    );
   }
 
   return (
@@ -72,22 +81,6 @@ export function ExploreScreen({ state, dispatch }: Props) {
               </button>
             ))}
           </div>
-        </div>
-      )}
-      {expedition && (
-        <div className="panel compact">
-          <p className="eyebrow">Active Expedition</p>
-          <h2>{routes.find((route) => route.id === expedition.routeId)?.name}</h2>
-          <div className="meter">
-            <span style={{ width: `${expeditionProgress(expedition.startedAt, expedition.endsAt)}%` }} />
-          </div>
-          <p>{Math.max(0, Math.ceil((expedition.endsAt - Date.now()) / 1000))}s until return</p>
-          {(expedition.usedRation || expedition.usedTorch) && (
-            <div className="status-strip">
-              {expedition.usedRation && <span>Ration: +6 safety, -4 fatigue</span>}
-              {expedition.usedTorch && <span>Torch: +5 high-danger safety</span>}
-            </div>
-          )}
         </div>
       )}
       {!expedition && !activeDecision && (
@@ -228,10 +221,4 @@ export function ExploreScreen({ state, dispatch }: Props) {
       </div>
     </section>
   );
-}
-
-function expeditionProgress(startedAt: number, endsAt: number): number {
-  const duration = endsAt - startedAt;
-  if (duration <= 0) return 100;
-  return Math.max(0, Math.min(100, ((Date.now() - startedAt) / duration) * 100));
 }

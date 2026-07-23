@@ -54,6 +54,19 @@ export type EventChainId = "ashMap" | "lostCaravan" | "singingRoots" | "brokenBe
 export type RepairMethod = "standard" | "ritual" | "special";
 export type RunModifierId = "heavyFog" | "emberWinds" | "hungryNight" | "oldTrailSigns" | "restlessRoots";
 export type RunEquipmentSlot = "tool" | "charm" | "provision";
+export type ExpeditionNodeType =
+  | "resource"
+  | "event"
+  | "encounter"
+  | "hazard"
+  | "rest"
+  | "shrine"
+  | "shortcut"
+  | "clue"
+  | "bossGate";
+export type PartyActivity = "walking" | "gathering" | "bracing" | "inspecting" | "resting" | "reacting";
+export type ExpeditionMode = "manual" | "autoSafe";
+export type BiomeMoodId = "mist" | "ember" | "tide" | "gale" | "root" | "lunar";
 export type RunItemId =
   | "oldCompass"
   | "emberPick"
@@ -123,6 +136,50 @@ export type Expedition = {
   endsAt: number;
   usedRation?: boolean;
   usedTorch?: boolean;
+  nodes: ExpeditionNode[];
+  currentNodeIndex: number;
+  nextNodeAt: number;
+  paused: boolean;
+  mode: ExpeditionMode;
+  activity: PartyActivity;
+  nodeSafety: number;
+  rewardMultiplier: number;
+  scoreBonus: number;
+  resolvedNodeIds: string[];
+  teasers: string[];
+  biomeMood: BiomeMoodId;
+};
+
+export type ExpeditionNodeChoice = {
+  id: "safe" | "risky" | "shortcut";
+  label: string;
+  detail: string;
+  result: string;
+  requirementLabel?: string;
+  requirement?: {
+    classId?: StarterClassId;
+    relic?: string;
+    survivorId?: string;
+    supply?: "ration" | "torch";
+  };
+  effect: {
+    safety?: number;
+    rewardMultiplier?: number;
+    score?: number;
+    fatigue?: number;
+    injury?: number;
+    resources?: Partial<Record<ResourceKey, number>>;
+  };
+};
+
+export type ExpeditionNode = {
+  id: string;
+  type: ExpeditionNodeType;
+  title: string;
+  flavor: string;
+  beat: string;
+  major: boolean;
+  choices: ExpeditionNodeChoice[];
 };
 
 export type RouteProgress = {
@@ -365,6 +422,8 @@ export type GameAction =
   | { type: "buyCampUpgrade"; upgradeId: CampUpgradeId }
   | { type: "startExpedition"; routeId: RouteId; survivorIds: string[]; useRation?: boolean; useTorch?: boolean }
   | { type: "resolveRouteDecision"; choiceId: string }
+  | { type: "resolveExpeditionNode"; choiceId: ExpeditionNodeChoice["id"] }
+  | { type: "setExpeditionMode"; mode: ExpeditionMode }
   | { type: "resolveRecruit"; choice: "herb" | "food" | "ignore" }
   | { type: "resolveCrisis"; choiceId: string }
   | { type: "equipRunItem"; itemId: RunItemId }

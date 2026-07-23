@@ -181,6 +181,26 @@ Vite reports expected build-time warnings for absolute asset paths under
 12. Load a pre-Alpha 9 save and verify Vows, variants, and memory defaults migrate safely.
 13. At 390px width, verify Vow cards, goal cards, metrics, and Tier II controls stack.
 
+## Fun Alpha 10 Live Expedition QA
+
+1. Start every route and verify it generates 4-7 visible path nodes.
+2. Verify normal routes use five nodes and Guardian routes end with a sixth threshold node.
+3. Watch party portraits move between nodes without shifting the surrounding layout.
+4. Verify walking, gathering, bracing, inspecting, resting, and danger reactions.
+5. Verify Mist fog, Ember particles, Tidal rain, Gale wind, Root sway, and Lunar light.
+6. Leave Explore during a manual journey; verify Camp continues and the branch pauses safely.
+7. Return to the paused journey and resolve Safe, Risky, and Shortcut choices.
+8. Verify unavailable shortcuts explain their class, relic, or survivor requirement.
+9. Compare Auto-safe with Risky and Shortcut reward, safety, and score results.
+10. Switch to Auto-safe while paused and verify the Safe choice resolves immediately.
+11. Use a prepared Ration or Torch and verify the hazard teaser reports +2 Safety.
+12. Reach a Guardian threshold and verify the scene darkens before combat.
+13. Complete prep/resource routes and verify recruit, event, reward, and discovery flow.
+14. Complete Guardian routes and verify deterministic transition into the existing battle.
+15. Reload an old timer-only expedition save and verify it resumes in Auto-safe mode.
+16. Enable reduced motion and verify ambient, path, teaser, and party animations stop.
+17. At 390x844, verify the path, status grid, choices, and party stay usable without overflow.
+
 ## Alpha 1 Exploration Regression Checklist
 
 1. Start a fresh run and open Explore; confirm the active Run Modifier is visible.
@@ -221,7 +241,7 @@ Vite reports expected build-time warnings for absolute asset paths under
 - Prototype timers are intentionally short.
 - Boss AI remains intentionally simple.
 - Normal encounters use one tactical decision and do not have a separate combat screen.
-- Route events are single-step decisions; multi-event chains are deferred.
+- Major expedition branches pause play; story events can still open after route completion.
 - Crisis tuning is intentionally simple; only one crisis is active at a time.
 - Temporary equipment applies to the whole run, not individual survivors.
 - Item drops are deterministic from matching content; weighted loot tables are deferred.

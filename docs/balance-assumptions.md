@@ -5,8 +5,9 @@ Last updated: 2026-07-23
 ## Pacing Target
 
 - Target active full-run time: 10-15 minutes.
-- Eleven base route timers total 222 seconds before Scout, Heavy Fog, supplies,
-  repeat routes, choices, combat turns, crafting, and repair.
+- Eleven route durations now define node cadence rather than one countdown.
+  Their 222-second total remains the baseline before Scout, Heavy Fog, repeat
+  routes, manual pauses, combat turns, crafting, and repair.
 - A clean prepared run should require 10 core route clears plus at least one
   recruit/resource route. Failed routes and resource recovery intentionally extend it.
 
@@ -19,6 +20,14 @@ Last updated: 2026-07-23
   outcomes may require a recovery route.
 - Crisis pressure decays slowly enough that the first crisis usually follows
   several route decisions rather than interrupting the opening minute.
+
+## Expedition Branch Assumptions
+
+- Auto-safe adds route safety and no reward multiplier; it remains the reliable idle path.
+- Risky branches trade 4 Safety for x1.30 route rewards and 14 score.
+- Identity shortcuts add 7 Safety, x1.15 rewards, and 20 score.
+- A prepared Ration or Torch adds 2 Safety when an animated hazard node resolves.
+- Manual decisions can extend active time, but never stop camp idle production.
 
 ## Combat Assumptions
 

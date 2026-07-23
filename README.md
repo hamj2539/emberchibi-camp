@@ -1,7 +1,7 @@
 # Emberchibi Camp
 
-Solo Alpha 9 survival roguelite RPG with long-term goals, optional run vows,
-tier-two Legacy projects, local balance history, collections, and phased boss combat.
+Fun Alpha 10 survival roguelite RPG with watchable node-based expeditions,
+optional run vows, long-term progression, collections, and phased boss combat.
 exploration decisions, idle management, and turn-based key encounters.
 
 **Live build:** https://hamj2539.github.io/emberchibi-camp/
@@ -37,6 +37,9 @@ exploration decisions, idle management, and turn-based key encounters.
 - Six long-term Journal goals for repairs, Core quality, Bonds, endings, challenges, and collections.
 - Five Tier II Legacy projects that unlock route hints, modifier/loadout choices, chest protection, and item memory.
 - Local aggregate balance history for duration, outcomes, chests, starters, and collapse causes.
+- Five-to-six node live journeys for every route, with safe, risky, and identity shortcuts.
+- Manual expedition decisions, viable Auto-safe play, six animated biome moods,
+  six party activity states, floating route beats, and Guardian lead-ins.
 - Local save migration, responsive layout, sound feedback, and PWA support.
 
 ## Development
@@ -60,7 +63,7 @@ The app is configured for GitHub Pages under `/emberchibi-camp/`.
 npm run test
 ```
 
-The suite currently covers 81 game-logic cases, including save migration,
+The suite currently covers 90 game-logic cases, including save migration,
 offline progress, expeditions, combat, upgrades, meta progression, collapse,
 route decisions, encounters, recruit branches, run modifiers, crisis triggers,
 deadlines, choices, ignored consequences, run item acquisition, loadout limits,
@@ -69,7 +72,8 @@ Core quality performance, balance thresholds, onboarding, local metrics,
 all four starter smoke paths, collection discovery, Bond progression, secrets,
 challenge completion, event chains, personal stories, alternate repairs,
 variant endings, progression costs, vows, reward scaling, long-term goals,
-aggregate metrics, and a clean full-run Gate simulation.
+aggregate metrics, node generation, branching, Auto-safe, decision pauses,
+shortcuts, supply consequences, route completion, and a clean full-run Gate simulation.
 
 ## Save Data
 

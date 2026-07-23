@@ -4,17 +4,17 @@ Last updated: 2026-07-23
 
 ## Current Release
 
-**Solo Alpha 9: Long-term Progression**
+**Fun Alpha 10: Interactive Live Expedition**
 
-The solo loop now has optional difficulty, multi-run collection targets,
-Tier II strategic projects, tuned chest value, and local aggregate metrics.
+Routes now unfold as animated node journeys with manual branches, Auto-safe
+compatibility, visible party activity, ambient biome moods, and boss lead-ins.
 
 | Area | Status | Current implementation |
 | --- | --- | --- |
 | Project shell | Complete | Vite, React, TypeScript, reducer architecture |
 | Save and offline | Complete | localStorage, backup recovery, migration, 8h offline cap |
 | Camp | Alpha 2 | six idle jobs, three upgrades, four pressure values, five crises |
-| Exploration | Alpha 3 | eleven routes, eight events, three encounters, temporary item drops |
+| Exploration | Alpha 10 | eleven live node journeys, route branches, events, encounters |
 | Run variation | Alpha 3 | five biome/run modifiers and twelve build-defining run items |
 | Run loadout | Alpha 3 | Tool, Charm, and Provision slots with source and trigger history |
 | Survivors | Alpha 1 | four starters plus branched/delayed Rook, Mira, and Bram recruitment |
@@ -38,6 +38,8 @@ Tier II strategic projects, tuned chest value, and local aggregate metrics.
 | Combat feel | Alpha 8 | phase emphasis, telegraph pulse, counter flashes, downed styling |
 | Long-term goals | Alpha 9 | six tracked goals covering variants, Bonds, endings, and collections |
 | Run vows | Alpha 9 | five optional difficulty modifiers with score and Journal records |
+| Live expedition | Alpha 10 | 5-6 node journeys, manual/Auto-safe modes, six biome moods |
+| Party activity | Alpha 10 | walking, gathering, bracing, inspecting, resting, reacting |
 | Assets and UI | Complete for prototype | route art, Guardian art, responsive layouts |
 | Production | Complete for prototype | GitHub Pages workflow and installable PWA shell |
 
@@ -170,6 +172,18 @@ Tier II strategic projects, tuned chest value, and local aggregate metrics.
 - Expanded local run history to 30 summaries with aggregate balance reporting.
 - Added safe migration and expanded the automated suite from 75 to 81 tests.
 
+### Fun Alpha 10 - Interactive Live Expedition
+
+- Replaced single route countdowns with data-driven 5-6 node journeys.
+- Added resource, event, encounter, hazard, rest, shrine, shortcut, clue,
+  and Guardian threshold node types.
+- Added safe, risky reward, and class/relic/survivor shortcut branches.
+- Added Manual and Auto-safe modes with safe idle pausing and offline progression.
+- Added a dedicated animated route scene with path movement and six party states.
+- Added fog, ember, rain, wind, root, moonlight, path, and Beacon/Guardian effects.
+- Preserved existing reward, recruit, route event, Guardian, Beacon, and save flows.
+- Added safe old-timer migration and expanded the automated suite from 81 to 90 tests.
+
 ## Next Phase
 
 ### P1 - External Alpha Playtest
@@ -208,4 +222,4 @@ The current prototype is complete when:
 - Automated tests and production build pass.
 - GitHub Pages serves the app, manifest, and service worker successfully.
 
-All prototype criteria remain met in Solo Alpha 9.
+All prototype criteria remain met in Fun Alpha 10.

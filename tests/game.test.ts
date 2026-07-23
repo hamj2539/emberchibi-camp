@@ -24,10 +24,18 @@ import {
   resolveRouteChoice,
   rollRouteDecision,
 } from "../src/game/routeDecisions.js";
-import { createInitialState, type GameState } from "../src/game/state.js";
+import { createInitialState, type GameState, type RouteId } from "../src/game/state.js";
 import { acquireRunItem } from "../src/game/runItems.js";
 import { buildRunMetrics } from "../src/game/metrics.js";
 import { addBond, bondLevel, discoverEntry, evaluateEndRunDiscoveries } from "../src/game/journal.js";
+import { createExpeditionJourney } from "../src/game/expeditionJourney.js";
+import {
+  advanceExpeditionJourney,
+  canUseNodeChoice,
+  resolveExpeditionNodeChoice,
+  setExpeditionMode,
+} from "../src/game/expeditionJourney.js";
+import { biomeMoods, generateExpeditionNodes } from "../src/data/expeditionNodes.js";
 import { aggregateRunMetrics, getLongTermGoals } from "../src/game/alpha9.js";
 import { runVows } from "../src/data/alpha9Progression.js";
 import { legacyProjects } from "../src/data/progression.js";
@@ -123,9 +131,9 @@ const tests: { name: string; run: () => void }[] = [
       const originalRandom = Math.random;
       Math.random = () => 0;
       try {
-        const hunterResult = resolveExpedition(hunterRun, hunterRun.run.activeExpedition?.endsAt ?? 0);
-        const herbalistResult = resolveExpedition(herbalistRun, herbalistRun.run.activeExpedition?.endsAt ?? 0);
-        assertEqual(hunterResult.run.resources.food, 14);
+        const hunterResult = resolveExpedition(autoSafeRun(hunterRun), hunterRun.run.activeExpedition?.endsAt ?? 0);
+        const herbalistResult = resolveExpedition(autoSafeRun(herbalistRun), herbalistRun.run.activeExpedition?.endsAt ?? 0);
+        assertEqual(hunterResult.run.resources.food, 16);
         assertEqual(herbalistResult.run.survivors[0].injury, 8);
         assertEqual(herbalistResult.run.survivors[0].fatigue, 15);
       } finally {
@@ -180,7 +188,7 @@ const tests: { name: string; run: () => void }[] = [
       const originalRandom = Math.random;
       Math.random = () => 0;
       try {
-        const resolved = resolveExpedition(launched, launched.run.activeExpedition?.endsAt ?? 0);
+        const resolved = resolveExpedition(autoSafeRun(launched), launched.run.activeExpedition?.endsAt ?? 0);
         assertEqual(resolved.run.routes.burntGrove.completed, 1);
         assertEqual(resolved.run.routes.burntGrove.failed, 0);
       } finally {
@@ -227,19 +235,13 @@ const tests: { name: string; run: () => void }[] = [
         run: {
           ...started.run,
           survivors: [scout, guardOne, guardTwo],
-          activeExpedition: {
-            id: "guard-test",
-            routeId: "burntGrove" as const,
-            survivorIds: [scout.id],
-            startedAt: 0,
-            endsAt: 1,
-          },
+          activeExpedition: testExpedition("burntGrove", [scout.id]),
         },
       };
       const originalRandom = Math.random;
       Math.random = () => 0;
       try {
-        const next = resolveExpedition(exploring, 1);
+        const next = resolveExpedition(exploring, 100_000);
         assertEqual(next.run.routes.burntGrove.completed, 1);
         assertEqual(next.run.routes.burntGrove.failed, 0);
       } finally {
@@ -444,17 +446,11 @@ const tests: { name: string; run: () => void }[] = [
     name: "event routes offer distinct survivors across the run",
     run: () => {
       const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "scout" });
-      const expedition = {
-        id: "event-test",
-        routeId: "saltmarshRun" as const,
-        survivorIds: ["survivor-scout"],
-        startedAt: 0,
-        endsAt: 1,
-      };
+      const expedition = testExpedition("saltmarshRun", ["survivor-scout"]);
       const originalRandom = Math.random;
       Math.random = () => 0.999;
       try {
-        const resolved = resolveExpedition({ ...started, run: { ...started.run, activeExpedition: expedition } }, 2);
+        const resolved = resolveExpedition({ ...started, run: { ...started.run, activeExpedition: expedition } }, 100_000);
         assertEqual(resolved.run.recruitEvent?.id, "mira");
         const recruited = gameReducer(
           { ...resolved, run: { ...resolved.run, resources: { ...resolved.run.resources, food: 20 } } },
@@ -612,17 +608,11 @@ const tests: { name: string; run: () => void }[] = [
       };
       const waiting = gameReducer(offered, { type: "resolveRecruit", choice: "food" });
       assertEqual(waiting.run.recruitEvent?.status, "waiting");
-      const expedition = {
-        id: "rook-delay",
-        routeId: "mistwoodEdge" as const,
-        survivorIds: ["survivor-scout"],
-        startedAt: 0,
-        endsAt: 1,
-      };
+      const expedition = testExpedition("mistwoodEdge", ["survivor-scout"]);
       const originalRandom = Math.random;
       Math.random = () => 0.999;
       try {
-        const resolved = resolveExpedition({ ...waiting, run: { ...waiting.run, activeExpedition: expedition } }, 2);
+        const resolved = resolveExpedition({ ...waiting, run: { ...waiting.run, activeExpedition: expedition } }, 100_000);
         assertEqual(resolved.run.recruitEvent?.status, "resolved");
         assertEqual(resolved.run.survivors.some((survivor) => survivor.id === "survivor-rook"), true);
       } finally {
@@ -650,15 +640,9 @@ const tests: { name: string; run: () => void }[] = [
           ...miraWaiting,
           run: {
             ...miraWaiting.run,
-            activeExpedition: {
-              id: "mira-delay",
-              routeId: "moonwellPath",
-              survivorIds: ["survivor-scout"],
-              startedAt: 0,
-              endsAt: 1,
-            },
+            activeExpedition: testExpedition("moonwellPath", ["survivor-scout"]),
           },
-        }, 2);
+        }, 100_000);
         assertEqual(miraResolved.run.survivors.some((survivor) => survivor.id === "survivor-mira"), true);
 
         const bram = getRecruitDefinition("bram");
@@ -674,30 +658,18 @@ const tests: { name: string; run: () => void }[] = [
           ...bramWaiting,
           run: {
             ...bramWaiting.run,
-            activeExpedition: {
-              id: "bram-delay-1",
-              routeId: "windscarCliffs",
-              survivorIds: ["survivor-scout"],
-              startedAt: 0,
-              endsAt: 1,
-            },
+            activeExpedition: testExpedition("windscarCliffs", ["survivor-scout"]),
           },
-        }, 2);
+        }, 100_000);
         assertEqual(withoutKit.run.recruitEvent?.status, "waiting");
         const withKit = resolveExpedition({
           ...withoutKit,
           run: {
             ...withoutKit.run,
             items: { ...withoutKit.run.items, repairKit: 1 },
-            activeExpedition: {
-              id: "bram-delay-2",
-              routeId: "windscarCliffs",
-              survivorIds: ["survivor-scout"],
-              startedAt: 0,
-              endsAt: 1,
-            },
+            activeExpedition: testExpedition("windscarCliffs", ["survivor-scout"]),
           },
-        }, 2);
+        }, 100_000);
         assertEqual(withKit.run.survivors.some((survivor) => survivor.id === "survivor-bram"), true);
         assertEqual(withKit.run.items.repairKit, 0);
       } finally {
@@ -1463,6 +1435,124 @@ const tests: { name: string; run: () => void }[] = [
       assertEqual(migrated.legacy.rememberedRunItem, null);
     },
   },
+  {
+    name: "Alpha 10 generates short node journeys and six biome moods",
+    run: () => {
+      assertEqual(biomeMoods.length, 6);
+      for (const route of routes) {
+        const nodes = generateExpeditionNodes(route.id);
+        assertEqual(nodes.length >= 4 && nodes.length <= 7, true);
+        assertEqual(nodes.some((node) => node.type === "shortcut"), true);
+        if (route.kind === "boss") assertEqual(nodes[nodes.length - 1].type, "bossGate");
+      }
+    },
+  },
+  {
+    name: "manual journeys pause safely at the major branch node",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "scout" });
+      const journey = createExpeditionJourney("mistwoodEdge", ["survivor-scout"], 0, 5, "manual", { usedRation: false, usedTorch: false });
+      const active = { ...started, run: { ...started.run, activeExpedition: journey } };
+      const advanced = advanceExpeditionJourney(active, 100_000);
+      assertEqual(advanced.completed, false);
+      assertEqual(advanced.state.run.activeExpedition?.paused, true);
+      assertEqual(advanced.state.run.activeExpedition?.currentNodeIndex, 2);
+    },
+  },
+  {
+    name: "auto-safe resolves conservative branches through the final node",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "hunter" });
+      const journey = createExpeditionJourney("burntGrove", ["survivor-hunter"], 0, 5, "autoSafe", { usedRation: false, usedTorch: false });
+      const advanced = advanceExpeditionJourney({ ...started, run: { ...started.run, activeExpedition: journey } }, 100_000);
+      assertEqual(advanced.completed, true);
+      assertEqual(advanced.state.run.activeExpedition?.paused, false);
+      assertEqual(advanced.state.run.activeExpedition?.rewardMultiplier, 1);
+      assertEqual((advanced.state.run.activeExpedition?.nodeSafety ?? 0) >= 7, true);
+    },
+  },
+  {
+    name: "switching to auto-safe releases an already paused decision",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "hunter" });
+      const journey = {
+        ...createExpeditionJourney("burntGrove", ["survivor-hunter"], 0, 5, "manual", { usedRation: false, usedTorch: false }),
+        currentNodeIndex: 2,
+        paused: true,
+      };
+      const released = setExpeditionMode({ ...started, run: { ...started.run, activeExpedition: journey } }, "autoSafe");
+      assertEqual(released.run.activeExpedition?.paused, false);
+      assertEqual(released.run.activeExpedition?.currentNodeIndex, 3);
+      assertEqual(released.run.activeExpedition?.nodeSafety, 5);
+    },
+  },
+  {
+    name: "class, relic, and survivor identities each unlock expedition shortcuts",
+    run: () => {
+      const scout = gameReducer(createInitialState(), { type: "chooseStarter", classId: "scout" });
+      const journey = createExpeditionJourney("mistwoodEdge", ["survivor-scout"], 0, 5, "manual", { usedRation: false, usedTorch: false });
+      const shortcut = journey.nodes[2].choices.find((choice) => choice.id === "shortcut")!;
+      assertEqual(canUseNodeChoice({ ...scout, run: { ...scout.run, activeExpedition: journey } }, shortcut), true);
+      const hunter = gameReducer(createInitialState(), { type: "chooseStarter", classId: "hunter" });
+      assertEqual(canUseNodeChoice({ ...hunter, run: { ...hunter.run, activeExpedition: { ...journey, survivorIds: ["survivor-hunter"] } } }, shortcut), false);
+      const relic = { ...hunter, legacy: { ...hunter.legacy, equippedRelics: ["Ashen Compass"] } };
+      assertEqual(canUseNodeChoice({ ...relic, run: { ...relic.run, activeExpedition: { ...journey, survivorIds: ["survivor-hunter"] } } }, shortcut), true);
+      const rook = { ...hunter.run.survivors[0], id: "survivor-rook" };
+      const survivor = { ...hunter, run: { ...hunter.run, survivors: [...hunter.run.survivors, rook], activeExpedition: { ...journey, survivorIds: ["survivor-rook"] } } };
+      assertEqual(canUseNodeChoice(survivor, shortcut), true);
+    },
+  },
+  {
+    name: "manual risky branch has more upside than auto-safe",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "hunter" });
+      const journey = { ...createExpeditionJourney("burntGrove", ["survivor-hunter"], 0, 5, "manual", { usedRation: false, usedTorch: false }), currentNodeIndex: 2, paused: true };
+      const risky = resolveExpeditionNodeChoice({ ...started, run: { ...started.run, activeExpedition: journey } }, "risky", 10);
+      assertEqual((risky.run.activeExpedition?.rewardMultiplier ?? 0) > 1, true);
+      assertEqual(risky.run.activeExpedition?.scoreBonus, 14);
+      assertEqual(risky.run.activeExpedition?.nodeSafety, -4);
+    },
+  },
+  {
+    name: "prepared supplies improve hazard node consequences",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "hunter" });
+      const journey = createExpeditionJourney("burntGrove", ["survivor-hunter"], 0, 5, "autoSafe", { usedRation: true, usedTorch: false });
+      const advanced = advanceExpeditionJourney({ ...started, run: { ...started.run, activeExpedition: journey } }, 100_000);
+      assertEqual(advanced.state.run.activeExpedition?.nodeSafety, 9);
+      assertEqual(advanced.state.run.activeExpedition?.teasers.some((teaser) => teaser.includes("Prepared supplies")), true);
+    },
+  },
+  {
+    name: "node journey completion still resolves the existing route flow",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "scout" });
+      const journey = createExpeditionJourney("burntGrove", ["survivor-scout"], 0, 5, "autoSafe", { usedRation: false, usedTorch: false });
+      const originalRandom = Math.random;
+      Math.random = () => 0.999;
+      try {
+        const completed = resolveExpedition({ ...started, run: { ...started.run, activeExpedition: journey } }, 100_000);
+        assertEqual(completed.run.activeExpedition, null);
+        assertEqual(completed.run.routes.burntGrove.completed, 1);
+        assertEqual(completed.run.routes.emberBeaconSite.discovered, true);
+      } finally {
+        Math.random = originalRandom;
+      }
+    },
+  },
+  {
+    name: "old timer expedition saves migrate into viable auto-safe journeys",
+    run: () => {
+      const started = gameReducer(createInitialState(), { type: "chooseStarter", classId: "scout" });
+      const old = createExpeditionJourney("mistwoodEdge", ["survivor-scout"], 0, 12, "manual", { usedRation: false, usedTorch: false });
+      for (const key of ["nodes", "currentNodeIndex", "nextNodeAt", "paused", "mode"] as const) {
+        delete (old as unknown as Record<string, unknown>)[key];
+      }
+      const migrated = migrateV1({ ...started, run: { ...started.run, activeExpedition: old } });
+      assertEqual((migrated.run.activeExpedition?.nodes.length ?? 0) >= 4, true);
+      assertEqual(migrated.run.activeExpedition?.mode, "autoSafe");
+    },
+  },
 ];
 
 for (const test of tests) {
@@ -1624,4 +1714,14 @@ function assertEqual<T>(actual: T, expected: T): void {
   if (actual !== expected) {
     throw new Error(`Expected ${String(expected)}, got ${String(actual)}`);
   }
+}
+
+function testExpedition(routeId: RouteId, survivorIds: string[]) {
+  return createExpeditionJourney(routeId, survivorIds, 0, 1, "autoSafe", { usedRation: false, usedTorch: false });
+}
+
+function autoSafeRun(state: GameState): GameState {
+  return state.run.activeExpedition
+    ? { ...state, run: { ...state.run, activeExpedition: { ...state.run.activeExpedition, mode: "autoSafe" } } }
+    : state;
 }

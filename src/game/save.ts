@@ -7,6 +7,7 @@ import { runItems } from "../data/runItems.js";
 import { guardianCombat, heraldCombat } from "../data/bossCombat.js";
 import { buildRunMetrics } from "./metrics.js";
 import { runVows, starterLoadouts } from "../data/alpha9Progression.js";
+import { migrateExpeditionJourney } from "./expeditionJourney.js";
 
 const SAVE_KEY = "emberchibiCamp.v1";
 const BACKUP_KEY = "emberchibiCamp.v1.backup";
@@ -98,6 +99,9 @@ export function migrateV1(state: GameState): GameState {
       routes: { ...defaults.run.routes, ...(state.run.routes ?? {}) },
       beacons: migrateBeacons(state, defaults),
       craftQueue: state.run.craftQueue ?? [],
+      activeExpedition: state.run.activeExpedition
+        ? migrateExpeditionJourney(state.run.activeExpedition)
+        : null,
       activeRouteDecision: migrateRouteDecision(state, defaults),
       recruitEvent: migrateRecruitEvent(state),
       bossBattle: bossBattle ? migrateBossBattle(bossBattle) : null,

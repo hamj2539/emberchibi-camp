@@ -4,6 +4,7 @@ import { getRunModifier } from "../data/routeContent.js";
 import { getRoute } from "../data/routes.js";
 import { createGuardianBattle } from "./combat.js";
 import { calculateExpeditionSafety } from "./expedition.js";
+import { advanceExpeditionJourney } from "./expeditionJourney.js";
 import { addBond, discoverEntry, discoverSecret } from "./journal.js";
 import { rollRouteDecision } from "./routeDecisions.js";
 import { hasRunItemEquipped, triggerRunEffect } from "./runItems.js";
@@ -158,15 +159,18 @@ function resolveRepairProgress(state: GameState, elapsedSeconds: number): GameSt
 }
 
 export function resolveExpedition(state: GameState, now: number): GameState {
+  const journey = advanceExpeditionJourney(state, now);
+  if (!journey.completed) return journey.state;
+  state = journey.state;
   const expedition = state.run.activeExpedition;
-  if (!expedition || now < expedition.endsAt) return state;
+  if (!expedition) return state;
 
   const route = getRoute(expedition.routeId);
   const party = state.run.survivors.filter((survivor) => expedition.survivorIds.includes(survivor.id));
   const safety = calculateExpeditionSafety(state, expedition.survivorIds, route, {
     useRation: Boolean(expedition.usedRation),
     useTorch: Boolean(expedition.usedTorch),
-  });
+  }) + expedition.nodeSafety;
   let failed = safety + roll(1, 24) < route.danger;
   const compassRecovery =
     failed &&
@@ -235,6 +239,8 @@ export function resolveExpedition(state: GameState, now: number): GameState {
             survivors: battleSurvivors,
             activeExpedition: null,
             screen: "boss",
+            eventScore: state.run.eventScore + expedition.scoreBonus,
+            decisionsResolved: state.run.decisionsResolved + 1,
             bossBattle: createGuardianBattle(
               {
                 ...state,
@@ -266,7 +272,7 @@ export function resolveExpedition(state: GameState, now: number): GameState {
       const ashBellMultiplier = hasRunItemEquipped(state, "ashBell") ? 0.85 : 1;
       resources[key] += Math.max(
         0,
-        Math.round((reward + hunterBonus) * getRunModifier(state.run.runModifier).rewardMultiplier * emberPickMultiplier * ashBellMultiplier),
+        Math.round((reward + hunterBonus) * getRunModifier(state.run.runModifier).rewardMultiplier * emberPickMultiplier * ashBellMultiplier * expedition.rewardMultiplier),
       );
     }
     routes[route.id] = { ...progress, completed: progress.completed + 1 };
@@ -323,6 +329,8 @@ export function resolveExpedition(state: GameState, now: number): GameState {
       activeRouteDecision,
       recruitEvent,
       routeFailures: state.run.routeFailures + (failed ? 1 : 0),
+      eventScore: state.run.eventScore + expedition.scoreBonus,
+      decisionsResolved: state.run.decisionsResolved + 1,
       campPressure: failed
         ? {
             ...state.run.campPressure,

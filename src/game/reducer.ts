@@ -9,6 +9,11 @@ import { resolveBossAction } from "./combat.js";
 import { advanceCampSystems, resolveCrisisChoice } from "./crises.js";
 import { openGate, resolveGateAction } from "./gate.js";
 import { calculateExpeditionDuration } from "./expedition.js";
+import {
+  createExpeditionJourney,
+  resolveExpeditionNodeChoice,
+  setExpeditionMode,
+} from "./expeditionJourney.js";
 import { applyLegacyStartBonuses } from "./meta.js";
 import { appendRunHistory, buildRunMetrics } from "./metrics.js";
 import { addBond, discoverEntry, evaluateEndRunDiscoveries } from "./journal.js";
@@ -121,15 +126,14 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           ...state.run,
           screen: "explore",
           items,
-          activeExpedition: {
-            id: `expedition-${now}`,
-            routeId: action.routeId,
-            survivorIds: action.survivorIds,
-            startedAt: now,
-            endsAt: now + durationSeconds * 1000,
-            usedRation: useRation,
-            usedTorch: useTorch,
-          },
+          activeExpedition: createExpeditionJourney(
+            action.routeId,
+            action.survivorIds,
+            now,
+            durationSeconds,
+            "manual",
+            { usedRation: useRation, usedTorch: useTorch },
+          ),
           survivors: state.run.survivors.map((survivor) =>
             selected.has(survivor.id) ? { ...survivor, onExpedition: true } : survivor,
           ),
@@ -143,6 +147,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
     case "resolveRouteDecision":
       return stamp(resolveRouteChoice(state, action.choiceId));
+    case "resolveExpeditionNode":
+      return stamp(resolveExpeditionNodeChoice(state, action.choiceId));
+    case "setExpeditionMode":
+      return stamp(setExpeditionMode(state, action.mode));
     case "resolveCrisis":
       return stamp(resolveCrisisChoice(state, action.choiceId));
     case "equipRunItem":
